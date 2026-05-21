@@ -23,6 +23,18 @@ export interface Question {
   type: QuestionType;
   rules?: Rule[];
   after_round?: Rule[];
+  name?: string;
+  image?: string;
+  map?: MapArea[];
+  duration?: number;
+}
+
+export interface MapArea {
+  width: string;
+  height: string;
+  left: string;
+  top: string;
+  color?: string;
 }
 
 export interface Price {
@@ -42,7 +54,8 @@ export interface Rule {
 export enum QuestionType {
   Normal = 'normal',
   Secret = 'secret',
-  Empty = 'empty'
+  Empty = 'empty',
+  FindACat = 'find-a-cat'
 }
 
 export enum RuleType {

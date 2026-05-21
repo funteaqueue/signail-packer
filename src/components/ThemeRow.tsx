@@ -3,7 +3,7 @@ import { Box, TextField, IconButton, Typography } from '@mui/material';
 import { Delete as DeleteIcon, DragIndicator as DragIndicatorIcon } from '@mui/icons-material';
 import { useSortable, SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Theme } from '../types/pack';
+import { Theme, QuestionType } from '../types/pack';
 import QuestionButton from './QuestionButton';
 import AddButton from './AddButton';
 
@@ -163,7 +163,13 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
                 <SortableContext items={questionIds} strategy={horizontalListSortingStrategy}>
                     {standardPrices.map((price, index) => {
                         const question = theme.questions[index];
-                        const hasContent = !!(question && ((question.rules && question.rules.length > 0) || (question.after_round && question.after_round.length > 0)));
+                        const hasContent = !!(
+                            question && (
+                                question.type === QuestionType.FindACat
+                                    ? !!question.image
+                                    : ((question.rules && question.rules.length > 0) || (question.after_round && question.after_round.length > 0))
+                            )
+                        );
                         const id = questionIds[index];
 
                         return (
