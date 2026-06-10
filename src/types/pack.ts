@@ -27,7 +27,24 @@ export interface Question {
   image?: string;
   map?: MapArea[];
   duration?: number;
+  max_clicks?: number;
+  first_place_bonus?: number;
+  answer?: number;
+  perfect_bonus?: number;
+  multiple?: boolean;
+  options?: ChoiceOption[];
+  effect?: RevealEffect;
+  curve?: RevealCurve;
 }
+
+export interface ChoiceOption {
+  content: string;
+  correct: boolean;
+}
+
+export type RevealEffect = 'blur' | 'pixelate' | 'zoom';
+
+export type RevealCurve = 'linear' | 'slow-start' | 'fast-start';
 
 export interface MapArea {
   width: string;
@@ -55,7 +72,11 @@ export enum QuestionType {
   Normal = 'normal',
   Secret = 'secret',
   Empty = 'empty',
-  FindACat = 'find-a-cat'
+  FindACat = 'find-a-cat',
+  CloseEnough = 'close-enough',
+  Choice = 'choice',
+  TextAnswer = 'text-answer',
+  ProgressiveReveal = 'progressive-reveal'
 }
 
 export enum RuleType {

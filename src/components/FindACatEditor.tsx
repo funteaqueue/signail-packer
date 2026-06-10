@@ -26,10 +26,14 @@ interface FindACatEditorProps {
   map: MapArea[];
   name: string;
   duration: number;
+  maxClicks: number;
+  firstPlaceBonus: number;
   onImageChange: (image: string) => void;
   onMapChange: (map: MapArea[]) => void;
   onNameChange: (name: string) => void;
   onDurationChange: (duration: number) => void;
+  onMaxClicksChange: (maxClicks: number) => void;
+  onFirstPlaceBonusChange: (firstPlaceBonus: number) => void;
 }
 
 const PRESET_COLORS = [
@@ -48,10 +52,14 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
   map,
   name,
   duration,
+  maxClicks,
+  firstPlaceBonus,
   onImageChange,
   onMapChange,
   onNameChange,
   onDurationChange,
+  onMaxClicksChange,
+  onFirstPlaceBonusChange,
 }) => {
   const [urlInput, setUrlInput] = useState('');
   const [activeAreaIndex, setActiveAreaIndex] = useState<number | null>(null);
@@ -308,7 +316,7 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
       {/* General Settings: Target and Duration */}
       <Paper sx={{ p: 3, background: 'rgba(19, 26, 54, 0.5)' }}>
         <Grid container spacing={2}>
-          <Grid item xs={12} sm={8}>
+          <Grid item xs={12}>
             <TextField
               label="What to find? (e.g. котиків)*"
               fullWidth
@@ -326,6 +334,30 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
               value={duration}
               onChange={(e) => onDurationChange(parseInt(e.target.value) || 0)}
               onWheel={(e) => (e.target as HTMLInputElement).blur()}
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <TextField
+              label="Click limit"
+              type="number"
+              fullWidth
+              value={maxClicks}
+              onChange={(e) => onMaxClicksChange(Math.max(0, parseInt(e.target.value) || 0))}
+              onWheel={(e) => (e.target as HTMLInputElement).blur()}
+              inputProps={{ min: 0 }}
+              helperText="Total clicks a player can spend (hits and misses). 0 = unlimited"
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <TextField
+              label="Bonus for 1st place"
+              type="number"
+              fullWidth
+              value={firstPlaceBonus}
+              onChange={(e) => onFirstPlaceBonusChange(Math.max(0, parseInt(e.target.value) || 0))}
+              onWheel={(e) => (e.target as HTMLInputElement).blur()}
+              inputProps={{ min: 0 }}
+              helperText="Extra points for the fastest solver, on top of the normal award. 0 = no bonus"
             />
           </Grid>
         </Grid>
