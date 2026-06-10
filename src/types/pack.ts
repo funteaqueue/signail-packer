@@ -23,6 +23,9 @@ export interface Question {
   type: QuestionType;
   rules?: Rule[];
   after_round?: Rule[];
+  /** Find-a-cat task text shown to players; supports %total% and %left% placeholders */
+  task?: string;
+  /** @deprecated Legacy find-a-cat target name (e.g. "котиків"); converted to `task` on edit */
   name?: string;
   image?: string;
   map?: MapArea[];

@@ -24,13 +24,13 @@ import { MapArea } from '../types/pack';
 interface FindACatEditorProps {
   image?: string;
   map: MapArea[];
-  name: string;
+  task: string;
   duration: number;
   maxClicks: number;
   firstPlaceBonus: number;
   onImageChange: (image: string) => void;
   onMapChange: (map: MapArea[]) => void;
-  onNameChange: (name: string) => void;
+  onTaskChange: (task: string) => void;
   onDurationChange: (duration: number) => void;
   onMaxClicksChange: (maxClicks: number) => void;
   onFirstPlaceBonusChange: (firstPlaceBonus: number) => void;
@@ -50,13 +50,13 @@ const PRESET_COLORS = [
 const FindACatEditor: React.FC<FindACatEditorProps> = ({
   image,
   map,
-  name,
+  task,
   duration,
   maxClicks,
   firstPlaceBonus,
   onImageChange,
   onMapChange,
-  onNameChange,
+  onTaskChange,
   onDurationChange,
   onMaxClicksChange,
   onFirstPlaceBonusChange,
@@ -318,12 +318,13 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <TextField
-              label="What to find? (e.g. котиків)*"
+              label="What to find?*"
               fullWidth
-              value={name}
-              onChange={(e) => onNameChange(e.target.value)}
-              placeholder="e.g. котиків"
-              helperText="The target item that players need to search for on the image"
+              multiline
+              value={task}
+              onChange={(e) => onTaskChange(e.target.value)}
+              placeholder='e.g. Знайдіть всіх котиків, всього %total% залишилось %left%'
+              helperText="The full task text shown to players, describing the target item they need to search for on the image. You can optionally use the variables %total% (total number of targets) and %left% (how many are still left) — they are replaced live during the game."
             />
           </Grid>
           <Grid item xs={12} sm={4}>

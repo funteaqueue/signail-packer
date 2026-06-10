@@ -30,6 +30,28 @@ interface QuestionModalProps {
     onClose: () => void;
 }
 
+const DEFAULT_FIND_A_CAT_TASK = 'Знайдіть всіх котиків, всього %total%, залишилось: %left%';
+const LAST_FIND_A_CAT_TASK_KEY = 'packer:last-find-a-cat-task';
+
+// The last saved task text becomes the default for the next find-a-cat question
+const getDefaultFindACatTask = (): string => {
+    try {
+        return localStorage.getItem(LAST_FIND_A_CAT_TASK_KEY) || DEFAULT_FIND_A_CAT_TASK;
+    } catch {
+        return DEFAULT_FIND_A_CAT_TASK;
+    }
+};
+
+const rememberFindACatTask = (task: string) => {
+    try {
+        if (task.trim()) {
+            localStorage.setItem(LAST_FIND_A_CAT_TASK_KEY, task);
+        }
+    } catch {
+        // localStorage unavailable (private mode etc.) — defaults just won't persist
+    }
+};
+
 interface TabPanelProps {
     children?: React.ReactNode;
     index: number;
@@ -63,12 +85,13 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
         },
         rules: [],
         after_round: [],
-        name: '',
+        task: '',
         image: '',
         map: [],
         duration: 60,
         max_clicks: 0,
-        first_place_bonus: 0,
+        first_place_bonus: 100,
+        perfect_bonus: 500,
         multiple: false,
         options: [],
         effect: 'blur',
@@ -91,7 +114,17 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
 
     useEffect(() => {
         if (question) {
-            setFormData(question);
+            // Legacy packs store only the target name ("котиків"); rebuild the
+            // exact task text the game showed for them so resaving keeps it
+            const needsTaskMigration =
+                question.type === QuestionType.FindACat && !question.task && question.name;
+            setFormData(needsTaskMigration
+                ? {
+                    ...question,
+                    task: `Знайдіть і клікніть на всіх ${question.name}. Залишилось всього %left%`,
+                    name: undefined,
+                }
+                : question);
             setIncorrectInputValue(question.price?.incorrect?.toString() || '0');
             setCorrectInputValue(question.price?.correct?.toString() || '0');
             setAnswerInputValue(question.answer !== undefined ? question.answer.toString() : '');
@@ -109,12 +142,13 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 },
                 rules: [],
                 after_round: [],
-                name: '',
+                task: getDefaultFindACatTask(),
                 image: '',
                 map: [],
                 duration: 60,
                 max_clicks: 0,
-                first_place_bonus: 0,
+                first_place_bonus: 100,
+                perfect_bonus: 500,
                 multiple: false,
                 options: [],
                 effect: 'blur',
@@ -158,7 +192,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
     const isProgressiveReveal = formData.type === QuestionType.ProgressiveReveal;
 
     const isFindACatValid = !isFindACat || (
-        !!formData.name?.trim() &&
+        !!formData.task?.trim() &&
         !!formData.image &&
         Array.isArray(formData.map) &&
         formData.map.length > 0
@@ -191,7 +225,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
         }
         if (!isFindACat) return null;
         const missing = [];
-        if (!formData.name?.trim()) missing.push('target name ("What to find?")');
+        if (!formData.task?.trim()) missing.push('the task text ("What to find?")');
         if (!formData.image) missing.push('an image upload');
         if (!formData.map || formData.map.length === 0) missing.push('at least one defined area');
 
@@ -236,7 +270,8 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 id: formData.id || Date.now(),
                 type: QuestionType.FindACat,
                 price: formData.price || defaultPriceValue,
-                name: formData.name || '',
+                task: formData.task || '',
+                name: undefined,
                 image: formData.image || '',
                 map: formData.map || [],
                 duration: formData.duration || 60,
@@ -261,6 +296,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 curve: formData.curve || 'linear',
                 rules: [],
                 after_round: currentAfterRound,
+                task: undefined,
                 name: undefined,
                 map: undefined,
                 answer: undefined,
@@ -278,6 +314,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 price: formData.price || defaultPriceValue,
                 rules: currentRules,
                 after_round: currentAfterRound,
+                task: undefined,
                 name: undefined,
                 image: undefined,
                 map: undefined,
@@ -294,6 +331,10 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 effect: undefined,
                 curve: undefined,
             } as Question;
+        }
+
+        if (updatedQuestion.type === QuestionType.FindACat) {
+            rememberFindACatTask(updatedQuestion.task || '');
         }
 
         onSave(updatedQuestion);
@@ -413,6 +454,10 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                             setFormData((prev) => ({
                                 ...prev,
                                 type: newType,
+                                // Pre-fill find-a-cat with the remembered task text
+                                task: newType === QuestionType.FindACat && !prev.task?.trim()
+                                    ? getDefaultFindACatTask()
+                                    : prev.task,
                             }));
                             setTabValue(0);
                         }}
@@ -474,13 +519,13 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                             <FindACatEditor
                                 image={formData.image}
                                 map={formData.map || []}
-                                name={formData.name || ''}
+                                task={formData.task || ''}
                                 duration={formData.duration || 60}
                                 maxClicks={formData.max_clicks || 0}
                                 firstPlaceBonus={formData.first_place_bonus || 0}
                                 onImageChange={(image) => setFormData(prev => ({ ...prev, image }))}
                                 onMapChange={(map) => setFormData(prev => ({ ...prev, map }))}
-                                onNameChange={(name) => setFormData(prev => ({ ...prev, name }))}
+                                onTaskChange={(task) => setFormData(prev => ({ ...prev, task }))}
                                 onDurationChange={(duration) => setFormData(prev => ({ ...prev, duration }))}
                                 onMaxClicksChange={(max_clicks) => setFormData(prev => ({ ...prev, max_clicks }))}
                                 onFirstPlaceBonusChange={(first_place_bonus) => setFormData(prev => ({ ...prev, first_place_bonus }))}
