@@ -1,45 +1,417 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
+/* ============================================================ Themes ====
+   Same six designs as the game app. Every theme defines the same variable
+   contract; components and the MUI overrides (theme/muiTheme.ts) reference
+   only variables. The selected theme is set as <html data-theme="..."> from
+   theme/themes.ts.
+
+   Contract:
+   surfaces  --bg-dark --bg-darker --glass-bg --glass-border --glass-shadow
+             --surface-soft --track --input-bg
+   text      --text-primary --text-secondary --text-muted
+   primary   --primary --primary-hover --primary-glow --on-primary --ring
+   secondary --secondary --secondary-glow
+   accent    --accent --accent-glow --accent-soft --accent-line
+   status    --danger --warning
+   buttons   --grad-primary --btn-primary-text --btn-shadow
+   tiles     --grad-cell --cell-text --cell-border --cell-glow
+   headline  --grad-text --logo-glow
+   progress  --fill --fill-hover
+   backdrop  --aurora --vignette
+   misc      --selection-bg --selection-text --scroll-thumb
+             --scroll-thumb-hover --hover-border
+   ======================================================================= */
+
+/* Default theme: Party Mix — neutral charcoal stage, every theme row gets
+   its own tile color (see the row rules further down) */
 :root {
-  /* Color Palette - Matching Final Product */
-  --color-bg-primary: #0a0e27;
-  --color-bg-secondary: #131a36;
-  --color-bg-card: rgba(19, 26, 54, 0.8);
+    --bg-dark: #1f232e;
+    --bg-darker: #14161e;
+    --glass-bg: rgba(30, 34, 46, 0.55);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 8px 32px rgba(5, 7, 12, 0.45);
+    --surface-soft: rgba(255, 255, 255, 0.06);
+    --track: rgba(255, 255, 255, 0.12);
+    --input-bg: rgba(9, 11, 16, 0.6);
 
-  /* Gradient - Purple to Pink like final product buttons */
-  --gradient-primary: linear-gradient(135deg, #8b5cf6 0%, #d946ef 50%, #ec4899 100%);
-  --gradient-secondary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  --gradient-background: linear-gradient(180deg, #0a0e27 0%, #1a1f3a 100%);
+    --text-primary: #f2f4f8;
+    --text-secondary: #9aa3b2;
+    --text-muted: #5a6170;
 
-  /* Accent Colors */
-  --color-accent-purple: #8b5cf6;
-  --color-accent-pink: #ec4899;
-  --color-accent-magenta: #d946ef;
+    --primary: #2d7ff0;
+    --primary-hover: #4f93f5;
+    --primary-glow: rgba(45, 127, 240, 0.4);
+    --on-primary: #ffffff;
+    --ring: rgba(45, 127, 240, 0.22);
 
-  /* Text Colors */
-  --color-text-primary: #ffffff;
-  --color-text-secondary: #a8b2d1;
-  --color-text-muted: #64748b;
+    --secondary: #e8485c;
+    --secondary-glow: rgba(232, 72, 92, 0.35);
 
-  /* Border & Effects */
-  --border-radius-sm: 8px;
-  --border-radius-md: 12px;
-  --border-radius-lg: 16px;
-  --border-radius-xl: 24px;
+    --accent: #f2a724;
+    --accent-glow: rgba(242, 167, 36, 0.35);
+    --accent-soft: rgba(242, 167, 36, 0.12);
+    --accent-line: rgba(242, 167, 36, 0.45);
 
-  /* Shadows & Glows */
-  --shadow-glow: 0 0 20px rgba(139, 92, 246, 0.3);
-  --shadow-glow-pink: 0 0 20px rgba(236, 72, 153, 0.3);
-  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
+    --danger: #ff5470;
+    --warning: #ffb02e;
 
-  /* Animations */
-  --transition-fast: 0.2s ease;
-  --transition-normal: 0.3s ease;
-  --transition-slow: 0.5s ease;
+    --grad-primary: linear-gradient(180deg, #ffffff 0%, #e9ecf2 100%);
+    --btn-primary-text: #15171f;
+    --btn-shadow: rgba(0, 0, 0, 0.4);
+
+    --grad-cell: linear-gradient(180deg, #3b87f2 0%, #2566cd 100%);
+    --cell-text: #ffffff;
+    --cell-border: rgba(255, 255, 255, 0.16);
+    --cell-glow: rgba(255, 255, 255, 0.22);
+
+    --grad-text: linear-gradient(92deg, #e8485c 0%, #f2a724 35%, #1fb377 68%, #2d7ff0 100%);
+    --logo-glow: rgba(242, 167, 36, 0.22);
+
+    --fill: linear-gradient(180deg, #f6b53e 0%, #df9416 100%);
+    --fill-hover: var(--fill);
+
+    --aurora:
+        radial-gradient(40% 46% at 14% 22%, rgba(232, 72, 92, 0.13) 0%, transparent 70%),
+        radial-gradient(42% 50% at 86% 18%, rgba(45, 127, 240, 0.14) 0%, transparent 70%),
+        radial-gradient(44% 50% at 82% 84%, rgba(242, 167, 36, 0.1) 0%, transparent 70%),
+        radial-gradient(36% 42% at 12% 86%, rgba(31, 179, 119, 0.12) 0%, transparent 70%);
+    --vignette: radial-gradient(120% 110% at 50% 0%, transparent 55%, rgba(4, 5, 9, 0.6) 100%);
+
+    --selection-bg: rgba(242, 167, 36, 0.9);
+    --selection-text: #1d1402;
+    --scroll-thumb: rgba(255, 255, 255, 0.18);
+    --scroll-thumb-hover: rgba(255, 255, 255, 0.35);
+    --hover-border: rgba(255, 255, 255, 0.28);
+
+    /* Layout helpers */
+    --border-radius-sm: 8px;
+    --border-radius-md: 12px;
+    --border-radius-lg: 16px;
+    --border-radius-xl: 24px;
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
 }
+
+/* Neon Arcade — deep violet space, electric gradients */
+html[data-theme="neon"] {
+    --bg-dark: #1c1442;
+    --bg-darker: #0e0a23;
+    --glass-bg: rgba(28, 21, 62, 0.55);
+    --glass-border: rgba(165, 148, 255, 0.16);
+    --glass-shadow: 0 8px 32px rgba(8, 4, 30, 0.45);
+    --surface-soft: rgba(255, 255, 255, 0.06);
+    --track: rgba(255, 255, 255, 0.12);
+    --input-bg: rgba(12, 8, 32, 0.6);
+
+    --text-primary: #f7f6ff;
+    --text-secondary: #aaa3d4;
+    --text-muted: #6d678f;
+
+    --primary: #8c6cff;
+    --primary-hover: #a285ff;
+    --primary-glow: rgba(140, 108, 255, 0.45);
+    --on-primary: #ffffff;
+    --ring: rgba(140, 108, 255, 0.2);
+
+    --secondary: #ff4fd8;
+    --secondary-glow: rgba(255, 79, 216, 0.35);
+
+    --accent: #2de2ff;
+    --accent-glow: rgba(45, 226, 255, 0.35);
+    --accent-soft: rgba(45, 226, 255, 0.12);
+    --accent-line: rgba(45, 226, 255, 0.45);
+
+    --danger: #ff5470;
+    --warning: #ffb02e;
+
+    --grad-primary: linear-gradient(135deg, #6d5dfc 0%, #9a4dff 55%, #e44dff 115%);
+    --btn-primary-text: #ffffff;
+    --btn-shadow: rgba(124, 92, 255, 0.4);
+
+    --grad-cell: linear-gradient(155deg, #5b48f5 0%, #7a3df0 55%, #b32de0 110%);
+    --cell-text: #ffffff;
+    --cell-border: rgba(255, 255, 255, 0.14);
+    --cell-glow: rgba(228, 77, 255, 0.32);
+
+    --grad-text: linear-gradient(92deg, #8c6cff 0%, #ff4fd8 60%, #ffc83d 115%);
+    --logo-glow: rgba(140, 108, 255, 0.4);
+
+    --fill: linear-gradient(135deg, #6d5dfc 0%, #9a4dff 55%, #e44dff 115%);
+    --fill-hover: var(--fill);
+
+    --aurora:
+        radial-gradient(42% 50% at 18% 20%, rgba(124, 77, 255, 0.34) 0%, transparent 70%),
+        radial-gradient(38% 46% at 85% 14%, rgba(255, 61, 154, 0.2) 0%, transparent 70%),
+        radial-gradient(46% 52% at 80% 88%, rgba(64, 110, 255, 0.22) 0%, transparent 70%),
+        radial-gradient(32% 40% at 10% 90%, rgba(45, 226, 255, 0.14) 0%, transparent 70%);
+    --vignette: radial-gradient(120% 110% at 50% 0%, transparent 55%, rgba(6, 3, 20, 0.6) 100%);
+
+    --selection-bg: rgba(140, 108, 255, 0.5);
+    --selection-text: #ffffff;
+    --scroll-thumb: rgba(140, 108, 255, 0.35);
+    --scroll-thumb-hover: rgba(140, 108, 255, 0.6);
+    --hover-border: rgba(165, 148, 255, 0.4);
+}
+
+/* Tide Pool — dark teal water, coral actions, sand-gold money */
+html[data-theme="tidepool"] {
+    --bg-dark: #10333b;
+    --bg-darker: #0a2228;
+    --glass-bg: rgba(13, 42, 49, 0.55);
+    --glass-border: rgba(242, 214, 160, 0.15);
+    --glass-shadow: 0 8px 32px rgba(2, 10, 12, 0.45);
+    --surface-soft: rgba(255, 255, 255, 0.05);
+    --track: rgba(255, 255, 255, 0.12);
+    --input-bg: rgba(5, 18, 21, 0.6);
+
+    --text-primary: #eff7f4;
+    --text-secondary: #8fb8bd;
+    --text-muted: #4e6e73;
+
+    --primary: #f2d6a0;
+    --primary-hover: #f8e3bd;
+    --primary-glow: rgba(242, 214, 160, 0.35);
+    --on-primary: #2e2008;
+    --ring: rgba(242, 214, 160, 0.22);
+
+    --secondary: #ff6b4a;
+    --secondary-glow: rgba(255, 107, 74, 0.35);
+
+    --accent: #f2d6a0;
+    --accent-glow: rgba(242, 214, 160, 0.35);
+    --accent-soft: rgba(242, 214, 160, 0.12);
+    --accent-line: rgba(242, 214, 160, 0.45);
+
+    --danger: #ff5470;
+    --warning: #ffb02e;
+
+    --grad-primary: linear-gradient(180deg, #ff7553 0%, #e5512c 100%);
+    --btn-primary-text: #38130a;
+    --btn-shadow: rgba(229, 81, 44, 0.35);
+
+    --grad-cell: linear-gradient(180deg, #14939e 0%, #0d6b74 100%);
+    --cell-text: #effaf6;
+    --cell-border: rgba(242, 214, 160, 0.2);
+    --cell-glow: rgba(242, 214, 160, 0.3);
+
+    --grad-text: linear-gradient(92deg, #f8e3b8 0%, #f2d6a0 55%, #d9b26e 110%);
+    --logo-glow: rgba(242, 214, 160, 0.3);
+
+    --fill: linear-gradient(180deg, #f6dfae 0%, #e3bd7d 100%);
+    --fill-hover: var(--fill);
+
+    --aurora:
+        radial-gradient(50% 38% at 50% 0%, rgba(242, 214, 160, 0.08) 0%, transparent 70%),
+        radial-gradient(42% 50% at 16% 30%, rgba(17, 128, 138, 0.3) 0%, transparent 70%),
+        radial-gradient(46% 52% at 84% 80%, rgba(13, 90, 98, 0.28) 0%, transparent 70%),
+        radial-gradient(30% 36% at 88% 12%, rgba(255, 107, 74, 0.08) 0%, transparent 70%);
+    --vignette: radial-gradient(120% 110% at 50% 0%, transparent 55%, rgba(2, 9, 11, 0.62) 100%);
+
+    --selection-bg: rgba(242, 214, 160, 0.9);
+    --selection-text: #241a05;
+    --scroll-thumb: rgba(242, 214, 160, 0.28);
+    --scroll-thumb-hover: rgba(242, 214, 160, 0.5);
+    --hover-border: rgba(242, 214, 160, 0.4);
+}
+
+/* Card Table — deep felt green, brass-gold value, red actions */
+html[data-theme="cardtable"] {
+    --bg-dark: #143626;
+    --bg-darker: #0b2018;
+    --glass-bg: rgba(17, 42, 30, 0.55);
+    --glass-border: rgba(233, 196, 120, 0.16);
+    --glass-shadow: 0 8px 32px rgba(3, 12, 7, 0.45);
+    --surface-soft: rgba(255, 255, 255, 0.05);
+    --track: rgba(255, 255, 255, 0.12);
+    --input-bg: rgba(6, 20, 13, 0.6);
+
+    --text-primary: #f2ebd4;
+    --text-secondary: #a7bfa9;
+    --text-muted: #5e7766;
+
+    --primary: #e9b53c;
+    --primary-hover: #f3c45a;
+    --primary-glow: rgba(233, 181, 60, 0.4);
+    --on-primary: #241803;
+    --ring: rgba(233, 181, 60, 0.18);
+
+    --secondary: #e0532f;
+    --secondary-glow: rgba(224, 83, 47, 0.35);
+
+    --accent: #e9b53c;
+    --accent-glow: rgba(233, 181, 60, 0.4);
+    --accent-soft: rgba(233, 181, 60, 0.12);
+    --accent-line: rgba(233, 181, 60, 0.4);
+
+    --danger: #ff5470;
+    --warning: #ffb02e;
+
+    --grad-primary: linear-gradient(180deg, #e25a33 0%, #c8431f 100%);
+    --btn-primary-text: #fff7ec;
+    --btn-shadow: rgba(196, 62, 28, 0.4);
+
+    --grad-cell: linear-gradient(180deg, #218559 0%, #175c3e 100%);
+    --cell-text: #ffd66b;
+    --cell-border: rgba(246, 214, 130, 0.22);
+    --cell-glow: rgba(233, 181, 60, 0.32);
+
+    --grad-text: linear-gradient(92deg, #f6d27a 0%, #e9b53c 55%, #d2942a 110%);
+    --logo-glow: rgba(233, 181, 60, 0.35);
+
+    --fill: linear-gradient(180deg, #f0c254 0%, #dfa62e 100%);
+    --fill-hover: var(--fill);
+
+    --aurora:
+        radial-gradient(50% 38% at 50% 0%, rgba(233, 181, 60, 0.1) 0%, transparent 70%),
+        radial-gradient(42% 50% at 16% 28%, rgba(31, 122, 82, 0.3) 0%, transparent 70%),
+        radial-gradient(46% 52% at 84% 80%, rgba(20, 96, 64, 0.26) 0%, transparent 70%),
+        radial-gradient(30% 36% at 88% 12%, rgba(224, 83, 47, 0.07) 0%, transparent 70%);
+    --vignette: radial-gradient(120% 110% at 50% 0%, transparent 55%, rgba(3, 10, 6, 0.62) 100%);
+
+    --selection-bg: rgba(233, 181, 60, 0.9);
+    --selection-text: #1a1206;
+    --scroll-thumb: rgba(233, 181, 60, 0.28);
+    --scroll-thumb-hover: rgba(233, 181, 60, 0.5);
+    --hover-border: rgba(233, 196, 120, 0.4);
+}
+
+/* Royal Court — navy ink, royal blue tiles, gold for money and actions */
+html[data-theme="royal"] {
+    --bg-dark: #15223f;
+    --bg-darker: #0a1228;
+    --glass-bg: rgba(18, 30, 58, 0.55);
+    --glass-border: rgba(245, 196, 90, 0.16);
+    --glass-shadow: 0 8px 32px rgba(3, 7, 18, 0.45);
+    --surface-soft: rgba(255, 255, 255, 0.05);
+    --track: rgba(255, 255, 255, 0.12);
+    --input-bg: rgba(6, 11, 26, 0.6);
+
+    --text-primary: #f8f7f2;
+    --text-secondary: #b8c6e8;
+    --text-muted: #5a6a8f;
+
+    --primary: #f5b62e;
+    --primary-hover: #f8c452;
+    --primary-glow: rgba(245, 182, 46, 0.4);
+    --on-primary: #2a1b00;
+    --ring: rgba(245, 182, 46, 0.2);
+
+    --secondary: #2e63e7;
+    --secondary-glow: rgba(46, 99, 231, 0.4);
+
+    --accent: #f5b62e;
+    --accent-glow: rgba(245, 182, 46, 0.4);
+    --accent-soft: rgba(245, 182, 46, 0.12);
+    --accent-line: rgba(245, 182, 46, 0.45);
+
+    --danger: #ff5470;
+    --warning: #ffb02e;
+
+    --grad-primary: linear-gradient(180deg, #f8c24a 0%, #e5a41c 100%);
+    --btn-primary-text: #2a1b00;
+    --btn-shadow: rgba(229, 164, 28, 0.35);
+
+    --grad-cell: linear-gradient(180deg, #2a63e8 0%, #1c45b8 100%);
+    --cell-text: #ffffff;
+    --cell-border: rgba(140, 170, 255, 0.25);
+    --cell-glow: rgba(46, 99, 231, 0.45);
+
+    --grad-text: linear-gradient(92deg, #f8d97e 0%, #f5b62e 55%, #d99a18 110%);
+    --logo-glow: rgba(245, 182, 46, 0.35);
+
+    --fill: linear-gradient(180deg, #f6c351 0%, #e2a31f 100%);
+    --fill-hover: var(--fill);
+
+    --aurora:
+        radial-gradient(50% 38% at 50% 0%, rgba(245, 182, 46, 0.09) 0%, transparent 70%),
+        radial-gradient(42% 50% at 16% 28%, rgba(36, 88, 214, 0.26) 0%, transparent 70%),
+        radial-gradient(46% 52% at 84% 80%, rgba(23, 58, 150, 0.3) 0%, transparent 70%),
+        radial-gradient(30% 36% at 88% 12%, rgba(120, 160, 255, 0.08) 0%, transparent 70%);
+    --vignette: radial-gradient(120% 110% at 50% 0%, transparent 55%, rgba(3, 6, 16, 0.62) 100%);
+
+    --selection-bg: rgba(245, 182, 46, 0.9);
+    --selection-text: #241700;
+    --scroll-thumb: rgba(245, 182, 46, 0.28);
+    --scroll-thumb-hover: rgba(245, 182, 46, 0.5);
+    --hover-border: rgba(245, 196, 90, 0.4);
+}
+
+/* Daylight — warm paper, vivid blue tiles, coral actions. The only light
+   theme: bg-dark/bg-darker keep their semantic roles but flip in lightness */
+html[data-theme="daylight"] {
+    --bg-dark: #ffffff;
+    --bg-darker: #faf5ea;
+    --glass-bg: rgba(255, 255, 255, 0.75);
+    --glass-border: rgba(32, 38, 59, 0.12);
+    --glass-shadow: 0 8px 28px rgba(31, 41, 55, 0.1);
+    --surface-soft: rgba(32, 38, 59, 0.05);
+    --track: rgba(32, 38, 59, 0.12);
+    --input-bg: #ffffff;
+
+    --text-primary: #20263b;
+    --text-secondary: #6e7894;
+    --text-muted: #a3a695;
+
+    --primary: #3d6bf5;
+    --primary-hover: #5d83f7;
+    --primary-glow: rgba(61, 107, 245, 0.3);
+    --on-primary: #ffffff;
+    --ring: rgba(61, 107, 245, 0.18);
+
+    --secondary: #f0454f;
+    --secondary-glow: rgba(240, 69, 79, 0.3);
+
+    --accent: #d98e0b;
+    --accent-glow: rgba(217, 142, 11, 0.3);
+    --accent-soft: rgba(217, 142, 11, 0.12);
+    --accent-line: rgba(217, 142, 11, 0.45);
+
+    --danger: #d22b44;
+    --warning: #9a6a00;
+
+    --grad-primary: linear-gradient(180deg, #f4565e 0%, #dd3640 100%);
+    --btn-primary-text: #ffffff;
+    --btn-shadow: rgba(221, 54, 64, 0.3);
+
+    --grad-cell: linear-gradient(180deg, #4a76f7 0%, #3057d8 100%);
+    --cell-text: #ffffff;
+    --cell-border: rgba(32, 38, 59, 0.1);
+    --cell-glow: rgba(61, 107, 245, 0.35);
+
+    --grad-text: linear-gradient(92deg, #3d6bf5 0%, #f0454f 110%);
+    --logo-glow: rgba(61, 107, 245, 0.25);
+
+    --fill: linear-gradient(180deg, #f2b135 0%, #dd9a12 100%);
+    --fill-hover: var(--fill);
+
+    --aurora:
+        radial-gradient(50% 38% at 50% 0%, rgba(245, 166, 35, 0.12) 0%, transparent 70%),
+        radial-gradient(42% 50% at 14% 30%, rgba(61, 107, 245, 0.08) 0%, transparent 70%),
+        radial-gradient(46% 52% at 86% 78%, rgba(240, 69, 79, 0.07) 0%, transparent 70%),
+        radial-gradient(32% 38% at 90% 10%, rgba(31, 179, 119, 0.07) 0%, transparent 70%);
+    --vignette: radial-gradient(120% 110% at 50% 0%, transparent 60%, rgba(196, 178, 140, 0.28) 100%);
+
+    --selection-bg: rgba(61, 107, 245, 0.9);
+    --selection-text: #ffffff;
+    --scroll-thumb: rgba(32, 38, 59, 0.25);
+    --scroll-thumb-hover: rgba(32, 38, 59, 0.45);
+    --hover-border: rgba(61, 107, 245, 0.35);
+}
+
+/* ====================================================== Base layout ==== */
 
 * {
   box-sizing: border-box;
+}
+
+/* The aurora lives on body::before; body must stay transparent or its
+   background would paint over it (negative z-index pseudo-elements render
+   behind the parent's background). html keeps the base color so there is
+   never a flash. */
+html {
+  background-color: var(--bg-darker);
 }
 
 body {
@@ -48,11 +420,46 @@ body {
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: var(--gradient-background);
-  background-attachment: fixed;
-  color: var(--color-text-primary);
+  color: var(--text-primary);
   min-height: 100vh;
   overflow-x: hidden;
+}
+
+/* Slowly drifting color pools behind every page */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -15%;
+  z-index: -2;
+  pointer-events: none;
+  background: var(--aurora);
+  animation: auroraDrift 26s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+/* Static vignette so content edges stay readable over the aurora */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--vignette);
+}
+
+@keyframes auroraDrift {
+  from {
+    transform: translate3d(-2%, -1.5%, 0) scale(1);
+  }
+
+  to {
+    transform: translate3d(2.5%, 3%, 0) scale(1.1);
+  }
+}
+
+::selection {
+  background: var(--selection-bg);
+  color: var(--selection-text);
 }
 
 code {
@@ -65,21 +472,50 @@ code {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-bg-secondary);
+  background: var(--bg-darker);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--gradient-primary);
+  background: var(--scroll-thumb);
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-accent-magenta);
+  background: var(--scroll-thumb-hover);
+}
+
+/* ============================================ Party Mix board colors ====
+   Question tiles cycle one bold color per theme row, like the game board.
+   The amber row flips to dark text for contrast. */
+html[data-theme="party"] .q-cell--r0 {
+  background: linear-gradient(180deg, #ef5366 0%, #d63a4e 100%);
+}
+
+html[data-theme="party"] .q-cell--r1 {
+  background: linear-gradient(180deg, #3b87f2 0%, #2566cd 100%);
+}
+
+html[data-theme="party"] .q-cell--r2 {
+  background: linear-gradient(180deg, #f5b13a 0%, #e0961a 100%);
+  color: #2a1a00;
+  text-shadow: none;
+}
+
+html[data-theme="party"] .q-cell--r3 {
+  background: linear-gradient(180deg, #1eb377 0%, #14905e 100%);
+}
+
+html[data-theme="party"] .q-cell--r4 {
+  background: linear-gradient(180deg, #9d6bf5 0%, #7e4ad8 100%);
+}
+
+html[data-theme="party"] .q-cell--r5 {
+  background: linear-gradient(180deg, #ee7038 0%, #d4571f 100%);
 }
 
 /* Utility Classes */
 .gradient-text {
-  background: var(--gradient-primary);
+  background: var(--grad-text);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -96,7 +532,7 @@ code {
   inset: 0;
   border-radius: var(--border-radius-md);
   padding: 2px;
-  background: var(--gradient-primary);
+  background: var(--grad-primary);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -128,18 +564,6 @@ code {
   }
 }
 
-@keyframes glow {
-
-  0%,
-  100% {
-    filter: drop-shadow(0 0 5px rgba(139, 92, 246, 0.5));
-  }
-
-  50% {
-    filter: drop-shadow(0 0 20px rgba(236, 72, 153, 0.8));
-  }
-}
-
 .animate-fade-in {
   animation: fadeIn var(--transition-normal) ease-out;
 }
@@ -150,11 +574,22 @@ code {
 
 /* Glass effect for cards */
 .glass-card {
-  background: rgba(19, 26, 54, 0.6);
+  background: var(--glass-bg);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  border: 1px solid var(--glass-border);
   border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--glass-shadow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before {
+    animation: none;
+  }
+
+  .animate-fade-in,
+  .animate-slide-in {
+    animation: none;
+  }
 }
 
 /* Hide number input spinners */

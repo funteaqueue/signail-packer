@@ -1,214 +1,53 @@
-/* Quill Editor Dark Theme */
+/* Quill editor follows the selected design through the CSS variables
+   defined in index.css */
 .ql-toolbar {
-    background-color: rgba(19, 26, 54, 0.8) !important;
-    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+    background-color: var(--glass-bg) !important;
+    border: 1px solid var(--glass-border) !important;
     border-radius: 12px 12px 0 0 !important;
 }
 
 .ql-container {
-    background-color: rgba(19, 26, 54, 0.5) !important;
-    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+    background-color: var(--input-bg) !important;
+    border: 1px solid var(--glass-border) !important;
     border-radius: 0 0 12px 12px !important;
-    color: #ffffff !important;
+    color: var(--text-primary) !important;
 }
 
 .ql-editor {
-    color: #ffffff !important;
+    color: var(--text-primary) !important;
     min-height: 100px;
 }
 
 .ql-editor.ql-blank::before {
-    color: #a8b2d1 !important;
+    color: var(--text-secondary) !important;
 }
 
 .ql-snow .ql-stroke {
-    stroke: #a8b2d1 !important;
+    stroke: var(--text-secondary) !important;
 }
 
 .ql-snow .ql-fill {
-    fill: #a8b2d1 !important;
+    fill: var(--text-secondary) !important;
 }
 
 .ql-snow .ql-picker-label {
-    color: #a8b2d1 !important;
+    color: var(--text-secondary) !important;
 }
 
 .ql-toolbar button:hover,
 .ql-toolbar button:focus,
 .ql-toolbar button.ql-active {
-    color: #8b5cf6 !important;
+    color: var(--primary) !important;
 }
 
 .ql-toolbar button:hover .ql-stroke,
 .ql-toolbar button.ql-active .ql-stroke {
-    stroke: #8b5cf6 !important;
+    stroke: var(--primary) !important;
 }
 
 .ql-toolbar button:hover .ql-fill,
 .ql-toolbar button.ql-active .ql-fill {
-    fill: #8b5cf6 !important;
-}
-
-.ql-snow.ql-toolbar button:hover,
-.ql-snow .ql-toolbar button:hover,
-.ql-snow.ql-toolbar button:focus,
-/* Quill Editor Dark Theme */
-.ql-toolbar {
-    background-color: rgba(19, 26, 54, 0.8) !important;
-    border: 1px solid rgba(139, 92, 246, 0.3) !important;
-    border-radius: 12px 12px 0 0 !important;
-}
-
-.ql-container {
-    background-color: rgba(19, 26, 54, 0.5) !important;
-    border: 1px solid rgba(139, 92, 246, 0.3) !important;
-    border-radius: 0 0 12px 12px !important;
-    color: #ffffff !important;
-}
-
-.ql-editor {
-    color: #ffffff !important;
-    min-height: 100px;
-}
-
-.ql-editor.ql-blank::before {
-    color: #a8b2d1 !important;
-}
-
-.ql-snow .ql-stroke {
-    stroke: #a8b2d1 !important;
-}
-
-.ql-snow .ql-fill {
-    fill: #a8b2d1 !important;
-}
-
-.ql-snow .ql-picker-label {
-    color: #a8b2d1 !important;
-}
-
-.ql-toolbar button:hover,
-.ql-toolbar button:focus,
-.ql-toolbar button.ql-active {
-    color: #8b5cf6 !important;
-}
-
-.ql-toolbar button:hover .ql-stroke,
-.ql-toolbar button.ql-active .ql-stroke {
-    stroke: #8b5cf6 !important;
-}
-
-.ql-toolbar button:hover .ql-fill,
-.ql-toolbar button.ql-active .ql-fill {
-    fill: #8b5cf6 !important;
-}
-
-.ql-snow.ql-toolbar button:hover,
-.ql-snow .ql-toolbar button:hover,
-.ql-snow.ql-toolbar button:focus,
-/* Quill Editor Dark Theme */
-.ql-toolbar {
-    background-color: rgba(19, 26, 54, 0.8) !important;
-    border: 1px solid rgba(139, 92, 246, 0.3) !important;
-    border-radius: 12px 12px 0 0 !important;
-}
-
-.ql-container {
-    background-color: rgba(19, 26, 54, 0.5) !important;
-    border: 1px solid rgba(139, 92, 246, 0.3) !important;
-    border-radius: 0 0 12px 12px !important;
-    color: #ffffff !important;
-}
-
-.ql-editor {
-    color: #ffffff !important;
-    min-height: 100px;
-}
-
-.ql-editor.ql-blank::before {
-    color: #a8b2d1 !important;
-}
-
-.ql-snow .ql-stroke {
-    stroke: #a8b2d1 !important;
-}
-
-.ql-snow .ql-fill {
-    fill: #a8b2d1 !important;
-}
-
-.ql-snow .ql-picker-label {
-    color: #a8b2d1 !important;
-}
-
-.ql-toolbar button:hover,
-.ql-toolbar button:focus,
-.ql-toolbar button.ql-active {
-    color: #8b5cf6 !important;
-}
-
-.ql-toolbar button:hover .ql-stroke,
-.ql-toolbar button.ql-active .ql-stroke {
-    stroke: #8b5cf6 !important;
-}
-
-.ql-toolbar button:hover .ql-fill,
-.ql-toolbar button.ql-active .ql-fill {
-    fill: #8b5cf6 !important;
-}
-
-.ql-snow.ql-toolbar button:hover,
-.ql-snow .ql-toolbar button:hover,
-.ql-snow.ql-toolbar button:focus,
-/* Quill Editor Dark Theme */
-.ql-toolbar {
-    background-color: rgba(19, 26, 54, 0.8) !important;
-    border: 1px solid rgba(139, 92, 246, 0.3) !important;
-    border-radius: 12px 12px 0 0 !important;
-}
-
-.ql-container {
-    background-color: rgba(19, 26, 54, 0.5) !important;
-    border: 1px solid rgba(139, 92, 246, 0.3) !important;
-    border-radius: 0 0 12px 12px !important;
-    color: #ffffff !important;
-}
-
-.ql-editor {
-    color: #ffffff !important;
-    min-height: 100px;
-}
-
-.ql-editor.ql-blank::before {
-    color: #a8b2d1 !important;
-}
-
-.ql-snow .ql-stroke {
-    stroke: #a8b2d1 !important;
-}
-
-.ql-snow .ql-fill {
-    fill: #a8b2d1 !important;
-}
-
-.ql-snow .ql-picker-label {
-    color: #a8b2d1 !important;
-}
-
-.ql-toolbar button:hover,
-.ql-toolbar button:focus,
-.ql-toolbar button.ql-active {
-    color: #8b5cf6 !important;
-}
-
-.ql-toolbar button:hover .ql-stroke,
-.ql-toolbar button.ql-active .ql-stroke {
-    stroke: #8b5cf6 !important;
-}
-
-.ql-toolbar button:hover .ql-fill,
-.ql-toolbar button.ql-active .ql-fill {
-    fill: #8b5cf6 !important;
+    fill: var(--primary) !important;
 }
 
 .ql-snow.ql-toolbar button:hover,
@@ -217,17 +56,17 @@
 .ql-snow .ql-toolbar button:focus,
 .ql-snow.ql-toolbar button.ql-active,
 .ql-snow .ql-toolbar button.ql-active {
-    background-color: rgba(139, 92, 246, 0.2) !important;
+    background-color: var(--ring) !important;
 }
 
-/* Audio Icon */
+/* Audio Icon: the SVG is applied as a mask so the icon color can come from a
+   theme variable (data-URL images cannot reference CSS variables) */
 .ql-toolbar button.ql-audio,
 .ql-snow.ql-toolbar button.ql-audio,
 .ql-snow .ql-toolbar button.ql-audio {
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='%23a8b2d1' fill='none' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M9 18V5l12-2v13'/%3E%3Ccircle stroke='%23a8b2d1' fill='none' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' cx='6' cy='18' r='3'/%3E%3Ccircle stroke='%23a8b2d1' fill='none' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' cx='18' cy='16' r='3'/%3E%3C/svg%3E") !important;
-    background-size: 16px !important;
-    background-position: center !important;
-    background-repeat: no-repeat !important;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='black' fill='none' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M9 18V5l12-2v13'/%3E%3Ccircle stroke='black' fill='none' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' cx='6' cy='18' r='3'/%3E%3Ccircle stroke='black' fill='none' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' cx='18' cy='16' r='3'/%3E%3C/svg%3E") center / 16px no-repeat !important;
+    mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='black' fill='none' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M9 18V5l12-2v13'/%3E%3Ccircle stroke='black' fill='none' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' cx='6' cy='18' r='3'/%3E%3Ccircle stroke='black' fill='none' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' cx='18' cy='16' r='3'/%3E%3C/svg%3E") center / 16px no-repeat !important;
+    background-color: var(--text-secondary) !important;
     width: 24px !important;
     height: 24px !important;
     display: inline-block !important;
@@ -242,5 +81,5 @@
 .ql-toolbar button.ql-audio.ql-active,
 .ql-snow.ql-toolbar button.ql-audio.ql-active,
 .ql-snow .ql-toolbar button.ql-audio.ql-active {
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='%238b5cf6' fill='none' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M9 18V5l12-2v13'/%3E%3Ccircle stroke='%238b5cf6' fill='none' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' cx='6' cy='18' r='3'/%3E%3Ccircle stroke='%238b5cf6' fill='none' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' cx='18' cy='16' r='3'/%3E%3C/svg%3E") !important;
+    background-color: var(--primary) !important;
 }

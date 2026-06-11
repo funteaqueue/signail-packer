@@ -253,7 +253,7 @@ const RuleForm: React.FC<RuleFormProps> = ({
       </Typography>
 
       {/* Add Rule Form */}
-      <Paper ref={formRef} sx={{ p: 2, mb: 2, border: editingIndex !== null ? '1px solid #8b5cf6' : 'none' }}>
+      <Paper ref={formRef} sx={{ p: 2, mb: 2, border: editingIndex !== null ? '1px solid var(--primary)' : 'none' }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Typography variant="body2" gutterBottom>
             {t('ruleForm.content')}
@@ -352,14 +352,14 @@ const RuleForm: React.FC<RuleFormProps> = ({
                 <IconButton
                   edge="end"
                   onClick={() => handleEditRule(index)}
-                  sx={{ mr: 1, color: '#8b5cf6' }}
+                  sx={{ mr: 1, color: 'var(--primary)' }}
                 >
                   <EditIcon />
                 </IconButton>
                 <IconButton
                   edge="end"
                   onClick={() => handleDeleteRule(index)}
-                  sx={{ color: '#ef4444' }}
+                  sx={{ color: 'var(--danger)', '&:hover': { color: 'var(--danger)' } }}
                 >
                   <DeleteIcon />
                 </IconButton>

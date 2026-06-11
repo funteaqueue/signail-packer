@@ -316,7 +316,7 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* General Settings: Target and Duration */}
-      <Paper sx={{ p: 3, background: 'rgba(19, 26, 54, 0.5)' }}>
+      <Paper sx={{ p: 3, background: 'var(--surface-soft)' }}>
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <TextField
@@ -373,18 +373,18 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
           onDrop={handleDrop}
           sx={{
             p: 5,
-            border: '2px dashed rgba(139, 92, 246, 0.4)',
+            border: '2px dashed var(--hover-border)',
             borderRadius: '16px',
             textAlign: 'center',
-            background: 'rgba(19, 26, 54, 0.3)',
+            background: 'var(--surface-soft)',
             cursor: 'pointer',
             transition: 'border-color 0.3s',
             '&:hover': {
-              borderColor: '#8b5cf6',
+              borderColor: 'var(--primary)',
             },
           }}
         >
-          <CloudUploadIcon sx={{ fontSize: 64, color: 'rgba(139, 92, 246, 0.7)', mb: 2 }} />
+          <CloudUploadIcon sx={{ fontSize: 64, color: 'var(--primary)', mb: 2 }} />
           <Typography variant="h6" gutterBottom>
             {t('upload.dragDrop')}
           </Typography>
@@ -430,7 +430,7 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 2,
-                background: 'rgba(19, 26, 54, 0.5)',
+                background: 'var(--surface-soft)',
               }}
             >
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -484,8 +484,8 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
                   cursor: previewMode ? 'default' : 'crosshair',
                   overflow: 'hidden',
                   borderRadius: '8px',
-                  border: '1px solid rgba(139, 92, 246, 0.3)',
-                  backgroundColor: '#0a0e27',
+                  border: '1px solid var(--glass-border)',
+                  backgroundColor: 'var(--bg-darker)',
                 }}
               >
                 {previewMode ? (
@@ -584,7 +584,7 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
           {/* Area Details & Controls */}
           <Grid item xs={12} md={4}>
             <Stack spacing={3}>
-              <Paper sx={{ p: 3, background: 'rgba(19, 26, 54, 0.5)' }}>
+              <Paper sx={{ p: 3, background: 'var(--surface-soft)' }}>
                 <Typography variant="h6" gutterBottom>
                   {t('findACat.definedAreas', { count: map.length })}
                 </Typography>
@@ -608,11 +608,11 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
                             justifyContent: 'space-between',
                             p: 1.5,
                             borderRadius: '8px',
-                            background: isSelected ? 'rgba(139, 92, 246, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                            border: isSelected ? '1px solid #8b5cf6' : '1px solid transparent',
+                            background: isSelected ? 'var(--ring)' : 'var(--surface-soft)',
+                            border: isSelected ? '1px solid var(--primary)' : '1px solid transparent',
                             cursor: 'pointer',
                             '&:hover': {
-                              background: isSelected ? 'rgba(139, 92, 246, 0.25)' : 'rgba(255, 255, 255, 0.08)',
+                              background: isSelected ? 'var(--ring)' : 'var(--track)',
                             },
                           }}
                         >
@@ -657,7 +657,7 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
 
               {/* Selected Area Fine Tuning */}
               {activeArea && activeAreaIndex !== null && (
-                <Paper sx={{ p: 3, border: '1px solid rgba(139, 92, 246, 0.3)', background: 'rgba(19, 26, 54, 0.6)' }}>
+                <Paper sx={{ p: 3, border: '1px solid var(--hover-border)', background: 'var(--surface-soft)' }}>
                   <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, display: 'flex', justify: 'space-between', alignItems: 'center' }}>
                     {t('findACat.editArea', { number: activeAreaIndex + 1 })}
                   </Typography>

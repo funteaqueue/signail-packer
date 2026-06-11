@@ -168,7 +168,7 @@ const ChoiceOptionsEditor: React.FC<ChoiceOptionsEditorProps> = ({
       />
 
       {/* Draft option editor */}
-      <Paper ref={formRef} sx={{ p: 2, border: editingIndex !== null ? '1px solid #8b5cf6' : 'none' }}>
+      <Paper ref={formRef} sx={{ p: 2, border: editingIndex !== null ? '1px solid var(--primary)' : 'none' }}>
         <Typography variant="body2" gutterBottom>
           {editingIndex !== null ? t('choice.editOption', { number: editingIndex + 1 }) : t('choice.newOption')}
         </Typography>
@@ -240,8 +240,8 @@ const ChoiceOptionsEditor: React.FC<ChoiceOptionsEditorProps> = ({
             display: 'flex',
             alignItems: 'flex-start',
             gap: 1.5,
-            border: option.correct ? '1px solid #10b981' : '1px solid rgba(139, 92, 246, 0.2)',
-            background: option.correct ? 'rgba(16, 185, 129, 0.08)' : 'rgba(19, 26, 54, 0.4)',
+            border: option.correct ? '1px solid #10b981' : '1px solid var(--glass-border)',
+            background: option.correct ? 'rgba(16, 185, 129, 0.08)' : 'var(--surface-soft)',
           }}
         >
           <Tooltip title={option.correct ? t('choice.correctAnswer') : t('choice.markCorrect')}>
@@ -264,8 +264,8 @@ const ChoiceOptionsEditor: React.FC<ChoiceOptionsEditorProps> = ({
               width: '28px',
               height: '28px',
               borderRadius: '50%',
-              background: '#8b5cf6',
-              color: '#fff',
+              background: 'var(--primary)',
+              color: 'var(--on-primary)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -285,7 +285,7 @@ const ChoiceOptionsEditor: React.FC<ChoiceOptionsEditorProps> = ({
             }}
             dangerouslySetInnerHTML={{ __html: option.content }}
           />
-          <IconButton size="small" onClick={() => handleEditOption(index)} sx={{ color: '#8b5cf6' }}>
+          <IconButton size="small" onClick={() => handleEditOption(index)} sx={{ color: 'var(--primary)' }}>
             <EditIcon fontSize="small" />
           </IconButton>
           <IconButton size="small" color="error" onClick={() => handleDeleteOption(index)}>

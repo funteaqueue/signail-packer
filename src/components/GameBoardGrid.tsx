@@ -31,15 +31,15 @@ const ThemeRowOverlay: React.FC<{ theme: Theme }> = ({ theme }: { theme: Theme }
             alignItems: 'center',
             gap: 2,
             padding: '16px',
-            background: 'rgba(139, 92, 246, 0.2)',
+            background: 'var(--glass-bg)',
             borderRadius: '12px',
-            border: '2px solid rgba(139, 92, 246, 0.5)',
+            border: '2px solid var(--hover-border)',
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
             width: '100%',
             opacity: 0.8,
         }}
     >
-        <Typography sx={{ color: '#ffffff', fontWeight: 600 }}>{theme.name}</Typography>
+        <Typography sx={{ color: 'var(--text-primary)', fontWeight: 600 }}>{theme.name}</Typography>
     </Box>
 );
 
@@ -99,13 +99,15 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({
     // Find the question for the overlay
     let activeQuestion: Question | undefined;
     let activePrice: number = 0;
+    let activeRowIndex: number = 0;
     if (activeId && activeId.startsWith('q-')) {
         const qId = parseInt(activeId.replace('q-', ''), 10);
-        currentRound.themes.forEach((theme: Theme) => {
+        currentRound.themes.forEach((theme: Theme, themeIdx: number) => {
             theme.questions.forEach((q: Question, idx: number) => {
                 if (q.id === qId) {
                     activeQuestion = q;
                     activePrice = (idx + 1) * 100;
+                    activeRowIndex = themeIdx;
                 }
             });
         });
@@ -131,18 +133,18 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({
                     gap: 4,
                     marginBottom: '32px',
                     padding: '20px',
-                    background: 'rgba(19, 26, 54, 0.4)',
+                    background: 'var(--glass-bg)',
                     borderRadius: '16px',
-                    border: '1px solid rgba(139, 92, 246, 0.2)',
+                    border: '1px solid var(--glass-border)',
                 }}
             >
                 <IconButton
                     onClick={onPreviousRound}
                     disabled={roundIndex === 0}
                     sx={{
-                        color: '#8b5cf6',
+                        color: 'var(--primary)',
                         '&:disabled': {
-                            color: 'rgba(139, 92, 246, 0.3)',
+                            color: 'var(--text-muted)',
                         },
                     }}
                 >
@@ -166,7 +168,7 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({
                                 textAlign: 'center',
                                 fontSize: '2.125rem',
                                 fontWeight: 700,
-                                background: 'linear-gradient(135deg, #8b5cf6 0%, #d946ef 50%, #ec4899 100%)',
+                                background: 'var(--grad-text)',
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: 'transparent',
                                 backgroundClip: 'text',
@@ -175,8 +177,8 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({
                         }}
                         sx={{
                             minWidth: '300px',
-                            '& .MuiInput-underline:before': { borderBottomColor: 'rgba(139, 92, 246, 0.5)' },
-                            '& .MuiInput-underline:after': { borderBottomColor: '#d946ef' },
+                            '& .MuiInput-underline:before': { borderBottomColor: 'var(--hover-border)' },
+                            '& .MuiInput-underline:after': { borderBottomColor: 'var(--primary)' },
                         }}
                     />
                 ) : (
@@ -198,7 +200,7 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({
                                 minWidth: '200px',
                                 textAlign: 'center',
                                 fontWeight: 700,
-                                background: 'linear-gradient(135deg, #8b5cf6 0%, #d946ef 50%, #ec4899 100%)',
+                                background: 'var(--grad-text)',
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: 'transparent',
                                 backgroundClip: 'text',
@@ -213,7 +215,7 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({
                             sx={{
                                 opacity: 0.5,
                                 transition: 'opacity 0.2s',
-                                color: '#d946ef',
+                                color: 'var(--secondary)',
                             }}
                         >
                             <EditIcon />
@@ -224,7 +226,7 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({
                 <IconButton
                     onClick={onNextRound}
                     sx={{
-                        color: '#8b5cf6',
+                        color: 'var(--primary)',
                     }}
                 >
                     <ChevronRight fontSize="large" />
@@ -240,10 +242,10 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({
             >
                 <Box
                     sx={{
-                        background: 'rgba(19, 26, 54, 0.3)',
+                        background: 'var(--surface-soft)',
                         borderRadius: '16px',
                         padding: '24px',
-                        border: '1px solid rgba(139, 92, 246, 0.2)',
+                        border: '1px solid var(--glass-border)',
                     }}
                 >
                     {currentRound.themes.length === 0 ? (
@@ -251,7 +253,7 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({
                             sx={{
                                 textAlign: 'center',
                                 padding: '60px',
-                                color: '#a8b2d1',
+                                color: 'var(--text-secondary)',
                             }}
                         >
                             <Typography variant="h6" sx={{ marginBottom: 2 }}>
@@ -288,6 +290,7 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({
                             id={activeId}
                             question={activeQuestion}
                             price={activePrice}
+                            rowIndex={activeRowIndex}
                             onClick={() => { }}
                             hasContent={true}
                         />

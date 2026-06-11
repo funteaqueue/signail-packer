@@ -20,11 +20,14 @@ const LanguageSwitcher: React.FC = () => {
                 '& .MuiToggleButton-root': {
                     padding: '4px 10px',
                     fontWeight: 600,
-                    color: '#a8b2d1',
-                    borderColor: 'rgba(139, 92, 246, 0.3)',
+                    color: 'var(--text-secondary)',
+                    borderColor: 'var(--glass-border)',
                     '&.Mui-selected': {
-                        color: '#ffffff',
-                        backgroundColor: 'rgba(139, 92, 246, 0.3)',
+                        color: 'var(--on-primary)',
+                        backgroundColor: 'var(--primary)',
+                    },
+                    '&.Mui-selected:hover': {
+                        backgroundColor: 'var(--primary-hover)',
                     },
                 },
             }}

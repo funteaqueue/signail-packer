@@ -1,8 +1,10 @@
 import React, { useRef } from 'react';
-import { Box, TextField, Button, Typography } from '@mui/material';
+import { Box, TextField, Button, Typography, Select, MenuItem } from '@mui/material';
 import { Upload, Download, DeleteForever, Autorenew } from '@mui/icons-material';
 import { useTranslation } from '../i18n/LanguageContext';
 import LanguageSwitcher from '../i18n/LanguageSwitcher';
+import { THEMES } from '../theme/themes';
+import { useAppTheme } from '../theme/ThemeContext';
 
 interface PackHeaderProps {
     packName: string;
@@ -28,6 +30,7 @@ const PackHeader: React.FC<PackHeaderProps> = ({
     repacking,
 }) => {
     const { t } = useTranslation();
+    const { themeId, setThemeId } = useAppTheme();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const repackInputRef = useRef<HTMLInputElement>(null);
 
@@ -48,9 +51,9 @@ const PackHeader: React.FC<PackHeaderProps> = ({
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 padding: '20px 32px',
-                background: 'rgba(19, 26, 54, 0.6)',
+                background: 'var(--glass-bg)',
                 backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(139, 92, 246, 0.2)',
+                border: '1px solid var(--glass-border)',
                 borderRadius: '16px',
                 marginBottom: '24px',
             }}
@@ -76,6 +79,26 @@ const PackHeader: React.FC<PackHeaderProps> = ({
             </Box>
 
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                <Select
+                    value={themeId}
+                    onChange={(e) => setThemeId(e.target.value)}
+                    size="small"
+                    aria-label={t('header.design')}
+                    title={t('header.design')}
+                    sx={{
+                        height: '36px',
+                        minWidth: '140px',
+                        background: 'var(--input-bg)',
+                        border: '1px solid var(--glass-border)',
+                        '& .MuiOutlinedInput-notchedOutline': {
+                            border: 'none',
+                        },
+                    }}
+                >
+                    {THEMES.map((option) => (
+                        <MenuItem key={option.id} value={option.id}>{option.name}</MenuItem>
+                    ))}
+                </Select>
                 <LanguageSwitcher />
                 <input
                     type="file"

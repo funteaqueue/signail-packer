@@ -242,7 +242,7 @@ const ProgressiveRevealEditor: React.FC<ProgressiveRevealEditorProps> = ({
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {/* Settings */}
-      <Paper sx={{ p: 3, background: 'rgba(19, 26, 54, 0.5)' }}>
+      <Paper sx={{ p: 3, background: 'var(--surface-soft)' }}>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={4}>
             <FormControl fullWidth>
@@ -295,16 +295,16 @@ const ProgressiveRevealEditor: React.FC<ProgressiveRevealEditorProps> = ({
           onDrop={handleDrop}
           sx={{
             p: 5,
-            border: '2px dashed rgba(139, 92, 246, 0.4)',
+            border: '2px dashed var(--hover-border)',
             borderRadius: '16px',
             textAlign: 'center',
-            background: 'rgba(19, 26, 54, 0.3)',
+            background: 'var(--surface-soft)',
             cursor: 'pointer',
             transition: 'border-color 0.3s',
-            '&:hover': { borderColor: '#8b5cf6' },
+            '&:hover': { borderColor: 'var(--primary)' },
           }}
         >
-          <CloudUploadIcon sx={{ fontSize: 64, color: 'rgba(139, 92, 246, 0.7)', mb: 2 }} />
+          <CloudUploadIcon sx={{ fontSize: 64, color: 'var(--primary)', mb: 2 }} />
           <Typography variant="h6" gutterBottom>
             {t('upload.dragDrop')}
           </Typography>
@@ -337,7 +337,7 @@ const ProgressiveRevealEditor: React.FC<ProgressiveRevealEditorProps> = ({
           </Box>
         </Paper>
       ) : (
-        <Paper sx={{ p: 2, background: 'rgba(19, 26, 54, 0.5)' }}>
+        <Paper sx={{ p: 2, background: 'var(--surface-soft)' }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
               {t('reveal.preview')}
@@ -359,8 +359,8 @@ const ProgressiveRevealEditor: React.FC<ProgressiveRevealEditorProps> = ({
           <Box sx={{
             borderRadius: '8px',
             overflow: 'hidden',
-            border: '1px solid rgba(139, 92, 246, 0.3)',
-            backgroundColor: '#0a0e27',
+            border: '1px solid var(--glass-border)',
+            backgroundColor: 'var(--bg-darker)',
           }}>
             <EffectPreview src={image} effect={effect} progress={applyRevealCurve(previewProgress / 100, curve)} />
           </Box>

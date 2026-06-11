@@ -61,14 +61,14 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
                 alignItems: 'center',
                 gap: 2,
                 padding: '16px',
-                background: 'rgba(19, 26, 54, 0.4)',
+                background: 'var(--surface-soft)',
                 borderRadius: '12px',
                 marginBottom: '12px',
-                border: '1px solid rgba(139, 92, 246, 0.15)',
+                border: '1px solid var(--glass-border)',
                 touchAction: 'none',
                 '&:hover': {
-                    background: 'rgba(19, 26, 54, 0.6)',
-                    border: '1px solid rgba(139, 92, 246, 0.3)',
+                    background: 'var(--glass-bg)',
+                    border: '1px solid var(--hover-border)',
                 },
                 zIndex: isDragging ? 10 : 1,
                 position: 'relative',
@@ -80,11 +80,11 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
                 {...listeners}
                 sx={{
                     cursor: 'grab',
-                    color: 'rgba(139, 92, 246, 0.5)',
+                    color: 'var(--text-muted)',
                     display: 'flex',
                     alignItems: 'center',
                     '&:hover': {
-                        color: '#8b5cf6',
+                        color: 'var(--primary)',
                     },
                 }}
             >
@@ -115,7 +115,7 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
                         fullWidth
                         sx={{
                             '& .MuiInputBase-input': {
-                                color: '#ffffff',
+                                color: 'var(--text-primary)',
                                 fontWeight: 500,
                             },
                         }}
@@ -125,14 +125,14 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
                         onClick={() => setIsEditingName(true)}
                         sx={{
                             cursor: 'pointer',
-                            color: '#ffffff',
+                            color: 'var(--text-primary)',
                             fontWeight: 500,
                             fontSize: '16px',
                             padding: '8px 12px',
                             borderRadius: '8px',
                             flex: 1,
                             '&:hover': {
-                                background: 'rgba(139, 92, 246, 0.2)',
+                                background: 'var(--ring)',
                             },
                         }}
                     >
@@ -143,9 +143,10 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
                     onClick={onDeleteTheme}
                     size="small"
                     sx={{
-                        color: '#ef4444',
+                        color: 'var(--danger)',
                         '&:hover': {
-                            background: 'rgba(239, 68, 68, 0.2)',
+                            color: 'var(--danger)',
+                            background: 'var(--surface-soft)',
                         },
                     }}
                 >
@@ -180,6 +181,7 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
                                 id={id}
                                 question={question}
                                 price={price}
+                                rowIndex={themeIndex}
                                 onClick={() => onQuestionClick(index)}
                                 hasContent={hasContent}
                             />

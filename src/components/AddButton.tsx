@@ -29,15 +29,16 @@ const AddButton: React.FC<AddButtonProps> = ({ onClick, size = 'medium', label }
             sx={{
                 width: sizeMap[size],
                 height: sizeMap[size],
-                border: '3px solid #ef4444',
+                border: '3px solid var(--secondary)',
                 borderRadius: '50%',
                 backgroundColor: 'transparent',
-                color: '#ef4444',
+                color: 'var(--secondary)',
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    color: 'var(--secondary)',
+                    backgroundColor: 'var(--surface-soft)',
                     transform: 'scale(1.1) rotate(90deg)',
-                    boxShadow: '0 0 20px rgba(239, 68, 68, 0.5)',
+                    boxShadow: '0 0 20px var(--secondary-glow)',
                 },
                 '&:active': {
                     transform: 'scale(1.05) rotate(90deg)',

@@ -19,6 +19,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'header.repacking': 'Repacking...',
     'header.download': 'Download',
     'header.clear': 'Clear',
+    'header.design': 'Design',
 
     // Image upload (shared by Find-a-Cat and Progressive Reveal editors)
     'upload.dragDrop': 'Drag & Drop image here',
@@ -209,6 +210,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'header.repacking': 'Перепакування...',
     'header.download': 'Завантажити',
     'header.clear': 'Очистити',
+    'header.design': 'Дизайн',
 
     // Image upload (shared by Find-a-Cat and Progressive Reveal editors)
     'upload.dragDrop': 'Перетягніть зображення сюди',

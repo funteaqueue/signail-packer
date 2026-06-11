@@ -436,9 +436,9 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
             fullWidth
             PaperProps={{
                 sx: {
-                    background: 'rgba(19, 26, 54, 0.95)',
+                    background: 'var(--glass-bg)',
                     backdropFilter: 'blur(20px)',
-                    border: '1px solid rgba(139, 92, 246, 0.3)',
+                    border: '1px solid var(--glass-border)',
                 },
             }}
         >
@@ -448,7 +448,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 </Typography>
 
                 <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
-                    <Typography variant="body2" sx={{ color: '#a8b2d1' }}>{t('question.typeLabel')}</Typography>
+                    <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>{t('question.typeLabel')}</Typography>
                     <Select
                         value={formData.type || QuestionType.Normal}
                         onChange={(e) => {
@@ -467,8 +467,8 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                         sx={{
                             height: '36px',
                             minWidth: '130px',
-                            background: 'rgba(19, 26, 54, 0.6)',
-                            border: '1px solid rgba(139, 92, 246, 0.3)',
+                            background: 'var(--input-bg)',
+                            border: '1px solid var(--glass-border)',
                             '& .MuiOutlinedInput-notchedOutline': {
                                 border: 'none'
                             }
@@ -492,7 +492,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                     onChange={(e, newValue) => setTabValue(newValue)}
                     sx={{
                         borderBottom: 1,
-                        borderColor: 'rgba(139, 92, 246, 0.3)',
+                        borderColor: 'var(--glass-border)',
                         marginBottom: 2,
                     }}
                 >

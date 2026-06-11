@@ -11,9 +11,12 @@ interface QuestionButtonProps {
     price: number;
     onClick: () => void;
     hasContent: boolean;
+    // Theme-row index: in Party Mix every row gets its own tile color
+    // (html[data-theme="party"] .q-cell--r* rules in index.css)
+    rowIndex?: number;
 }
 
-const QuestionButton: React.FC<QuestionButtonProps> = ({ id, question, price, onClick, hasContent }) => {
+const QuestionButton: React.FC<QuestionButtonProps> = ({ id, question, price, onClick, hasContent, rowIndex }) => {
     const {
         attributes,
         listeners,
@@ -37,8 +40,11 @@ const QuestionButton: React.FC<QuestionButtonProps> = ({ id, question, price, on
             {...attributes}
             {...listeners}
             onClick={onClick}
+            className={rowIndex !== undefined ? `q-cell q-cell--r${rowIndex % 6}` : 'q-cell'}
             sx={{
-                background: 'linear-gradient(135deg, #8b5cf6 0%, #d946ef 50%, #ec4899 100%)',
+                background: 'var(--grad-cell)',
+                color: 'var(--cell-text)',
+                textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
                 borderRadius: '12px',
                 padding: '24px 32px',
                 minWidth: '120px',
@@ -48,11 +54,11 @@ const QuestionButton: React.FC<QuestionButtonProps> = ({ id, question, price, on
                 cursor: 'grab',
                 touchAction: 'none',
                 transition: 'transform 0.3s ease, box-shadow 0.3s ease, border 0.3s ease',
-                border: hasContent ? '2px solid rgba(255, 255, 255, 0.3)' : '2px solid transparent',
+                border: hasContent ? '2px solid var(--cell-border)' : '2px solid transparent',
                 '&:hover': {
                     transform: 'translateY(-4px) scale(1.05)',
-                    boxShadow: '0 8px 30px rgba(139, 92, 246, 0.6)',
-                    border: '2px solid rgba(255, 255, 255, 0.5)',
+                    boxShadow: '0 8px 30px var(--cell-glow)',
+                    border: '2px solid var(--hover-border)',
                 },
                 '&:active': {
                     cursor: 'grabbing',
@@ -63,8 +69,6 @@ const QuestionButton: React.FC<QuestionButtonProps> = ({ id, question, price, on
                 sx={{
                     fontSize: '32px',
                     fontWeight: 700,
-                    color: '#ffffff',
-                    textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
                     pointerEvents: 'none',
                     zIndex: 2,
                 }}
