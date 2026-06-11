@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
 import PackForm from './components/PackForm';
+import { LanguageProvider } from './i18n/LanguageContext';
 import './App.css';
 
 const theme = createTheme({
@@ -204,9 +205,11 @@ const App: React.FC = () => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <div className="App">
-        <PackForm />
-      </div>
+      <LanguageProvider>
+        <div className="App">
+          <PackForm />
+        </div>
+      </LanguageProvider>
     </ThemeProvider>
   );
 };

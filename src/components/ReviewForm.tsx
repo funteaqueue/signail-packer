@@ -10,6 +10,7 @@ import {
   Button,
 } from '@mui/material';
 import { Pack } from '../types/pack';
+import { useTranslation } from '../i18n/LanguageContext';
 
 interface ReviewFormProps {
   packData: Pack;
@@ -17,23 +18,24 @@ interface ReviewFormProps {
 }
 
 const ReviewForm: React.FC<ReviewFormProps> = ({ packData, onDownload }) => {
+  const { t } = useTranslation();
   return (
     <Box sx={{ mt: 2 }}>
       <Typography variant="h6" gutterBottom>
-        Review Pack
+        {t('review.title')}
       </Typography>
 
       <Paper sx={{ p: 2, mb: 2 }}>
         <Typography variant="subtitle1" gutterBottom>
-          Basic Information
+          {t('basicInfo.title')}
         </Typography>
-        <Typography>Name: {packData.name}</Typography>
-        <Typography>Author: {packData.author}</Typography>
+        <Typography>{t('review.name')} {packData.name}</Typography>
+        <Typography>{t('review.author')} {packData.author}</Typography>
       </Paper>
 
       <Paper sx={{ p: 2 }}>
         <Typography variant="subtitle1" gutterBottom>
-          Rounds and Themes
+          {t('rounds.title')}
         </Typography>
         <List>
           {packData.rounds.map((round, roundIndex) => (
@@ -46,10 +48,10 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ packData, onDownload }) => {
                       {round.themes.map((theme, themeIndex) => (
                         <Box key={themeIndex} sx={{ mt: 1 }}>
                           <Typography variant="body2">
-                            Theme: {theme.name}
+                            {t('review.theme')} {theme.name}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
-                            Description: {theme.description}
+                            {t('review.description')} {theme.description}
                           </Typography>
                         </Box>
                       ))}
@@ -65,7 +67,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ packData, onDownload }) => {
 
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
         <Button variant="contained" onClick={onDownload}>
-          Download JSON
+          {t('review.downloadJson')}
         </Button>
       </Box>
     </Box>

@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { Pack, Round, Theme, Question } from '../types/pack';
+import { useTranslation } from '../i18n/LanguageContext';
 import QuestionForm from './QuestionForm';
 
 interface RoundsFormProps {
@@ -24,6 +25,7 @@ interface RoundsFormProps {
 }
 
 const RoundsForm: React.FC<RoundsFormProps> = ({ onSubmit, initialData, onRoundsChange }) => {
+  const { t } = useTranslation();
   const [rounds, setRounds] = useState<Round[]>(initialData);
   const [currentRound, setCurrentRound] = useState<Partial<Round>>({
     name: '',
@@ -119,18 +121,18 @@ const RoundsForm: React.FC<RoundsFormProps> = ({ onSubmit, initialData, onRounds
   return (
     <Box sx={{ mt: 2 }}>
       <Typography variant="h6" gutterBottom>
-        Rounds and Themes
+        {t('rounds.title')}
       </Typography>
 
       {/* Add Round Form */}
       <Paper sx={{ p: 2, mb: 2 }}>
         <Typography variant="subtitle1" gutterBottom>
-          Add New Round
+          {t('rounds.addNewRound')}
         </Typography>
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
           <TextField
             fullWidth
-            label="Round Name"
+            label={t('rounds.roundName')}
             value={currentRound.name}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCurrentRound({ ...currentRound, name: e.target.value })}
           />
@@ -139,7 +141,7 @@ const RoundsForm: React.FC<RoundsFormProps> = ({ onSubmit, initialData, onRounds
             startIcon={<AddIcon />}
             onClick={handleAddRound}
           >
-            Add Round
+            {t('rounds.addRound')}
           </Button>
         </Box>
       </Paper>
@@ -178,13 +180,13 @@ const RoundsForm: React.FC<RoundsFormProps> = ({ onSubmit, initialData, onRounds
               <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
                 <TextField
                   fullWidth
-                  label="Theme Name"
+                  label={t('rounds.themeName')}
                   value={currentTheme.name}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCurrentTheme({ ...currentTheme, name: e.target.value })}
                 />
                 <TextField
                   fullWidth
-                  label="Theme Description"
+                  label={t('rounds.themeDescription')}
                   value={currentTheme.description}
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => setCurrentTheme({ ...currentTheme, description: e.target.value })}
                 />
@@ -193,7 +195,7 @@ const RoundsForm: React.FC<RoundsFormProps> = ({ onSubmit, initialData, onRounds
                   startIcon={<AddIcon />}
                   onClick={() => handleAddTheme(roundIndex)}
                 >
-                  Add Theme
+                  {t('rounds.addTheme')}
                 </Button>
               </Box>
 
@@ -260,7 +262,7 @@ const RoundsForm: React.FC<RoundsFormProps> = ({ onSubmit, initialData, onRounds
           onClick={() => onSubmit(rounds)}
           disabled={rounds.length === 0}
         >
-          Next
+          {t('common.next')}
         </Button>
       </Box>
     </Box>

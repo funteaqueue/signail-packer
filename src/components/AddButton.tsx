@@ -1,6 +1,7 @@
 import React from 'react';
 import { IconButton } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
+import { useTranslation } from '../i18n/LanguageContext';
 
 interface AddButtonProps {
     onClick: () => void;
@@ -9,6 +10,7 @@ interface AddButtonProps {
 }
 
 const AddButton: React.FC<AddButtonProps> = ({ onClick, size = 'medium', label }) => {
+    const { t } = useTranslation();
     const sizeMap = {
         small: 40,
         medium: 56,
@@ -41,7 +43,7 @@ const AddButton: React.FC<AddButtonProps> = ({ onClick, size = 'medium', label }
                     transform: 'scale(1.05) rotate(90deg)',
                 },
             }}
-            aria-label={label || 'Add'}
+            aria-label={label || t('common.add')}
         >
             <AddIcon sx={{ fontSize: iconSizeMap[size] }} />
         </IconButton>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, TextField, Button, Typography } from '@mui/material';
 import { Pack } from '../types/pack';
+import { useTranslation } from '../i18n/LanguageContext';
 
 interface BasicInfoFormProps {
   onSubmit: (data: { author: string; name: string }) => void;
@@ -8,6 +9,7 @@ interface BasicInfoFormProps {
 }
 
 const BasicInfoForm: React.FC<BasicInfoFormProps> = ({ onSubmit, initialData }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     author: initialData.author,
     name: initialData.name,
@@ -31,12 +33,12 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({ onSubmit, initialData }) 
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
       <Typography variant="h6" gutterBottom>
-        Basic Information
+        {t('basicInfo.title')}
       </Typography>
       <TextField
         required
         fullWidth
-        label="Pack Name"
+        label={t('header.packName')}
         name="name"
         value={formData.name}
         onChange={handleChange}
@@ -45,7 +47,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({ onSubmit, initialData }) 
       <TextField
         required
         fullWidth
-        label="Author"
+        label={t('header.author')}
         name="author"
         value={formData.author}
         onChange={handleChange}
@@ -53,7 +55,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({ onSubmit, initialData }) 
       />
       <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
         <Button type="submit" variant="contained">
-          Next
+          {t('common.next')}
         </Button>
       </Box>
     </Box>

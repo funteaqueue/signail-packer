@@ -4,6 +4,7 @@ import { Delete as DeleteIcon, DragIndicator as DragIndicatorIcon } from '@mui/i
 import { useSortable, SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Theme, QuestionType } from '../types/pack';
+import { useTranslation } from '../i18n/LanguageContext';
 import QuestionButton from './QuestionButton';
 import AddButton from './AddButton';
 
@@ -24,6 +25,7 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
     onAddQuestion,
     onDeleteTheme,
 }: ThemeRowProps) => {
+    const { t } = useTranslation();
     const [isEditingName, setIsEditingName] = useState(false);
 
     const {
@@ -134,7 +136,7 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
                             },
                         }}
                     >
-                        {theme.name || 'Unnamed Theme'}
+                        {theme.name || t('theme.unnamed')}
                     </Box>
                 )}
                 <IconButton
@@ -187,7 +189,7 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
 
                 {/* Add Question Button */}
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <AddButton onClick={onAddQuestion} size="medium" label="Add Question" />
+                    <AddButton onClick={onAddQuestion} size="medium" label={t('theme.addQuestion')} />
                 </Box>
             </Box>
         </Box>

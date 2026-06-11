@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { Question, QuestionType, Price, Rule, RuleType } from '../types/pack';
+import { useTranslation } from '../i18n/LanguageContext';
 import RuleForm from './RuleForm';
 import { loadPack, savePack } from '../services/storage';
 
@@ -25,6 +26,7 @@ interface QuestionFormProps {
 }
 
 const QuestionForm: React.FC<QuestionFormProps> = ({ questions, onQuestionsChange, getNextQuestionId }) => {
+  const { t } = useTranslation();
   const [currentQuestion, setCurrentQuestion] = useState<Partial<Question>>({
     id: getNextQuestionId(),
     type: QuestionType.Normal,
@@ -122,7 +124,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ questions, onQuestionsChang
   return (
     <Box sx={{ mt: 2 }}>
       <Typography variant="subtitle1" gutterBottom>
-        Questions
+        {t('questionForm.questions')}
       </Typography>
 
       {/* Add Question Form */}
@@ -130,21 +132,21 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ questions, onQuestionsChang
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField
             fullWidth
-            label="Price Text"
+            label={t('question.priceText')}
             value={currentQuestion.price?.text || ''}
             onChange={(e) => handlePriceChange('text', e.target.value)}
           />
           <TextField
             fullWidth
             type="number"
-            label="Correct Points"
+            label={t('question.correctPoints')}
             value={currentQuestion.price?.correct || (questions.length + 1) * 100}
             onChange={(e) => handlePriceChange('correct', parseInt(e.target.value))}
           />
           <TextField
             fullWidth
             type="number"
-            label="Incorrect Points"
+            label={t('question.incorrectPoints')}
             value={currentQuestion.price?.incorrect || -(questions.length + 1) * 100}
             onChange={(e) => handlePriceChange('incorrect', parseInt(e.target.value))}
           />
@@ -154,7 +156,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ questions, onQuestionsChang
             startIcon={<AddIcon />}
             onClick={handleAddQuestion}
           >
-            Add Question
+            {t('question.addQuestion')}
           </Button>
         </Box>
       </Paper>
@@ -165,15 +167,15 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ questions, onQuestionsChang
           <React.Fragment key={index}>
             <ListItem>
               <ListItemText
-                primary={`Question ${question.id} (${question.type})`}
+                primary={t('questionForm.questionItem', { id: question.id, type: question.type })}
                 secondary={
                   question.type !== QuestionType.Empty ? (
                     <>
-                      Price: {question.price?.text}<br />
-                      Correct: {question.price?.correct}<br />
-                      Incorrect: {question.price?.incorrect}
+                      {t('questionForm.priceLabel')} {question.price?.text}<br />
+                      {t('questionForm.correctLabel')} {question.price?.correct}<br />
+                      {t('questionForm.incorrectLabel')} {question.price?.incorrect}
                     </>
-                  ) : 'Empty Question'
+                  ) : t('questionForm.emptyQuestion')
                 }
               />
               <ListItemSecondaryAction>
@@ -196,14 +198,14 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ questions, onQuestionsChang
                 <RuleForm
                   rules={question.rules || []}
                   onRulesChange={(rules) => handleRulesChange(index, rules)}
-                  title="Rules"
+                  title={t('questionForm.rules')}
                   draftRule={{}}
                   onDraftRuleChange={() => { }}
                 />
                 <RuleForm
                   rules={question.after_round || []}
                   onRulesChange={(rules) => handleAfterRoundChange(index, rules)}
-                  title="After Round Rules"
+                  title={t('questionForm.afterRoundRules')}
                   draftRule={{}}
                   onDraftRuleChange={() => { }}
                 />

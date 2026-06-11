@@ -20,6 +20,7 @@ import {
 } from '@mui/icons-material';
 import { ImageMap } from '@qiuz/react-image-map';
 import { MapArea } from '../types/pack';
+import { useTranslation } from '../i18n/LanguageContext';
 
 interface FindACatEditorProps {
   image?: string;
@@ -61,6 +62,7 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
   onMaxClicksChange,
   onFirstPlaceBonusChange,
 }) => {
+  const { t } = useTranslation();
   const [urlInput, setUrlInput] = useState('');
   const [activeAreaIndex, setActiveAreaIndex] = useState<number | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -143,16 +145,16 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
             const dataUrl = canvas.toDataURL('image/png');
             onImageChange(dataUrl);
           } catch (canvasErr) {
-            alert('CORS restriction on this server prevents automatic conversion to base64. Please save the image to your PC first, then upload it or copy/paste it.');
+            alert(t('upload.corsError'));
           }
         }
       };
       img.onerror = () => {
-        alert('Failed to load image from URL. Ensure the URL is valid and public.');
+        alert(t('upload.loadError'));
       };
       img.src = urlInput;
     } catch (err) {
-      alert('Error fetching image from URL.');
+      alert(t('upload.fetchError'));
     }
   };
 
@@ -266,7 +268,7 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
   };
 
   const handleClearAll = () => {
-    if (window.confirm('Are you sure you want to clear all selected areas?')) {
+    if (window.confirm(t('findACat.confirmClearAll'))) {
       onMapChange([]);
       setActiveAreaIndex(null);
     }
@@ -318,18 +320,18 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <TextField
-              label="What to find?*"
+              label={t('findACat.whatToFind')}
               fullWidth
               multiline
               value={task}
               onChange={(e) => onTaskChange(e.target.value)}
-              placeholder='e.g. Знайдіть всіх котиків, всього %total% залишилось %left%'
-              helperText="The full task text shown to players, describing the target item they need to search for on the image. You can optionally use the variables %total% (total number of targets) and %left% (how many are still left) — they are replaced live during the game."
+              placeholder={t('findACat.taskPlaceholder')}
+              helperText={t('findACat.taskHelper')}
             />
           </Grid>
           <Grid item xs={12} sm={4}>
             <TextField
-              label="Duration (seconds)*"
+              label={t('findACat.duration')}
               type="number"
               fullWidth
               value={duration}
@@ -339,26 +341,26 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
           </Grid>
           <Grid item xs={12} sm={4}>
             <TextField
-              label="Click limit"
+              label={t('findACat.clickLimit')}
               type="number"
               fullWidth
               value={maxClicks}
               onChange={(e) => onMaxClicksChange(Math.max(0, parseInt(e.target.value) || 0))}
               onWheel={(e) => (e.target as HTMLInputElement).blur()}
               inputProps={{ min: 0 }}
-              helperText="Total clicks a player can spend (hits and misses). 0 = unlimited"
+              helperText={t('findACat.clickLimitHelper')}
             />
           </Grid>
           <Grid item xs={12} sm={4}>
             <TextField
-              label="Bonus for 1st place"
+              label={t('findACat.firstPlaceBonus')}
               type="number"
               fullWidth
               value={firstPlaceBonus}
               onChange={(e) => onFirstPlaceBonusChange(Math.max(0, parseInt(e.target.value) || 0))}
               onWheel={(e) => (e.target as HTMLInputElement).blur()}
               inputProps={{ min: 0 }}
-              helperText="Extra points for the fastest solver, on top of the normal award. 0 = no bonus"
+              helperText={t('findACat.firstPlaceBonusHelper')}
             />
           </Grid>
         </Grid>
@@ -384,10 +386,10 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
         >
           <CloudUploadIcon sx={{ fontSize: 64, color: 'rgba(139, 92, 246, 0.7)', mb: 2 }} />
           <Typography variant="h6" gutterBottom>
-            Drag & Drop image here
+            {t('upload.dragDrop')}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            or click below to upload from PC, load from URL, or press <strong>Ctrl+V</strong> to paste from clipboard
+            {t('upload.instructionsPrefix')} <strong>Ctrl+V</strong> {t('upload.instructionsSuffix')}
           </Typography>
 
           <Stack direction="row" spacing={2} justifyContent="center" sx={{ mb: 3 }}>
@@ -396,7 +398,7 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
               component="label"
               startIcon={<CloudUploadIcon />}
             >
-              Upload from PC
+              {t('upload.fromPc')}
               <input type="file" hidden accept="image/*" onChange={handlePcUpload} />
             </Button>
           </Stack>
@@ -404,7 +406,7 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
           <Box sx={{ maxW: '500px', mx: 'auto', display: 'flex', gap: 1 }}>
             <TextField
               size="small"
-              label="Load Image from URL"
+              label={t('upload.fromUrl')}
               fullWidth
               value={urlInput}
               onChange={(e) => setUrlInput(e.target.value)}
@@ -414,7 +416,7 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
               }}
             />
             <Button variant="outlined" onClick={handleUrlLoad}>
-              Load
+              {t('common.load')}
             </Button>
           </Box>
         </Paper>
@@ -434,7 +436,7 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="subtitle1" sx={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
                   {previewMode ? <VisibilityIcon fontSize="small" /> : <EditIcon fontSize="small" />}
-                  {previewMode ? 'Map Preview' : 'Drag & Draw Areas'}
+                  {previewMode ? t('findACat.mapPreview') : t('findACat.dragDrawAreas')}
                 </Typography>
                 <Stack direction="row" spacing={1}>
                   <Button
@@ -443,7 +445,7 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
                     onClick={() => setPreviewMode(!previewMode)}
                     startIcon={<VisibilityIcon />}
                   >
-                    {previewMode ? 'Editor Mode' : 'Preview Mode'}
+                    {previewMode ? t('findACat.editorMode') : t('findACat.previewMode')}
                   </Button>
                   <Button
                     size="small"
@@ -453,19 +455,19 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
                     disabled={map.length === 0}
                     startIcon={<ClearAllIcon />}
                   >
-                    Clear All
+                    {t('findACat.clearAll')}
                   </Button>
                   <Button
                     size="small"
                     variant="outlined"
                     color="warning"
                     onClick={() => {
-                      if (window.confirm('Change image? This will keep defined areas but let you load a new image.')) {
+                      if (window.confirm(t('findACat.confirmChangeImage'))) {
                         onImageChange('');
                       }
                     }}
                   >
-                    Change Image
+                    {t('upload.changeImage')}
                   </Button>
                 </Stack>
               </Box>
@@ -493,7 +495,7 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
                     <Box
                       component="img"
                       src={image}
-                      alt="Cat search board"
+                      alt={t('findACat.imageAlt')}
                       draggable={false}
                       sx={{
                         display: 'block',
@@ -574,7 +576,7 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
               </Box>
 
               <Typography variant="caption" color="text.secondary">
-                {!previewMode && '💡 Drag and draw rectangles over the image to mark where cats (or other targets) are hidden.'}
+                {!previewMode && t('findACat.drawTip')}
               </Typography>
             </Paper>
           </Grid>
@@ -584,12 +586,12 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
             <Stack spacing={3}>
               <Paper sx={{ p: 3, background: 'rgba(19, 26, 54, 0.5)' }}>
                 <Typography variant="h6" gutterBottom>
-                  Defined Areas ({map.length})
+                  {t('findACat.definedAreas', { count: map.length })}
                 </Typography>
 
                 {map.length === 0 ? (
                   <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
-                    No areas marked yet. Draw one on the image!
+                    {t('findACat.noAreas')}
                   </Typography>
                 ) : (
                   <Stack spacing={1} sx={{ maxH: '250px', overflowY: 'auto', pr: 1, mb: 2 }}>
@@ -657,12 +659,12 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
               {activeArea && activeAreaIndex !== null && (
                 <Paper sx={{ p: 3, border: '1px solid rgba(139, 92, 246, 0.3)', background: 'rgba(19, 26, 54, 0.6)' }}>
                   <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, display: 'flex', justify: 'space-between', alignItems: 'center' }}>
-                    Edit Area #{activeAreaIndex + 1}
+                    {t('findACat.editArea', { number: activeAreaIndex + 1 })}
                   </Typography>
 
                   {/* Color Selector */}
                   <Typography variant="body2" sx={{ mb: 1, color: 'text.secondary' }}>
-                    Area Color:
+                    {t('findACat.areaColor')}
                   </Typography>
                   <Stack direction="row" spacing={1} flexWrap="wrap" gap={1} sx={{ mb: 3 }}>
                     {PRESET_COLORS.map((col) => {
@@ -739,7 +741,7 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
                     <Grid item xs={6}>
                       <TextField
                         size="small"
-                        label="Left (%)"
+                        label={t('findACat.left')}
                         type="number"
                         value={parseFloat(activeArea.left)}
                         onChange={(e) => handleUpdateAreaField('left', `${e.target.value}%`)}
@@ -749,7 +751,7 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
                     <Grid item xs={6}>
                       <TextField
                         size="small"
-                        label="Top (%)"
+                        label={t('findACat.top')}
                         type="number"
                         value={parseFloat(activeArea.top)}
                         onChange={(e) => handleUpdateAreaField('top', `${e.target.value}%`)}
@@ -759,7 +761,7 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
                     <Grid item xs={6}>
                       <TextField
                         size="small"
-                        label="Width (%)"
+                        label={t('findACat.width')}
                         type="number"
                         value={parseFloat(activeArea.width)}
                         onChange={(e) => handleUpdateAreaField('width', `${e.target.value}%`)}
@@ -769,7 +771,7 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
                     <Grid item xs={6}>
                       <TextField
                         size="small"
-                        label="Height (%)"
+                        label={t('findACat.height')}
                         type="number"
                         value={parseFloat(activeArea.height)}
                         onChange={(e) => handleUpdateAreaField('height', `${e.target.value}%`)}
@@ -786,7 +788,7 @@ const FindACatEditor: React.FC<FindACatEditorProps> = ({
                     onClick={() => handleDeleteArea(activeAreaIndex)}
                     sx={{ mt: 2 }}
                   >
-                    Delete Area
+                    {t('findACat.deleteArea')}
                   </Button>
                 </Paper>
               )}

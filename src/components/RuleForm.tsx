@@ -19,6 +19,7 @@ import {
 import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon, Close as CloseIcon } from '@mui/icons-material';
 import { Rule, RuleType } from '../types/pack';
 import { isContentEmpty } from '../utils/contentUtils';
+import { useTranslation } from '../i18n/LanguageContext';
 import ReactQuill, { Quill } from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import '../quill-theme.css';
@@ -99,8 +100,10 @@ const RuleForm: React.FC<RuleFormProps> = ({
   title,
   draftRule,
   onDraftRuleChange,
-  buttonLabel = "Add Rule"
+  buttonLabel
 }) => {
+  const { t } = useTranslation();
+  const resolvedButtonLabel = buttonLabel ?? t('ruleForm.addRule');
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const formRef = useRef<HTMLDivElement>(null);
 
@@ -253,7 +256,7 @@ const RuleForm: React.FC<RuleFormProps> = ({
       <Paper ref={formRef} sx={{ p: 2, mb: 2, border: editingIndex !== null ? '1px solid #8b5cf6' : 'none' }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Typography variant="body2" gutterBottom>
-            Content
+            {t('ruleForm.content')}
           </Typography>
           <Box sx={{
             maxHeight: '400px',
@@ -295,7 +298,7 @@ const RuleForm: React.FC<RuleFormProps> = ({
           <TextField
             fullWidth
             type="number"
-            label="Duration (seconds)"
+            label={t('ruleForm.durationSeconds')}
             value={draftRule.duration || 15}
             onChange={(e) => onDraftRuleChange({ ...draftRule, duration: parseInt(e.target.value) })}
           />
@@ -307,7 +310,7 @@ const RuleForm: React.FC<RuleFormProps> = ({
               onClick={handleAddRule}
               fullWidth
             >
-              {editingIndex !== null ? "Update Rule" : buttonLabel}
+              {editingIndex !== null ? t('ruleForm.updateRule') : resolvedButtonLabel}
             </Button>
             {editingIndex !== null && (
               <Button
@@ -316,7 +319,7 @@ const RuleForm: React.FC<RuleFormProps> = ({
                 onClick={handleCancelEdit}
                 color="secondary"
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
             )}
           </Box>
@@ -329,7 +332,7 @@ const RuleForm: React.FC<RuleFormProps> = ({
           <React.Fragment key={index}>
             <ListItem>
               <ListItemText
-                primary={`${rule.type} Rule`}
+                primary={t('ruleForm.ruleItem', { type: rule.type })}
                 secondary={
                   <Box sx={{
                     maxHeight: '400px',
@@ -340,8 +343,8 @@ const RuleForm: React.FC<RuleFormProps> = ({
                       height: 'auto'
                     }
                   }}>
-                    Content: <div dangerouslySetInnerHTML={{ __html: rule.content || '' }} /><br />
-                    Duration: {rule.duration}s
+                    {t('ruleForm.contentLabel')} <div dangerouslySetInnerHTML={{ __html: rule.content || '' }} /><br />
+                    {t('ruleForm.durationLabel')} {rule.duration}s
                   </Box>
                 }
               />

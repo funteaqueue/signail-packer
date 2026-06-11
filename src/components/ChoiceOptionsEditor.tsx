@@ -19,6 +19,7 @@ import {
 } from '@mui/icons-material';
 import { ChoiceOption } from '../types/pack';
 import { isContentEmpty } from '../utils/contentUtils';
+import { useTranslation } from '../i18n/LanguageContext';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import '../quill-theme.css';
@@ -51,6 +52,7 @@ const ChoiceOptionsEditor: React.FC<ChoiceOptionsEditorProps> = ({
   onOptionsChange,
   onMultipleChange,
 }) => {
+  const { t } = useTranslation();
   const [draftContent, setDraftContent] = useState('');
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const quillRef = useRef<ReactQuill>(null);
@@ -162,13 +164,13 @@ const ChoiceOptionsEditor: React.FC<ChoiceOptionsEditorProps> = ({
             onChange={(e) => handleMultipleToggle(e.target.checked)}
           />
         }
-        label="Multiple correct answers"
+        label={t('choice.multipleCorrect')}
       />
 
       {/* Draft option editor */}
       <Paper ref={formRef} sx={{ p: 2, border: editingIndex !== null ? '1px solid #8b5cf6' : 'none' }}>
         <Typography variant="body2" gutterBottom>
-          {editingIndex !== null ? `Edit option #${editingIndex + 1}` : 'New option (text, image, GIF, audio or video)'}
+          {editingIndex !== null ? t('choice.editOption', { number: editingIndex + 1 }) : t('choice.newOption')}
         </Typography>
         <Box sx={{
           maxHeight: '300px',
@@ -206,7 +208,7 @@ const ChoiceOptionsEditor: React.FC<ChoiceOptionsEditorProps> = ({
             onClick={handleAddOption}
             fullWidth
           >
-            {editingIndex !== null ? 'Update Option' : 'Add Option'}
+            {editingIndex !== null ? t('choice.updateOption') : t('choice.addOption')}
           </Button>
           {editingIndex !== null && (
             <Button
@@ -215,7 +217,7 @@ const ChoiceOptionsEditor: React.FC<ChoiceOptionsEditorProps> = ({
               onClick={handleCancelEdit}
               color="secondary"
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
           )}
         </Box>
@@ -223,11 +225,11 @@ const ChoiceOptionsEditor: React.FC<ChoiceOptionsEditorProps> = ({
 
       {/* Options list */}
       <Typography variant="subtitle1">
-        Options ({options.length}) — mark the correct one{multiple ? 's' : ''}
+        {t(multiple ? 'choice.optionsHeadingMultiple' : 'choice.optionsHeadingSingle', { count: options.length })}
       </Typography>
       {options.length === 0 && (
         <Typography variant="body2" color="text.secondary">
-          No options yet. Add at least two options and mark the correct answer.
+          {t('choice.noOptions')}
         </Typography>
       )}
       {options.map((option, index) => (
@@ -242,7 +244,7 @@ const ChoiceOptionsEditor: React.FC<ChoiceOptionsEditorProps> = ({
             background: option.correct ? 'rgba(16, 185, 129, 0.08)' : 'rgba(19, 26, 54, 0.4)',
           }}
         >
-          <Tooltip title={option.correct ? 'Correct answer' : 'Mark as correct'}>
+          <Tooltip title={option.correct ? t('choice.correctAnswer') : t('choice.markCorrect')}>
             {multiple ? (
               <Checkbox
                 checked={option.correct}

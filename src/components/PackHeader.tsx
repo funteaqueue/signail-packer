@@ -1,6 +1,8 @@
 import React, { useRef } from 'react';
 import { Box, TextField, Button, Typography } from '@mui/material';
 import { Upload, Download, DeleteForever, Autorenew } from '@mui/icons-material';
+import { useTranslation } from '../i18n/LanguageContext';
+import LanguageSwitcher from '../i18n/LanguageSwitcher';
 
 interface PackHeaderProps {
     packName: string;
@@ -25,6 +27,7 @@ const PackHeader: React.FC<PackHeaderProps> = ({
     onRepackFile,
     repacking,
 }) => {
+    const { t } = useTranslation();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const repackInputRef = useRef<HTMLInputElement>(null);
 
@@ -54,17 +57,17 @@ const PackHeader: React.FC<PackHeaderProps> = ({
         >
             <Box sx={{ display: 'flex', gap: 3, alignItems: 'center', flex: 1 }}>
                 <Typography variant="h5" className="gradient-text" sx={{ fontWeight: 700 }}>
-                    Pack Creator
+                    {t('header.title')}
                 </Typography>
                 <TextField
-                    label="Pack Name"
+                    label={t('header.packName')}
                     value={packName}
                     onChange={(e) => onPackNameChange(e.target.value)}
                     size="small"
                     sx={{ width: '250px' }}
                 />
                 <TextField
-                    label="Author"
+                    label={t('header.author')}
                     value={author}
                     onChange={(e) => onAuthorChange(e.target.value)}
                     size="small"
@@ -72,7 +75,8 @@ const PackHeader: React.FC<PackHeaderProps> = ({
                 />
             </Box>
 
-            <Box sx={{ display: 'flex', gap: 2 }}>
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                <LanguageSwitcher />
                 <input
                     type="file"
                     accept=".json"
@@ -93,7 +97,7 @@ const PackHeader: React.FC<PackHeaderProps> = ({
                     onClick={() => fileInputRef.current?.click()}
                     size="small"
                 >
-                    Upload
+                    {t('header.upload')}
                 </Button>
                 <Button
                     variant="outlined"
@@ -102,7 +106,7 @@ const PackHeader: React.FC<PackHeaderProps> = ({
                     size="small"
                     disabled={repacking}
                 >
-                    {repacking ? 'Repacking...' : 'Repack'}
+                    {repacking ? t('header.repacking') : t('header.repack')}
                 </Button>
                 <Button
                     variant="outlined"
@@ -110,7 +114,7 @@ const PackHeader: React.FC<PackHeaderProps> = ({
                     onClick={onDownload}
                     size="small"
                 >
-                    Download
+                    {t('header.download')}
                 </Button>
                 <Button
                     variant="outlined"
@@ -119,7 +123,7 @@ const PackHeader: React.FC<PackHeaderProps> = ({
                     onClick={onClear}
                     size="small"
                 >
-                    Clear
+                    {t('header.clear')}
                 </Button>
             </Box>
         </Box>

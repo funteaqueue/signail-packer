@@ -5,11 +5,13 @@ import { arrayMove } from '@dnd-kit/sortable';
 import { Pack, Round, Question, Theme } from '../types/pack';
 import { savePack, loadPack, initDB, clearStorage } from '../services/storage';
 import { convertSIQFromFile } from '../services/siqConverter';
+import { useTranslation } from '../i18n/LanguageContext';
 import PackHeader from './PackHeader';
 import GameBoardGrid from './GameBoardGrid';
 import QuestionModal from './QuestionModal';
 
 const PackForm: React.FC = () => {
+  const { t } = useTranslation();
   const [packData, setPackData] = useState<Pack>({
     author: '',
     name: '',
@@ -379,8 +381,8 @@ const PackForm: React.FC = () => {
       setCurrentRoundIndex(0);
     } catch (error) {
       console.error('Error repacking SIQ package:', error);
-      const message = error instanceof Error ? error.message : 'Please make sure the SIQ archive is valid.';
-      alert(`Failed to repack SIQ package. ${message}`);
+      const message = error instanceof Error ? error.message : t('pack.repackErrorFallback');
+      alert(t('pack.repackError', { message }));
     } finally {
       setRepacking(false);
     }
@@ -409,7 +411,7 @@ const PackForm: React.FC = () => {
       setCurrentRoundIndex(0);
     } catch (error) {
       console.error('Error loading JSON file:', error);
-      alert("Error loading JSON file. Please make sure it's a valid pack JSON file.");
+      alert(t('pack.uploadError'));
     }
   };
 

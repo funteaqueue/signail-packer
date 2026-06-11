@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import { Question, QuestionType, Rule, RuleType } from '../types/pack';
 import { isContentEmpty } from '../utils/contentUtils';
+import { useTranslation } from '../i18n/LanguageContext';
 import RuleForm from './RuleForm';
 import FindACatEditor from './FindACatEditor';
 import ChoiceOptionsEditor from './ChoiceOptionsEditor';
@@ -73,6 +74,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
     onSave,
     onClose,
 }) => {
+    const { t } = useTranslation();
     const [tabValue, setTabValue] = useState(0);
     const [formData, setFormData] = useState<Partial<Question>>({
         id: 0,
@@ -210,27 +212,27 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
 
     const getValidationErrorMessage = () => {
         if (isCloseEnough && !isCloseEnoughValid) {
-            return 'Please enter the numeric correct answer to save the question.';
+            return t('validation.closeEnough');
         }
         if (isChoice && !isChoiceValid) {
             if ((formData.options || []).length < 2) {
-                return 'Please add at least two options to save the question.';
+                return t('validation.minTwoOptions');
             }
             return formData.multiple
-                ? 'Please mark at least one option as correct.'
-                : 'Please mark exactly one option as correct.';
+                ? t('validation.atLeastOneCorrect')
+                : t('validation.exactlyOneCorrect');
         }
         if (isProgressiveReveal && !isProgressiveRevealValid) {
-            return 'Please upload an image to save the question.';
+            return t('validation.uploadImage');
         }
         if (!isFindACat) return null;
         const missing = [];
-        if (!formData.task?.trim()) missing.push('the task text ("What to find?")');
-        if (!formData.image) missing.push('an image upload');
-        if (!formData.map || formData.map.length === 0) missing.push('at least one defined area');
+        if (!formData.task?.trim()) missing.push(t('validation.missingTask'));
+        if (!formData.image) missing.push(t('validation.missingImage'));
+        if (!formData.map || formData.map.length === 0) missing.push(t('validation.missingArea'));
 
         if (missing.length > 0) {
-            return `Please add ${missing.join(', ')} to save the question.`;
+            return t('validation.addMissing', { items: missing.join(', ') });
         }
         return null;
     };
@@ -352,7 +354,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
     const renderPriceFields = () => (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <TextField
-                label="Correct Points"
+                label={t('question.correctPoints')}
                 type="number"
                 value={correctInputValue}
                 onChange={(e) => {
@@ -376,7 +378,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 fullWidth
             />
             <TextField
-                label="Price Text"
+                label={t('question.priceText')}
                 value={formData.price?.text || ''}
                 onChange={(e) =>
                     setFormData({
@@ -387,7 +389,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 fullWidth
             />
             <TextField
-                label="Incorrect Points"
+                label={t('question.incorrectPoints')}
                 type="number"
                 value={incorrectInputValue}
                 onChange={(e) => {
@@ -406,7 +408,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
             />
             {(isChoice || isTextAnswer) && (
                 <TextField
-                    label="Bonus for 1st place"
+                    label={t('question.firstPlaceBonus')}
                     type="number"
                     value={formData.first_place_bonus || 0}
                     onChange={(e) => setFormData(prev => ({
@@ -416,8 +418,8 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                     onWheel={(e) => (e.target as HTMLInputElement).blur()}
                     inputProps={{ min: 0 }}
                     helperText={isChoice
-                        ? 'Extra points for the fastest correct answer, on top of the normal award. 0 = none'
-                        : 'Extra points for the fastest answerer, on top of the normal award. 0 = none'}
+                        ? t('question.firstPlaceBonusHelperChoice')
+                        : t('question.firstPlaceBonusHelperText')}
                     fullWidth
                 />
             )}
@@ -442,11 +444,11 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
         >
             <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
                 <Typography variant="h6" className="gradient-text">
-                    {question ? 'Edit Question' : 'New Question'} - {formData.price?.text || '100'} Points
+                    {question ? t('question.editTitle') : t('question.newTitle')} - {formData.price?.text || '100'} {t('question.points')}
                 </Typography>
-                
+
                 <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
-                    <Typography variant="body2" sx={{ color: '#a8b2d1' }}>Question Type:</Typography>
+                    <Typography variant="body2" sx={{ color: '#a8b2d1' }}>{t('question.typeLabel')}</Typography>
                     <Select
                         value={formData.type || QuestionType.Normal}
                         onChange={(e) => {
@@ -472,14 +474,14 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                             }
                         }}
                     >
-                        <MenuItem value={QuestionType.Normal}>Normal</MenuItem>
-                        <MenuItem value={QuestionType.Secret}>Secret</MenuItem>
-                        <MenuItem value={QuestionType.Empty}>Empty</MenuItem>
-                        <MenuItem value={QuestionType.FindACat}>Find-a-Cat</MenuItem>
-                        <MenuItem value={QuestionType.CloseEnough}>Close Enough</MenuItem>
-                        <MenuItem value={QuestionType.Choice}>Choice</MenuItem>
-                        <MenuItem value={QuestionType.TextAnswer}>Text Answer</MenuItem>
-                        <MenuItem value={QuestionType.ProgressiveReveal}>Progressive Reveal</MenuItem>
+                        <MenuItem value={QuestionType.Normal}>{t('questionType.normal')}</MenuItem>
+                        <MenuItem value={QuestionType.Secret}>{t('questionType.secret')}</MenuItem>
+                        <MenuItem value={QuestionType.Empty}>{t('questionType.empty')}</MenuItem>
+                        <MenuItem value={QuestionType.FindACat}>{t('questionType.findACat')}</MenuItem>
+                        <MenuItem value={QuestionType.CloseEnough}>{t('questionType.closeEnough')}</MenuItem>
+                        <MenuItem value={QuestionType.Choice}>{t('questionType.choice')}</MenuItem>
+                        <MenuItem value={QuestionType.TextAnswer}>{t('questionType.textAnswer')}</MenuItem>
+                        <MenuItem value={QuestionType.ProgressiveReveal}>{t('questionType.progressiveReveal')}</MenuItem>
                     </Select>
                 </Box>
             </DialogTitle>
@@ -495,21 +497,21 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                     }}
                 >
                     {isFindACat ? [
-                        <Tab key="find-a-cat" label="Find-a-Cat Editor" />,
-                        <Tab key="price" label="Price" />
+                        <Tab key="find-a-cat" label={t('tab.findACatEditor')} />,
+                        <Tab key="price" label={t('tab.price')} />
                     ] : isProgressiveReveal ? [
-                        <Tab key="image" label="Image & Effect" />,
-                        <Tab key="answer" label="Answer" />,
-                        <Tab key="price" label="Price" />
+                        <Tab key="image" label={t('tab.imageEffect')} />,
+                        <Tab key="answer" label={t('tab.answer')} />,
+                        <Tab key="price" label={t('tab.price')} />
                     ] : isChoice ? [
-                        <Tab key="question" label="Question" />,
-                        <Tab key="options" label="Options" />,
-                        <Tab key="answer" label="Answer" />,
-                        <Tab key="price" label="Price" />
+                        <Tab key="question" label={t('tab.question')} />,
+                        <Tab key="options" label={t('tab.options')} />,
+                        <Tab key="answer" label={t('tab.answer')} />,
+                        <Tab key="price" label={t('tab.price')} />
                     ] : [
-                        <Tab key="question" label="Question" />,
-                        <Tab key="answer" label="Answer" />,
-                        <Tab key="price" label="Price" />
+                        <Tab key="question" label={t('tab.question')} />,
+                        <Tab key="answer" label={t('tab.answer')} />,
+                        <Tab key="price" label={t('tab.price')} />
                     ]}
                 </Tabs>
 
@@ -555,10 +557,10 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                             <RuleForm
                                 rules={formData.after_round || []}
                                 onRulesChange={handleAfterRoundChange}
-                                title="Answer"
+                                title={t('question.answerTitle')}
                                 draftRule={draftAfterRound}
                                 onDraftRuleChange={setDraftAfterRound}
-                                buttonLabel="Add Answer"
+                                buttonLabel={t('question.addAnswer')}
                             />
                         </TabPanel>
 
@@ -572,10 +574,10 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                             <RuleForm
                                 rules={formData.rules || []}
                                 onRulesChange={handleRulesChange}
-                                title="Question"
+                                title={t('question.questionTitle')}
                                 draftRule={draftRule}
                                 onDraftRuleChange={setDraftRule}
-                                buttonLabel="Add Question"
+                                buttonLabel={t('question.addQuestion')}
                             />
                         </TabPanel>
 
@@ -592,10 +594,10 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                             <RuleForm
                                 rules={formData.after_round || []}
                                 onRulesChange={handleAfterRoundChange}
-                                title="Answer explanation (optional)"
+                                title={t('question.answerExplanationTitle')}
                                 draftRule={draftAfterRound}
                                 onDraftRuleChange={setDraftAfterRound}
-                                buttonLabel="Add Answer"
+                                buttonLabel={t('question.addAnswer')}
                             />
                         </TabPanel>
 
@@ -609,10 +611,10 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                             <RuleForm
                                 rules={formData.rules || []}
                                 onRulesChange={handleRulesChange}
-                                title="Question"
+                                title={t('question.questionTitle')}
                                 draftRule={draftRule}
                                 onDraftRuleChange={setDraftRule}
-                                buttonLabel="Add Question"
+                                buttonLabel={t('question.addQuestion')}
                             />
                         </TabPanel>
 
@@ -620,42 +622,42 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                             {isCloseEnough && (
                                 <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
                                     <TextField
-                                        label="Correct Answer (number)*"
+                                        label={t('question.correctAnswerNumber')}
                                         type="number"
                                         value={answerInputValue}
                                         onChange={(e) => setAnswerInputValue(e.target.value)}
                                         onWheel={(e) => (e.target as HTMLInputElement).blur()}
                                         fullWidth
-                                        helperText="Players submit numbers; the closest one wins"
+                                        helperText={t('question.correctAnswerHelper')}
                                     />
                                     <TextField
-                                        label="Duration (seconds)"
+                                        label={t('question.durationSeconds')}
                                         type="number"
                                         value={formData.duration || 30}
                                         onChange={(e) => setFormData(prev => ({ ...prev, duration: parseInt(e.target.value) || 0 }))}
                                         onWheel={(e) => (e.target as HTMLInputElement).blur()}
                                         sx={{ minWidth: '180px' }}
-                                        helperText="Time window to submit answers"
+                                        helperText={t('question.durationHelper')}
                                     />
                                     <TextField
-                                        label="Perfect guess bonus"
+                                        label={t('question.perfectBonus')}
                                         type="number"
                                         value={formData.perfect_bonus || 0}
                                         onChange={(e) => setFormData(prev => ({ ...prev, perfect_bonus: Math.max(0, parseInt(e.target.value) || 0) }))}
                                         onWheel={(e) => (e.target as HTMLInputElement).blur()}
                                         inputProps={{ min: 0 }}
                                         sx={{ minWidth: '180px' }}
-                                        helperText="Extra points for the exact answer. 0 = none"
+                                        helperText={t('question.perfectBonusHelper')}
                                     />
                                 </Box>
                             )}
                             <RuleForm
                                 rules={formData.after_round || []}
                                 onRulesChange={handleAfterRoundChange}
-                                title={isCloseEnough ? 'Answer explanation (optional)' : 'Answer'}
+                                title={isCloseEnough ? t('question.answerExplanationTitle') : t('question.answerTitle')}
                                 draftRule={draftAfterRound}
                                 onDraftRuleChange={setDraftAfterRound}
-                                buttonLabel="Add Answer"
+                                buttonLabel={t('question.addAnswer')}
                             />
                         </TabPanel>
 
@@ -674,10 +676,10 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 )}
                 <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ width: '100%' }}>
                     <Button onClick={onClose} variant="outlined">
-                        Cancel
+                        {t('common.cancel')}
                     </Button>
                     <Button onClick={handleSave} variant="contained" disabled={!isFindACatValid || !isCloseEnoughValid || !isChoiceValid || !isProgressiveRevealValid}>
-                        Save Question
+                        {t('question.save')}
                     </Button>
                 </Stack>
             </DialogActions>

@@ -18,6 +18,7 @@ import {
     SortableContext,
 } from '@dnd-kit/sortable';
 import { Round, Question, Theme } from '../types/pack';
+import { useTranslation } from '../i18n/LanguageContext';
 import ThemeRow from './ThemeRow';
 import AddButton from './AddButton';
 import QuestionButton from './QuestionButton';
@@ -71,6 +72,7 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({
     onAddTheme,
     onDragEnd,
 }: GameBoardGridProps) => {
+    const { t } = useTranslation();
     const [isEditingName, setIsEditingName] = useState(false);
     const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -253,10 +255,10 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({
                             }}
                         >
                             <Typography variant="h6" sx={{ marginBottom: 2 }}>
-                                No themes yet
+                                {t('board.noThemes')}
                             </Typography>
                             <Typography variant="body2" sx={{ marginBottom: 3 }}>
-                                Click the + button below to create your first theme
+                                {t('board.noThemesHint')}
                             </Typography>
                         </Box>
                     ) : (
@@ -276,7 +278,7 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({
                     )}
 
                     <Box sx={{ marginTop: '24px', display: 'flex', justifyContent: 'center' }}>
-                        <AddButton onClick={onAddTheme} label="Add New Theme" size="large" />
+                        <AddButton onClick={onAddTheme} label={t('board.addNewTheme')} size="large" />
                     </Box>
                 </Box>
 

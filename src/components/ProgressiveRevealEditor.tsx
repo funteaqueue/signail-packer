@@ -18,6 +18,7 @@ import {
   Link as LinkIcon,
 } from '@mui/icons-material';
 import { RevealEffect, RevealCurve } from '../types/pack';
+import { useTranslation } from '../i18n/LanguageContext';
 
 interface ProgressiveRevealEditorProps {
   image?: string;
@@ -136,6 +137,7 @@ const ProgressiveRevealEditor: React.FC<ProgressiveRevealEditorProps> = ({
   onEffectChange,
   onCurveChange,
 }) => {
+  const { t } = useTranslation();
   const [urlInput, setUrlInput] = useState('');
   const [previewProgress, setPreviewProgress] = useState(0);
 
@@ -209,16 +211,16 @@ const ProgressiveRevealEditor: React.FC<ProgressiveRevealEditorProps> = ({
           try {
             onImageChange(canvas.toDataURL('image/png'));
           } catch (canvasErr) {
-            alert('CORS restriction prevents conversion to base64. Save the image to your PC and upload it, or copy/paste it.');
+            alert(t('upload.corsError'));
           }
         }
       };
       img.onerror = () => {
-        alert('Failed to load image from URL. Ensure the URL is valid and public.');
+        alert(t('upload.loadError'));
       };
       img.src = urlInput;
     } catch (err) {
-      alert('Error fetching image from URL.');
+      alert(t('upload.fetchError'));
     }
   };
 
@@ -244,43 +246,43 @@ const ProgressiveRevealEditor: React.FC<ProgressiveRevealEditorProps> = ({
         <Grid container spacing={2}>
           <Grid item xs={12} sm={4}>
             <FormControl fullWidth>
-              <InputLabel id="reveal-effect-label">Hiding effect</InputLabel>
+              <InputLabel id="reveal-effect-label">{t('reveal.hidingEffect')}</InputLabel>
               <Select
                 labelId="reveal-effect-label"
-                label="Hiding effect"
+                label={t('reveal.hidingEffect')}
                 value={effect}
                 onChange={(e) => onEffectChange(e.target.value as RevealEffect)}
               >
-                <MenuItem value="blur">Blur</MenuItem>
-                <MenuItem value="pixelate">Pixelate</MenuItem>
-                <MenuItem value="zoom">Zoom out</MenuItem>
+                <MenuItem value="blur">{t('reveal.blur')}</MenuItem>
+                <MenuItem value="pixelate">{t('reveal.pixelate')}</MenuItem>
+                <MenuItem value="zoom">{t('reveal.zoomOut')}</MenuItem>
               </Select>
             </FormControl>
           </Grid>
           <Grid item xs={12} sm={4}>
             <FormControl fullWidth>
-              <InputLabel id="reveal-curve-label">Reveal speed</InputLabel>
+              <InputLabel id="reveal-curve-label">{t('reveal.speed')}</InputLabel>
               <Select
                 labelId="reveal-curve-label"
-                label="Reveal speed"
+                label={t('reveal.speed')}
                 value={curve}
                 onChange={(e) => onCurveChange(e.target.value as RevealCurve)}
               >
-                <MenuItem value="linear">Linear (even)</MenuItem>
-                <MenuItem value="slow-start">Slow start (stays hidden longer)</MenuItem>
-                <MenuItem value="fast-start">Fast start (uncovers a lot early)</MenuItem>
+                <MenuItem value="linear">{t('reveal.linear')}</MenuItem>
+                <MenuItem value="slow-start">{t('reveal.slowStart')}</MenuItem>
+                <MenuItem value="fast-start">{t('reveal.fastStart')}</MenuItem>
               </Select>
             </FormControl>
           </Grid>
           <Grid item xs={12} sm={4}>
             <TextField
-              label="Reveal duration (seconds)*"
+              label={t('reveal.duration')}
               type="number"
               fullWidth
               value={duration}
               onChange={(e) => onDurationChange(Math.max(1, parseInt(e.target.value) || 0))}
               onWheel={(e) => (e.target as HTMLInputElement).blur()}
-              helperText="Time for the image to fully reveal if nobody buzzes in"
+              helperText={t('reveal.durationHelper')}
             />
           </Grid>
         </Grid>
@@ -304,15 +306,15 @@ const ProgressiveRevealEditor: React.FC<ProgressiveRevealEditorProps> = ({
         >
           <CloudUploadIcon sx={{ fontSize: 64, color: 'rgba(139, 92, 246, 0.7)', mb: 2 }} />
           <Typography variant="h6" gutterBottom>
-            Drag & Drop image here
+            {t('upload.dragDrop')}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            or upload from PC, load from URL, or press <strong>Ctrl+V</strong> to paste from clipboard
+            {t('upload.instructionsPrefixShort')} <strong>Ctrl+V</strong> {t('upload.instructionsSuffix')}
           </Typography>
 
           <Stack direction="row" spacing={2} justifyContent="center" sx={{ mb: 3 }}>
             <Button variant="contained" component="label" startIcon={<CloudUploadIcon />}>
-              Upload from PC
+              {t('upload.fromPc')}
               <input type="file" hidden accept="image/*" onChange={handlePcUpload} />
             </Button>
           </Stack>
@@ -320,7 +322,7 @@ const ProgressiveRevealEditor: React.FC<ProgressiveRevealEditorProps> = ({
           <Box sx={{ maxWidth: '500px', mx: 'auto', display: 'flex', gap: 1 }}>
             <TextField
               size="small"
-              label="Load Image from URL"
+              label={t('upload.fromUrl')}
               fullWidth
               value={urlInput}
               onChange={(e) => setUrlInput(e.target.value)}
@@ -330,7 +332,7 @@ const ProgressiveRevealEditor: React.FC<ProgressiveRevealEditorProps> = ({
               }}
             />
             <Button variant="outlined" onClick={handleUrlLoad}>
-              Load
+              {t('common.load')}
             </Button>
           </Box>
         </Paper>
@@ -338,19 +340,19 @@ const ProgressiveRevealEditor: React.FC<ProgressiveRevealEditorProps> = ({
         <Paper sx={{ p: 2, background: 'rgba(19, 26, 54, 0.5)' }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-              Reveal Preview
+              {t('reveal.preview')}
             </Typography>
             <Button
               size="small"
               variant="outlined"
               color="warning"
               onClick={() => {
-                if (window.confirm('Change image?')) {
+                if (window.confirm(t('reveal.confirmChangeImage'))) {
                   onImageChange('');
                 }
               }}
             >
-              Change Image
+              {t('upload.changeImage')}
             </Button>
           </Box>
 
@@ -365,7 +367,7 @@ const ProgressiveRevealEditor: React.FC<ProgressiveRevealEditorProps> = ({
 
           <Box sx={{ px: 1, mt: 2 }}>
             <Typography variant="caption" color="text.secondary">
-              Simulate reveal progress: {previewProgress}%
+              {t('reveal.simulateProgress', { percent: previewProgress })}
             </Typography>
             <Slider
               value={previewProgress}
