@@ -6,10 +6,10 @@ import LanguageSwitcher from '../i18n/LanguageSwitcher';
 import { THEMES } from '../theme/themes';
 import { useAppTheme } from '../theme/ThemeContext';
 
-interface PackHeaderProps {
-    packName: string;
+interface QuizHeaderProps {
+    quizName: string;
     author: string;
-    onPackNameChange: (name: string) => void;
+    onQuizNameChange: (name: string) => void;
     onAuthorChange: (author: string) => void;
     onUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
     onDownload: () => void;
@@ -18,10 +18,10 @@ interface PackHeaderProps {
     repacking: boolean;
 }
 
-const PackHeader: React.FC<PackHeaderProps> = ({
-    packName,
+const QuizHeader: React.FC<QuizHeaderProps> = ({
+    quizName,
     author,
-    onPackNameChange,
+    onQuizNameChange,
     onAuthorChange,
     onUpload,
     onDownload,
@@ -63,9 +63,9 @@ const PackHeader: React.FC<PackHeaderProps> = ({
                     {t('header.title')}
                 </Typography>
                 <TextField
-                    label={t('header.packName')}
-                    value={packName}
-                    onChange={(e) => onPackNameChange(e.target.value)}
+                    label={t('header.quizName')}
+                    value={quizName}
+                    onChange={(e) => onQuizNameChange(e.target.value)}
                     size="small"
                     sx={{ width: '250px' }}
                 />
@@ -153,4 +153,4 @@ const PackHeader: React.FC<PackHeaderProps> = ({
     );
 };
 
-export default PackHeader;
+export default QuizHeader;

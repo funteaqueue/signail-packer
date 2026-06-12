@@ -2,17 +2,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Container } from '@mui/material';
 import { DragEndEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
-import { Pack, Round, Question, Theme } from '../types/pack';
-import { savePack, loadPack, initDB, clearStorage } from '../services/storage';
+import { Quiz, Round, Question, Theme } from '../types/quiz';
+import { saveQuiz, loadQuiz, initDB, clearStorage } from '../services/storage';
 import { convertSIQFromFile } from '../services/siqConverter';
 import { useTranslation } from '../i18n/LanguageContext';
-import PackHeader from './PackHeader';
+import QuizHeader from './QuizHeader';
 import GameBoardGrid from './GameBoardGrid';
 import QuestionModal from './QuestionModal';
 
-const PackForm: React.FC = () => {
+const QuizForm: React.FC = () => {
   const { t } = useTranslation();
-  const [packData, setPackData] = useState<Pack>({
+  const [quizData, setQuizData] = useState<Quiz>({
     author: '',
     name: '',
     rounds: [
@@ -25,7 +25,7 @@ const PackForm: React.FC = () => {
   const [currentRoundIndex, setCurrentRoundIndex] = useState(0);
   const [dbReady, setDbReady] = useState(false);
   const saveTimeoutRef = useRef<number | null>(null);
-  const latestPackRef = useRef(packData);
+  const latestQuizRef = useRef(quizData);
   const [repacking, setRepacking] = useState(false);
 
   // Question Modal State
@@ -37,12 +37,12 @@ const PackForm: React.FC = () => {
   } | null>(null);
 
   // Helper to ensure all themes and questions have unique IDs
-  const ensurePackIds = (pack: Pack): Pack => {
+  const ensureQuizIds = (quiz: Quiz): Quiz => {
     let nextThemeId = 1;
     let nextQuestionId = 1;
 
     // Find highest existing IDs
-    pack.rounds.forEach(round => {
+    quiz.rounds.forEach(round => {
       round.themes.forEach(theme => {
         if (theme.id && theme.id >= nextThemeId) nextThemeId = theme.id + 1;
         theme.questions.forEach(q => {
@@ -51,7 +51,7 @@ const PackForm: React.FC = () => {
       });
     });
 
-    const updatedRounds = pack.rounds.map(round => ({
+    const updatedRounds = quiz.rounds.map(round => ({
       ...round,
       themes: round.themes.map(theme => {
         const themeId = theme.id || nextThemeId++;
@@ -66,7 +66,7 @@ const PackForm: React.FC = () => {
       })
     }));
 
-    return { ...pack, rounds: updatedRounds };
+    return { ...quiz, rounds: updatedRounds };
   };
 
   // Initialize database
@@ -82,27 +82,27 @@ const PackForm: React.FC = () => {
     initializeDatabase();
   }, []);
 
-  // Load saved pack data
+  // Load saved quiz data
   useEffect(() => {
     if (dbReady) {
-      const loadSavedPack = async () => {
+      const loadSavedQuiz = async () => {
         try {
-          const savedPack = await loadPack();
-          if (savedPack) {
-            setPackData(ensurePackIds(savedPack));
+          const savedQuiz = await loadQuiz();
+          if (savedQuiz) {
+            setQuizData(ensureQuizIds(savedQuiz));
           }
         } catch (error) {
-          console.error('Error loading saved pack:', error);
+          console.error('Error loading saved quiz:', error);
         }
       };
-      loadSavedPack();
+      loadSavedQuiz();
     }
   }, [dbReady]);
 
-  // Auto-save pack data
+  // Auto-save quiz data
   useEffect(() => {
     if (!dbReady) return;
-    if (!packData.name && !packData.author && packData.rounds.length === 1 && packData.rounds[0].themes.length === 0) {
+    if (!quizData.name && !quizData.author && quizData.rounds.length === 1 && quizData.rounds[0].themes.length === 0) {
       return;
     }
 
@@ -111,8 +111,8 @@ const PackForm: React.FC = () => {
     }
 
     saveTimeoutRef.current = window.setTimeout(() => {
-      savePack(packData).catch((error) => {
-        console.error('Error saving pack:', error);
+      saveQuiz(quizData).catch((error) => {
+        console.error('Error saving quiz:', error);
       });
       saveTimeoutRef.current = null;
     }, 500);
@@ -122,19 +122,19 @@ const PackForm: React.FC = () => {
         window.clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [packData, dbReady]);
+  }, [quizData, dbReady]);
 
   useEffect(() => {
-    latestPackRef.current = packData;
-  }, [packData]);
+    latestQuizRef.current = quizData;
+  }, [quizData]);
 
   useEffect(() => {
     return () => {
       if (saveTimeoutRef.current !== null) {
         window.clearTimeout(saveTimeoutRef.current);
-        if (dbReady && (latestPackRef.current.name || latestPackRef.current.author || latestPackRef.current.rounds[0].themes.length > 0)) {
-          savePack(latestPackRef.current).catch((error) => {
-            console.error('Error saving pack on unmount:', error);
+        if (dbReady && (latestQuizRef.current.name || latestQuizRef.current.author || latestQuizRef.current.rounds[0].themes.length > 0)) {
+          saveQuiz(latestQuizRef.current).catch((error) => {
+            console.error('Error saving quiz on unmount:', error);
           });
         }
         saveTimeoutRef.current = null;
@@ -150,24 +150,24 @@ const PackForm: React.FC = () => {
   };
 
   const handleNextRound = () => {
-    if (currentRoundIndex < packData.rounds.length - 1) {
+    if (currentRoundIndex < quizData.rounds.length - 1) {
       setCurrentRoundIndex(currentRoundIndex + 1);
     } else {
       // Create new round
       const newRound: Round = {
-        name: `Round ${packData.rounds.length + 1}`,
+        name: `Round ${quizData.rounds.length + 1}`,
         themes: [],
       };
-      setPackData((prev: Pack) => ({
+      setQuizData((prev: Quiz) => ({
         ...prev,
         rounds: [...prev.rounds, newRound],
       }));
-      setCurrentRoundIndex(packData.rounds.length);
+      setCurrentRoundIndex(quizData.rounds.length);
     }
   };
 
   const handleRoundNameChange = (name: string) => {
-    setPackData((prev: Pack) => {
+    setQuizData((prev: Quiz) => {
       const updatedRounds = [...prev.rounds];
       updatedRounds[currentRoundIndex].name = name;
       return { ...prev, rounds: updatedRounds };
@@ -175,7 +175,7 @@ const PackForm: React.FC = () => {
   };
 
   const handleThemeNameChange = (themeIndex: number, name: string) => {
-    setPackData((prev: Pack) => {
+    setQuizData((prev: Quiz) => {
       const updatedRounds = [...prev.rounds];
       updatedRounds[currentRoundIndex].themes[themeIndex].name = name;
       return { ...prev, rounds: updatedRounds };
@@ -183,7 +183,7 @@ const PackForm: React.FC = () => {
   };
 
   const handleAddTheme = () => {
-    setPackData((prev: Pack) => {
+    setQuizData((prev: Quiz) => {
       let maxThemeId = 0;
       prev.rounds.forEach(r => r.themes.forEach(t => {
         if (t.id > maxThemeId) maxThemeId = t.id;
@@ -191,7 +191,7 @@ const PackForm: React.FC = () => {
 
       const newTheme: Theme = {
         id: maxThemeId + 1,
-        name: `Theme ${packData.rounds[currentRoundIndex].themes.length + 1}`,
+        name: `Theme ${quizData.rounds[currentRoundIndex].themes.length + 1}`,
         description: '',
         ordered: false,
         questions: [],
@@ -204,7 +204,7 @@ const PackForm: React.FC = () => {
   };
 
   const handleDeleteTheme = (themeIndex: number) => {
-    setPackData((prev: Pack) => {
+    setQuizData((prev: Quiz) => {
       const updatedRounds = [...prev.rounds];
       updatedRounds[currentRoundIndex].themes = updatedRounds[currentRoundIndex].themes.filter(
         (_: any, i: number) => i !== themeIndex
@@ -214,7 +214,7 @@ const PackForm: React.FC = () => {
   };
 
   const handleAddQuestion = (themeIndex: number) => {
-    const theme = packData.rounds[currentRoundIndex].themes[themeIndex];
+    const theme = quizData.rounds[currentRoundIndex].themes[themeIndex];
     const questionIndex = theme.questions.length;
 
     setEditingQuestion({
@@ -226,7 +226,7 @@ const PackForm: React.FC = () => {
   };
 
   const handleQuestionClick = (themeIndex: number, questionIndex: number) => {
-    const theme = packData.rounds[currentRoundIndex].themes[themeIndex];
+    const theme = quizData.rounds[currentRoundIndex].themes[themeIndex];
     const question = theme.questions[questionIndex] || null;
 
     setEditingQuestion({
@@ -240,7 +240,7 @@ const PackForm: React.FC = () => {
   const handleSaveQuestion = (question: Question) => {
     if (!editingQuestion) return;
 
-    setPackData((prev: Pack) => {
+    setQuizData((prev: Quiz) => {
       const updatedRounds = [...prev.rounds];
       const theme = updatedRounds[currentRoundIndex].themes[editingQuestion.themeIndex];
 
@@ -281,7 +281,7 @@ const PackForm: React.FC = () => {
     const overId = over.id as string;
 
     if (activeId !== overId) {
-      setPackData((prev: Pack) => {
+      setQuizData((prev: Quiz) => {
         const updatedRounds = [...prev.rounds];
         const currentRound = updatedRounds[currentRoundIndex];
 
@@ -350,15 +350,15 @@ const PackForm: React.FC = () => {
     }
   };
 
-  const buildDownloadFileName = (name: string) => (name ? name.toLowerCase().replace(/\s+/g, '-') : 'pack');
+  const buildDownloadFileName = (name: string) => (name ? name.toLowerCase().replace(/\s+/g, '-') : 'quiz');
 
-  const downloadPack = (pack: Pack) => {
-    const jsonString = JSON.stringify(pack, null, 2);
+  const downloadQuiz = (quiz: Quiz) => {
+    const jsonString = JSON.stringify(quiz, null, 2);
     const blob = new Blob([jsonString], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${buildDownloadFileName(pack.name)}.json`;
+    link.download = `${buildDownloadFileName(quiz.name)}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -366,23 +366,23 @@ const PackForm: React.FC = () => {
   };
 
   const handleDownload = () => {
-    downloadPack(packData);
+    downloadQuiz(quizData);
   };
 
   const handleRepackFile = async (file: File) => {
     setRepacking(true);
     try {
-      const convertedPack = await convertSIQFromFile(file);
-      const safePack = {
-        ...convertedPack,
-        rounds: convertedPack.rounds && convertedPack.rounds.length > 0 ? convertedPack.rounds : [{ name: 'Round 1', themes: [] }],
+      const convertedQuiz = await convertSIQFromFile(file);
+      const safeQuiz = {
+        ...convertedQuiz,
+        rounds: convertedQuiz.rounds && convertedQuiz.rounds.length > 0 ? convertedQuiz.rounds : [{ name: 'Round 1', themes: [] }],
       };
-      setPackData(ensurePackIds(safePack));
+      setQuizData(ensureQuizIds(safeQuiz));
       setCurrentRoundIndex(0);
     } catch (error) {
       console.error('Error repacking SIQ package:', error);
-      const message = error instanceof Error ? error.message : t('pack.repackErrorFallback');
-      alert(t('pack.repackError', { message }));
+      const message = error instanceof Error ? error.message : t('quiz.repackErrorFallback');
+      alert(t('quiz.repackError', { message }));
     } finally {
       setRepacking(false);
     }
@@ -406,24 +406,24 @@ const PackForm: React.FC = () => {
       const jsonData = JSON.parse(text);
 
       await clearStorage();
-      await savePack(jsonData);
-      setPackData(ensurePackIds(jsonData));
+      await saveQuiz(jsonData);
+      setQuizData(ensureQuizIds(jsonData));
       setCurrentRoundIndex(0);
     } catch (error) {
       console.error('Error loading JSON file:', error);
-      alert(t('pack.uploadError'));
+      alert(t('quiz.uploadError'));
     }
   };
 
-  const currentRound: Round = packData.rounds[currentRoundIndex] || { name: 'Round 1', themes: [] };
+  const currentRound: Round = quizData.rounds[currentRoundIndex] || { name: 'Round 1', themes: [] };
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      <PackHeader
-        packName={packData.name}
-        author={packData.author}
-        onPackNameChange={(name: string) => setPackData((prev: Pack) => ({ ...prev, name }))}
-        onAuthorChange={(author: string) => setPackData((prev: Pack) => ({ ...prev, author }))}
+      <QuizHeader
+        quizName={quizData.name}
+        author={quizData.author}
+        onQuizNameChange={(name: string) => setQuizData((prev: Quiz) => ({ ...prev, name }))}
+        onAuthorChange={(author: string) => setQuizData((prev: Quiz) => ({ ...prev, author }))}
         onUpload={handleFileUpload}
         onDownload={handleDownload}
         onRepackFile={handleRepackFile}
@@ -434,7 +434,7 @@ const PackForm: React.FC = () => {
       <GameBoardGrid
         currentRound={currentRound}
         roundIndex={currentRoundIndex}
-        totalRounds={packData.rounds.length}
+        totalRounds={quizData.rounds.length}
         onPreviousRound={handlePreviousRound}
         onNextRound={handleNextRound}
         onRoundNameChange={handleRoundNameChange}
@@ -457,4 +457,4 @@ const PackForm: React.FC = () => {
   );
 };
 
-export default PackForm;
+export default QuizForm;

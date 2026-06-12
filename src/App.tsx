@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import CssBaseline from '@mui/material/CssBaseline';
-import PackForm from './components/PackForm';
+import QuizForm from './components/QuizForm';
 import { LanguageProvider } from './i18n/LanguageContext';
 import { AppThemeProvider } from './theme/ThemeContext';
 import './App.css';
@@ -38,7 +38,7 @@ const App: React.FC = () => {
       <CssBaseline />
       <LanguageProvider>
         <div className="App">
-          <PackForm />
+          <QuizForm />
         </div>
       </LanguageProvider>
     </AppThemeProvider>

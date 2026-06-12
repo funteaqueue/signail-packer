@@ -14,13 +14,14 @@ import {
     MenuItem,
     Stack,
 } from '@mui/material';
-import { Question, QuestionType, Rule, RuleType } from '../types/pack';
+import { Question, QuestionType, Rule, RuleType } from '../types/quiz';
 import { isContentEmpty } from '../utils/contentUtils';
 import { useTranslation } from '../i18n/LanguageContext';
 import RuleForm from './RuleForm';
 import FindACatEditor from './FindACatEditor';
 import ChoiceOptionsEditor from './ChoiceOptionsEditor';
 import ProgressiveRevealEditor from './ProgressiveRevealEditor';
+import KaraokeEditor from './KaraokeEditor';
 
 
 interface QuestionModalProps {
@@ -98,6 +99,9 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
         options: [],
         effect: 'blur',
         curve: 'linear',
+        media: '',
+        lyrics: '',
+        lyrics_format: 'plain',
     });
 
     const [draftRule, setDraftRule] = useState<Partial<Rule>>({
@@ -154,6 +158,9 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 multiple: false,
                 options: [],
                 effect: 'blur',
+                media: '',
+                lyrics: '',
+                lyrics_format: 'plain',
             });
             setIncorrectInputValue((-defaultPrice).toString());
             setCorrectInputValue(defaultPrice.toString());
@@ -192,6 +199,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
     const isChoice = formData.type === QuestionType.Choice;
     const isTextAnswer = formData.type === QuestionType.TextAnswer;
     const isProgressiveReveal = formData.type === QuestionType.ProgressiveReveal;
+    const isKaraoke = formData.type === QuestionType.Karaoke;
 
     const isFindACatValid = !isFindACat || (
         !!formData.task?.trim() &&
@@ -210,9 +218,14 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
 
     const isProgressiveRevealValid = !isProgressiveReveal || !!formData.image;
 
+    const isKaraokeValid = !isKaraoke || !!formData.media;
+
     const getValidationErrorMessage = () => {
         if (isCloseEnough && !isCloseEnoughValid) {
             return t('validation.closeEnough');
+        }
+        if (isKaraoke && !isKaraokeValid) {
+            return t('validation.karaokeMedia');
         }
         if (isChoice && !isChoiceValid) {
             if ((formData.options || []).length < 2) {
@@ -285,6 +298,9 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 options: undefined,
                 effect: undefined,
                 curve: undefined,
+                media: undefined,
+                lyrics: undefined,
+                lyrics_format: undefined,
             } as Question;
         } else if (formData.type === QuestionType.ProgressiveReveal) {
             updatedQuestion = {
@@ -307,6 +323,34 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 perfect_bonus: undefined,
                 multiple: undefined,
                 options: undefined,
+                media: undefined,
+                lyrics: undefined,
+                lyrics_format: undefined,
+            } as Question;
+        } else if (formData.type === QuestionType.Karaoke) {
+            updatedQuestion = {
+                ...formData,
+                id: formData.id || Date.now(),
+                type: QuestionType.Karaoke,
+                price: formData.price || defaultPriceValue,
+                media: formData.media || '',
+                lyrics: formData.lyrics || '',
+                lyrics_format: formData.lyrics_format || 'plain',
+                rules: [],
+                after_round: currentAfterRound,
+                task: undefined,
+                name: undefined,
+                image: undefined,
+                map: undefined,
+                answer: undefined,
+                duration: undefined,
+                max_clicks: undefined,
+                first_place_bonus: undefined,
+                perfect_bonus: undefined,
+                multiple: undefined,
+                options: undefined,
+                effect: undefined,
+                curve: undefined,
             } as Question;
         } else {
             updatedQuestion = {
@@ -332,6 +376,9 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 first_place_bonus: (isChoice || isTextAnswer) ? (formData.first_place_bonus || undefined) : undefined,
                 effect: undefined,
                 curve: undefined,
+                media: undefined,
+                lyrics: undefined,
+                lyrics_format: undefined,
             } as Question;
         }
 
@@ -482,6 +529,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                         <MenuItem value={QuestionType.Choice}>{t('questionType.choice')}</MenuItem>
                         <MenuItem value={QuestionType.TextAnswer}>{t('questionType.textAnswer')}</MenuItem>
                         <MenuItem value={QuestionType.ProgressiveReveal}>{t('questionType.progressiveReveal')}</MenuItem>
+                        <MenuItem value={QuestionType.Karaoke}>{t('questionType.karaoke')}</MenuItem>
                     </Select>
                 </Box>
             </DialogTitle>
@@ -498,6 +546,10 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 >
                     {isFindACat ? [
                         <Tab key="find-a-cat" label={t('tab.findACatEditor')} />,
+                        <Tab key="price" label={t('tab.price')} />
+                    ] : isKaraoke ? [
+                        <Tab key="karaoke" label={t('tab.karaokeEditor')} />,
+                        <Tab key="answer" label={t('tab.answer')} />,
                         <Tab key="price" label={t('tab.price')} />
                     ] : isProgressiveReveal ? [
                         <Tab key="image" label={t('tab.imageEffect')} />,
@@ -535,6 +587,34 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                         </TabPanel>
 
                         <TabPanel value={tabValue} index={1}>
+                            {renderPriceFields()}
+                        </TabPanel>
+                    </>
+                ) : isKaraoke ? (
+                    <>
+                        <TabPanel value={tabValue} index={0}>
+                            <KaraokeEditor
+                                media={formData.media}
+                                lyrics={formData.lyrics || ''}
+                                lyricsFormat={formData.lyrics_format || 'plain'}
+                                onMediaChange={(media) => setFormData(prev => ({ ...prev, media }))}
+                                onLyricsChange={(lyrics) => setFormData(prev => ({ ...prev, lyrics }))}
+                                onLyricsFormatChange={(lyrics_format) => setFormData(prev => ({ ...prev, lyrics_format }))}
+                            />
+                        </TabPanel>
+
+                        <TabPanel value={tabValue} index={1}>
+                            <RuleForm
+                                rules={formData.after_round || []}
+                                onRulesChange={handleAfterRoundChange}
+                                title={t('question.answerTitle')}
+                                draftRule={draftAfterRound}
+                                onDraftRuleChange={setDraftAfterRound}
+                                buttonLabel={t('question.addAnswer')}
+                            />
+                        </TabPanel>
+
+                        <TabPanel value={tabValue} index={2}>
                             {renderPriceFields()}
                         </TabPanel>
                     </>
@@ -678,7 +758,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                     <Button onClick={onClose} variant="outlined">
                         {t('common.cancel')}
                     </Button>
-                    <Button onClick={handleSave} variant="contained" disabled={!isFindACatValid || !isCloseEnoughValid || !isChoiceValid || !isProgressiveRevealValid}>
+                    <Button onClick={handleSave} variant="contained" disabled={!isFindACatValid || !isCloseEnoughValid || !isChoiceValid || !isProgressiveRevealValid || !isKaraokeValid}>
                         {t('question.save')}
                     </Button>
                 </Stack>

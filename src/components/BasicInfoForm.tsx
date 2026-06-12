@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Box, TextField, Button, Typography } from '@mui/material';
-import { Pack } from '../types/pack';
+import { Quiz } from '../types/quiz';
 import { useTranslation } from '../i18n/LanguageContext';
 
 interface BasicInfoFormProps {
   onSubmit: (data: { author: string; name: string }) => void;
-  initialData: Pick<Pack, 'author' | 'name'>;
+  initialData: Pick<Quiz, 'author' | 'name'>;
 }
 
 const BasicInfoForm: React.FC<BasicInfoFormProps> = ({ onSubmit, initialData }) => {
@@ -38,7 +38,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({ onSubmit, initialData }) 
       <TextField
         required
         fullWidth
-        label={t('header.packName')}
+        label={t('header.quizName')}
         name="name"
         value={formData.name}
         onChange={handleChange}

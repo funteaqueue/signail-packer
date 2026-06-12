@@ -17,7 +17,7 @@ import {
   CloudUpload as CloudUploadIcon,
   Link as LinkIcon,
 } from '@mui/icons-material';
-import { RevealEffect, RevealCurve } from '../types/pack';
+import { RevealEffect, RevealCurve } from '../types/quiz';
 import { useTranslation } from '../i18n/LanguageContext';
 
 interface ProgressiveRevealEditorProps {

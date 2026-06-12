@@ -19,7 +19,7 @@ import {
   Edit as EditIcon,
 } from '@mui/icons-material';
 import { ImageMap } from '@qiuz/react-image-map';
-import { MapArea } from '../types/pack';
+import { MapArea } from '../types/quiz';
 import { useTranslation } from '../i18n/LanguageContext';
 
 interface FindACatEditorProps {

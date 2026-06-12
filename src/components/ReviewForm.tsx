@@ -9,15 +9,15 @@ import {
   Divider,
   Button,
 } from '@mui/material';
-import { Pack } from '../types/pack';
+import { Quiz } from '../types/quiz';
 import { useTranslation } from '../i18n/LanguageContext';
 
 interface ReviewFormProps {
-  packData: Pack;
+  quizData: Quiz;
   onDownload: () => void;
 }
 
-const ReviewForm: React.FC<ReviewFormProps> = ({ packData, onDownload }) => {
+const ReviewForm: React.FC<ReviewFormProps> = ({ quizData, onDownload }) => {
   const { t } = useTranslation();
   return (
     <Box sx={{ mt: 2 }}>
@@ -29,8 +29,8 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ packData, onDownload }) => {
         <Typography variant="subtitle1" gutterBottom>
           {t('basicInfo.title')}
         </Typography>
-        <Typography>{t('review.name')} {packData.name}</Typography>
-        <Typography>{t('review.author')} {packData.author}</Typography>
+        <Typography>{t('review.name')} {quizData.name}</Typography>
+        <Typography>{t('review.author')} {quizData.author}</Typography>
       </Paper>
 
       <Paper sx={{ p: 2 }}>
@@ -38,7 +38,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ packData, onDownload }) => {
           {t('rounds.title')}
         </Typography>
         <List>
-          {packData.rounds.map((round, roundIndex) => (
+          {quizData.rounds.map((round, roundIndex) => (
             <React.Fragment key={roundIndex}>
               <ListItem>
                 <ListItemText
@@ -59,7 +59,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ packData, onDownload }) => {
                   }
                 />
               </ListItem>
-              {roundIndex < packData.rounds.length - 1 && <Divider />}
+              {roundIndex < quizData.rounds.length - 1 && <Divider />}
             </React.Fragment>
           ))}
         </List>
@@ -74,4 +74,4 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ packData, onDownload }) => {
   );
 };
 
-export default ReviewForm; 
+export default ReviewForm;

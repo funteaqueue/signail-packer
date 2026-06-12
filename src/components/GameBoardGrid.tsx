@@ -17,7 +17,7 @@ import {
     verticalListSortingStrategy,
     SortableContext,
 } from '@dnd-kit/sortable';
-import { Round, Question, Theme } from '../types/pack';
+import { Round, Question, Theme } from '../types/quiz';
 import { useTranslation } from '../i18n/LanguageContext';
 import ThemeRow from './ThemeRow';
 import AddButton from './AddButton';

@@ -1,8 +1,8 @@
-import { Pack } from '../types/pack';
+import { Quiz } from '../types/quiz';
 
-const DB_NAME = 'packerDB';
+const DB_NAME = 'jeopartyDB';
 const DB_VERSION = 2;
-const STORE_NAME = 'pack';
+const STORE_NAME = 'quiz';
 
 let dbInstance: IDBDatabase | null = null;
 let dbOpeningPromise: Promise<IDBDatabase> | null = null;
@@ -50,37 +50,35 @@ export const initDB = (): Promise<IDBDatabase> => {
   return dbOpeningPromise;
 };
 
-export const savePack = async (pack: Pack): Promise<void> => {
+export const saveQuiz = async (quiz: Quiz): Promise<void> => {
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(STORE_NAME, 'readwrite');
     const store = transaction.objectStore(STORE_NAME);
 
-    // Save pack with a unique ID
-    const packWithId = {
-      ...pack,
-      id: 'current-pack',
+    const quizWithId = {
+      ...quiz,
+      id: 'current-quiz',
     };
-    store.put(packWithId);
+    store.put(quizWithId);
 
     transaction.oncomplete = () => resolve();
     transaction.onerror = () => reject(transaction.error);
   });
 };
 
-export const loadPack = async (): Promise<Pack | null> => {
+export const loadQuiz = async (): Promise<Quiz | null> => {
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(STORE_NAME, 'readonly');
     const store = transaction.objectStore(STORE_NAME);
-    const request = store.get('current-pack');
+    const request = store.get('current-quiz');
 
     request.onsuccess = () => {
-      const pack = request.result;
-      if (pack) {
-        // Remove the ID before returning
-        const { id, ...packWithoutId } = pack;
-        resolve(packWithoutId);
+      const quiz = request.result;
+      if (quiz) {
+        const { id, ...quizWithoutId } = quiz;
+        resolve(quizWithoutId);
       } else {
         resolve(null);
       }

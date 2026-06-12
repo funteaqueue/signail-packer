@@ -1,4 +1,4 @@
-export interface Pack {
+export interface Quiz {
   author: string;
   name: string;
   rounds: Round[];
@@ -38,7 +38,14 @@ export interface Question {
   options?: ChoiceOption[];
   effect?: RevealEffect;
   curve?: RevealCurve;
+  /** Karaoke track (audio or video) as a base64 data URL */
+  media?: string;
+  /** Karaoke lyrics: plain text or LRC "[mm:ss.xx] line" depending on lyrics_format */
+  lyrics?: string;
+  lyrics_format?: LyricsFormat;
 }
+
+export type LyricsFormat = 'plain' | 'lrc';
 
 export interface ChoiceOption {
   content: string;
@@ -79,7 +86,8 @@ export enum QuestionType {
   CloseEnough = 'close-enough',
   Choice = 'choice',
   TextAnswer = 'text-answer',
-  ProgressiveReveal = 'progressive-reveal'
+  ProgressiveReveal = 'progressive-reveal',
+  Karaoke = 'karaoke'
 }
 
 export enum RuleType {

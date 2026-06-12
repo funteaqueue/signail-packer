@@ -3,7 +3,7 @@ import { Box, TextField, IconButton, Typography } from '@mui/material';
 import { Delete as DeleteIcon, DragIndicator as DragIndicatorIcon } from '@mui/icons-material';
 import { useSortable, SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Theme, QuestionType } from '../types/pack';
+import { Theme, QuestionType } from '../types/quiz';
 import { useTranslation } from '../i18n/LanguageContext';
 import QuestionButton from './QuestionButton';
 import AddButton from './AddButton';
@@ -170,7 +170,9 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
                             question && (
                                 question.type === QuestionType.FindACat
                                     ? !!question.image
-                                    : ((question.rules && question.rules.length > 0) || (question.after_round && question.after_round.length > 0))
+                                    : question.type === QuestionType.Karaoke
+                                        ? !!question.media
+                                        : ((question.rules && question.rules.length > 0) || (question.after_round && question.after_round.length > 0))
                             )
                         );
                         const id = questionIds[index];

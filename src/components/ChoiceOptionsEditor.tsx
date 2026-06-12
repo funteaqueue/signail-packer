@@ -17,7 +17,7 @@ import {
   Edit as EditIcon,
   Close as CloseIcon,
 } from '@mui/icons-material';
-import { ChoiceOption } from '../types/pack';
+import { ChoiceOption } from '../types/quiz';
 import { isContentEmpty } from '../utils/contentUtils';
 import { useTranslation } from '../i18n/LanguageContext';
 import ReactQuill from 'react-quill';

@@ -17,7 +17,7 @@ import {
   MenuItem,
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon, Close as CloseIcon } from '@mui/icons-material';
-import { Rule, RuleType } from '../types/pack';
+import { Rule, RuleType } from '../types/quiz';
 import { isContentEmpty } from '../utils/contentUtils';
 import { useTranslation } from '../i18n/LanguageContext';
 import ReactQuill, { Quill } from 'react-quill';

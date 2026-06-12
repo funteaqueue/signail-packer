@@ -14,10 +14,9 @@ import {
   Collapse,
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
-import { Question, QuestionType, Price, Rule, RuleType } from '../types/pack';
+import { Question, QuestionType, Price, Rule, RuleType } from '../types/quiz';
 import { useTranslation } from '../i18n/LanguageContext';
 import RuleForm from './RuleForm';
-import { loadPack, savePack } from '../services/storage';
 
 interface QuestionFormProps {
   questions: Question[];

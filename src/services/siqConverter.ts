@@ -1,5 +1,5 @@
 import JSZip from 'jszip';
-import { Pack, Price, Question, QuestionType, Round, Rule, RuleType, Theme } from '../types/pack';
+import { Quiz, Price, Question, QuestionType, Round, Rule, RuleType, Theme } from '../types/quiz';
 
 const DEFAULT_DURATION = 15;
 const MEDIA_FOLDERS: Record<string, string> = {
@@ -295,7 +295,7 @@ const convertRound = async (roundNode: Element, loadMedia: MediaLoader, nextQues
   };
 };
 
-const convertDocumentToPack = async (doc: Document, loadMedia: MediaLoader): Promise<Pack> => {
+const convertDocumentToQuiz = async (doc: Document, loadMedia: MediaLoader): Promise<Quiz> => {
   const packageNode = doc.documentElement;
   if (packageNode.localName !== 'package') {
     throw new Error(`Unexpected SIQ root element (${packageNode.localName}).`);
@@ -303,7 +303,7 @@ const convertDocumentToPack = async (doc: Document, loadMedia: MediaLoader): Pro
   const infoNode = getChildElements(packageNode, 'info')[0];
   const authorsNode = infoNode ? getChildElements(infoNode, 'authors')[0] : undefined;
   const author = getTextContent(getChildElements(authorsNode || packageNode, 'author')[0]) || 'SIQ Import';
-  const packName = packageNode.getAttribute('name') || 'Converted pack';
+  const quizName = packageNode.getAttribute('name') || 'Converted quiz';
 
   const roundsNode = getChildElements(packageNode, 'rounds')[0];
   const roundNodes = roundsNode ? getChildElements(roundsNode, 'round') : [];
@@ -320,12 +320,12 @@ const convertDocumentToPack = async (doc: Document, loadMedia: MediaLoader): Pro
 
   return {
     author,
-    name: packName,
+    name: quizName,
     rounds,
   };
 };
 
-const parseSIQ = async ({ loadContentXml, loadMedia }: SIQSource): Promise<Pack> => {
+const parseSIQ = async ({ loadContentXml, loadMedia }: SIQSource): Promise<Quiz> => {
   const xmlText = await loadContentXml();
   const parser = new DOMParser();
   const doc = parser.parseFromString(xmlText, 'application/xml');
@@ -335,10 +335,10 @@ const parseSIQ = async ({ loadContentXml, loadMedia }: SIQSource): Promise<Pack>
     throw new Error('Invalid SIQ XML.');
   }
 
-  return convertDocumentToPack(doc, loadMedia);
+  return convertDocumentToQuiz(doc, loadMedia);
 };
 
-export const convertSIQFromPublicDir = async (siqBasePath = '/siq'): Promise<Pack> => {
+export const convertSIQFromPublicDir = async (siqBasePath = '/siq'): Promise<Quiz> => {
   const normalizedBase = siqBasePath.endsWith('/') ? siqBasePath.slice(0, -1) : siqBasePath;
   const contentUrl = `${normalizedBase}/content.xml`;
 
@@ -359,7 +359,7 @@ export const convertSIQFromPublicDir = async (siqBasePath = '/siq'): Promise<Pac
   return parseSIQ({ loadContentXml, loadMedia });
 };
 
-export const convertSIQFromFile = async (file: File): Promise<Pack> => {
+export const convertSIQFromFile = async (file: File): Promise<Quiz> => {
   const arrayBuffer = await file.arrayBuffer();
   const zip = await JSZip.loadAsync(arrayBuffer);
 

@@ -10,9 +10,9 @@ export const translations: Record<Language, Record<string, string>> = {
     'common.add': 'Add',
     'common.load': 'Load',
 
-    // Pack header
-    'header.title': 'Pack Creator',
-    'header.packName': 'Pack Name',
+    // Quiz header
+    'header.title': 'Quiz Creator',
+    'header.quizName': 'Quiz Name',
     'header.author': 'Author',
     'header.upload': 'Upload',
     'header.repack': 'Repack',
@@ -94,6 +94,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'questionType.choice': 'Choice',
     'questionType.textAnswer': 'Text Answer',
     'questionType.progressiveReveal': 'Progressive Reveal',
+    'questionType.karaoke': 'Karaoke',
 
     // Question modal tabs
     'tab.findACatEditor': 'Find-a-Cat Editor',
@@ -102,6 +103,21 @@ export const translations: Record<Language, Record<string, string>> = {
     'tab.answer': 'Answer',
     'tab.question': 'Question',
     'tab.options': 'Options',
+    'tab.karaokeEditor': 'Karaoke',
+
+    // Karaoke editor
+    'karaoke.uploadTitle': 'Karaoke track (audio or video)',
+    'karaoke.uploadButton': 'Upload from PC',
+    'karaoke.dropHint': 'or drag & drop an audio/video file here',
+    'karaoke.fileSize': 'Size: {size} MB (stored in the pack as base64)',
+    'karaoke.removeMedia': 'Remove track',
+    'karaoke.lyricsTitle': 'Lyrics',
+    'karaoke.formatPlain': 'Plain text',
+    'karaoke.formatLrc': 'LRC (timed)',
+    'karaoke.lyricsPlaceholderPlain': 'Song lyrics shown to the singer and the audience...',
+    'karaoke.lyricsPlaceholderLrc': '[00:12.30] First line of the song\n[00:18.10] Second line...',
+    'karaoke.lrcPreview': 'Parsed {count} timed lines:',
+    'karaoke.lrcNoLines': 'No "[mm:ss.xx] line" timestamps found — the game will show the text as-is, without highlighting.',
 
     // Question modal validation
     'validation.closeEnough': 'Please enter the numeric correct answer to save the question.',
@@ -109,6 +125,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'validation.atLeastOneCorrect': 'Please mark at least one option as correct.',
     'validation.exactlyOneCorrect': 'Please mark exactly one option as correct.',
     'validation.uploadImage': 'Please upload an image to save the question.',
+    'validation.karaokeMedia': 'Please upload an audio or video track to save the karaoke question.',
     'validation.missingTask': 'the task text ("What to find?")',
     'validation.missingImage': 'an image upload',
     'validation.missingArea': 'at least one defined area',
@@ -181,13 +198,13 @@ export const translations: Record<Language, Record<string, string>> = {
     'rounds.themeDescription': 'Theme Description',
     'rounds.addTheme': 'Add Theme',
 
-    // Pack form alerts
-    'pack.uploadError': "Error loading JSON file. Please make sure it's a valid pack JSON file.",
-    'pack.repackError': 'Failed to repack SIQ package. {message}',
-    'pack.repackErrorFallback': 'Please make sure the SIQ archive is valid.',
+    // Quiz form alerts
+    'quiz.uploadError': "Error loading JSON file. Please make sure it's a valid quiz JSON file.",
+    'quiz.repackError': 'Failed to repack SIQ package. {message}',
+    'quiz.repackErrorFallback': 'Please make sure the SIQ archive is valid.',
 
     // Review form
-    'review.title': 'Review Pack',
+    'review.title': 'Review Quiz',
     'review.name': 'Name:',
     'review.author': 'Author:',
     'review.theme': 'Theme:',
@@ -201,9 +218,9 @@ export const translations: Record<Language, Record<string, string>> = {
     'common.add': 'Додати',
     'common.load': 'Завантажити',
 
-    // Pack header
-    'header.title': 'Редактор паків',
-    'header.packName': 'Назва паку',
+    // Quiz header
+    'header.title': 'Редактор квізів',
+    'header.quizName': 'Назва квізу',
     'header.author': 'Автор',
     'header.upload': 'Імпортувати',
     'header.repack': 'Перепакувати',
@@ -285,6 +302,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'questionType.choice': 'Вибір варіанту',
     'questionType.textAnswer': 'Текстова відповідь',
     'questionType.progressiveReveal': 'Поступове відкриття',
+    'questionType.karaoke': 'Караоке',
 
     // Question modal tabs
     'tab.findACatEditor': 'Редактор «Знайди кота»',
@@ -293,6 +311,21 @@ export const translations: Record<Language, Record<string, string>> = {
     'tab.answer': 'Відповідь',
     'tab.question': 'Питання',
     'tab.options': 'Варіанти',
+    'tab.karaokeEditor': 'Караоке',
+
+    // Karaoke editor
+    'karaoke.uploadTitle': 'Караоке-трек (аудіо або відео)',
+    'karaoke.uploadButton': 'Завантажити з ПК',
+    'karaoke.dropHint': 'або перетягніть аудіо/відео файл сюди',
+    'karaoke.fileSize': 'Розмір: {size} МБ (зберігається в паку як base64)',
+    'karaoke.removeMedia': 'Прибрати трек',
+    'karaoke.lyricsTitle': 'Текст пісні',
+    'karaoke.formatPlain': 'Звичайний текст',
+    'karaoke.formatLrc': 'LRC (з таймкодами)',
+    'karaoke.lyricsPlaceholderPlain': 'Текст пісні, який бачитимуть співак і глядачі...',
+    'karaoke.lyricsPlaceholderLrc': '[00:12.30] Перший рядок пісні\n[00:18.10] Другий рядок...',
+    'karaoke.lrcPreview': 'Розпізнано рядків з таймкодами: {count}',
+    'karaoke.lrcNoLines': 'Не знайдено таймкодів формату "[хх:сс.мс] рядок" — гра покаже текст як є, без підсвічування.',
 
     // Question modal validation
     'validation.closeEnough': 'Вкажіть числову правильну відповідь, щоб зберегти питання.',
@@ -300,6 +333,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'validation.atLeastOneCorrect': 'Позначте принаймні один варіант як правильний.',
     'validation.exactlyOneCorrect': 'Позначте рівно один варіант як правильний.',
     'validation.uploadImage': 'Завантажте зображення, щоб зберегти питання.',
+    'validation.karaokeMedia': 'Завантажте аудіо або відео трек, щоб зберегти караоке-питання.',
     'validation.missingTask': 'текст завдання («Що шукати?»)',
     'validation.missingImage': 'зображення',
     'validation.missingArea': 'принаймні одну позначену область',
@@ -372,13 +406,13 @@ export const translations: Record<Language, Record<string, string>> = {
     'rounds.themeDescription': 'Опис теми',
     'rounds.addTheme': 'Додати тему',
 
-    // Pack form alerts
-    'pack.uploadError': 'Помилка завантаження JSON-файлу. Переконайтеся, що це коректний файл паку.',
-    'pack.repackError': 'Не вдалося перепакувати SIQ-пакет. {message}',
-    'pack.repackErrorFallback': 'Переконайтеся, що SIQ-архів коректний.',
+    // Quiz form alerts
+    'quiz.uploadError': 'Помилка завантаження JSON-файлу. Переконайтеся, що це коректний файл квізу.',
+    'quiz.repackError': 'Не вдалося перепакувати SIQ-пакет. {message}',
+    'quiz.repackErrorFallback': 'Переконайтеся, що SIQ-архів коректний.',
 
     // Review form
-    'review.title': 'Перевірка паку',
+    'review.title': 'Перевірка квізу',
     'review.name': 'Назва:',
     'review.author': 'Автор:',
     'review.theme': 'Тема:',

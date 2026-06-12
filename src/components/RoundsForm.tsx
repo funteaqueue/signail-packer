@@ -14,14 +14,14 @@ import {
   Collapse,
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
-import { Pack, Round, Theme, Question } from '../types/pack';
+import { Quiz, Round, Theme, Question } from '../types/quiz';
 import { useTranslation } from '../i18n/LanguageContext';
 import QuestionForm from './QuestionForm';
 
 interface RoundsFormProps {
-  onSubmit: (rounds: Pack['rounds']) => void;
-  initialData: Pack['rounds'];
-  onRoundsChange: (rounds: Pack['rounds']) => void;
+  onSubmit: (rounds: Quiz['rounds']) => void;
+  initialData: Quiz['rounds'];
+  onRoundsChange: (rounds: Quiz['rounds']) => void;
 }
 
 const RoundsForm: React.FC<RoundsFormProps> = ({ onSubmit, initialData, onRoundsChange }) => {
@@ -55,7 +55,7 @@ const RoundsForm: React.FC<RoundsFormProps> = ({ onSubmit, initialData, onRounds
   }, [rounds]);
 
   useEffect(() => {
-    // Update expandedRounds when initialData changes (e.g., pack loaded)
+    // Update expandedRounds when initialData changes (e.g., quiz loaded)
     setExpandedRounds(initialData.map(() => true));
   }, [initialData]);
 

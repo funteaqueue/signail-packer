@@ -3,7 +3,7 @@ import { Box } from '@mui/material';
 import { Edit as EditIcon } from '@mui/icons-material';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Question } from '../types/pack';
+import { Question } from '../types/quiz';
 
 interface QuestionButtonProps {
     id: string;
