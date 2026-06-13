@@ -10,10 +10,16 @@ import {
     IconButton,
     Tooltip,
 } from '@mui/material';
-import { CloudUpload as CloudUploadIcon, Delete as DeleteIcon, Timer as TimerIcon } from '@mui/icons-material';
+import {
+    CloudUpload as CloudUploadIcon,
+    Delete as DeleteIcon,
+    Timer as TimerIcon,
+    ContentCut as ContentCutIcon,
+} from '@mui/icons-material';
 import { LyricsFormat } from '../types/quiz';
 import { useTranslation } from '../i18n/LanguageContext';
 import KaraokeTimingEditor from './KaraokeTimingEditor';
+import AudioTrimmer from './AudioTrimmer';
 
 // Same line-level LRC subset the game renders: "[mm:ss.xx] line"
 // (multiple timestamps per line allowed, metadata tags like [ti:...] ignored)
@@ -76,6 +82,7 @@ const KaraokeEditor: React.FC<KaraokeEditorProps> = ({
     const { t } = useTranslation();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [timingOpen, setTimingOpen] = useState(false);
+    const [trimOpen, setTrimOpen] = useState(false);
 
     const readFile = (file: File) => {
         if (!file.type.startsWith('audio/') && !file.type.startsWith('video/')) return;
@@ -166,14 +173,30 @@ const KaraokeEditor: React.FC<KaraokeEditorProps> = ({
                             <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
                                 {t('karaoke.fileSize', { size: mediaSizeMb.toFixed(1) })}
                             </Typography>
-                            <IconButton
-                                onClick={() => onMediaChange('')}
-                                sx={{ color: 'var(--danger)' }}
-                                title={t('karaoke.removeMedia')}
-                            >
-                                <DeleteIcon />
-                            </IconButton>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                {!isVideo && (
+                                    <IconButton
+                                        onClick={() => setTrimOpen(o => !o)}
+                                        sx={{ color: trimOpen ? 'var(--primary)' : 'var(--text-secondary)' }}
+                                        title={t('karaoke.trimToggle')}
+                                    >
+                                        <ContentCutIcon />
+                                    </IconButton>
+                                )}
+                                <IconButton
+                                    onClick={() => { onMediaChange(''); setTrimOpen(false); }}
+                                    sx={{ color: 'var(--danger)' }}
+                                    title={t('karaoke.removeMedia')}
+                                >
+                                    <DeleteIcon />
+                                </IconButton>
+                            </Box>
                         </Box>
+                        {!isVideo && trimOpen && (
+                            <Box sx={{ borderTop: '1px solid var(--glass-border)', pt: 1.5 }}>
+                                <AudioTrimmer media={media} onChange={onMediaChange} />
+                            </Box>
+                        )}
                     </Paper>
                 )}
                 <input
@@ -257,6 +280,7 @@ const KaraokeEditor: React.FC<KaraokeEditorProps> = ({
                     open={timingOpen}
                     media={media}
                     lyrics={lyrics}
+                    onMediaChange={onMediaChange}
                     onClose={() => setTimingOpen(false)}
                     onSave={(newLyrics, anyTimed) => {
                         onLyricsChange(newLyrics);

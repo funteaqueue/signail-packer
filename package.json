@@ -8,6 +8,8 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/util": "^0.12.2",
     "@mui/icons-material": "^5.15.10",
     "@mui/material": "^5.15.10",
     "@qiuz/react-image-map": "^1.1.8",

@@ -16,74 +16,65 @@ import {
   Select,
   MenuItem,
 } from '@mui/material';
-import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon, Close as CloseIcon } from '@mui/icons-material';
+import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon, Close as CloseIcon, ContentCut as ContentCutIcon } from '@mui/icons-material';
 import { Rule, RuleType } from '../types/quiz';
 import { isContentEmpty } from '../utils/contentUtils';
 import { useTranslation } from '../i18n/LanguageContext';
+import MediaTrimmer from './MediaTrimmer';
 import ReactQuill, { Quill } from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import '../quill-theme.css';
 
-const Video = Quill.import('formats/video');
-const Link = Quill.import('formats/link');
+// First embedded audio/video data URL in the rule's HTML, if any
+const MEDIA_DATA_URL_RE = /data:(?:audio|video)\/[\w.+-]+;base64,[A-Za-z0-9+/=]+/;
+const findMediaDataUrl = (html?: string): string | null => {
+  const m = html?.match(MEDIA_DATA_URL_RE);
+  return m ? m[0] : null;
+};
 
-class CoustomVideo extends Video {
+// Audio/video embeds are stored as plain <audio>/<video> data-URL tags. Using
+// the element itself as the blot tag (with value() reading the src back) lets
+// them round-trip through Quill's HTML parser — needed so editing or trimming
+// a clip doesn't lose the media.
+const BlockEmbed = Quill.import('blots/block/embed') as any;
 
-
+class CoustomVideo extends BlockEmbed {
   static blotName = 'video';
-  static className = 'ql-video';
-  static tagName = 'DIV';
+  static tagName = 'video';
 
   static create(value: string) {
-    const node = super.create(value) as HTMLElement;
-
-    // Clear any existing content (like iframe from parent)
-    while (node.firstChild) {
-      node.removeChild(node.firstChild);
-    }
-
-    const video = document.createElement('video');
-    video.setAttribute('controls', 'true');
-    video.setAttribute('autoplay', 'true');
-    video.setAttribute('type', "video/mp4");
-    video.setAttribute('style', "height: 200px; width: 100%");
-    video.setAttribute('src', value); // Use value directly, Link.sanitize might break data URIs
-    node.appendChild(video);
-
+    const node = super.create() as HTMLElement;
+    node.setAttribute('controls', 'true');
+    node.setAttribute('style', 'max-width: 100%; height: 200px;');
+    node.setAttribute('src', value);
     return node;
   }
 
+  static value(node: HTMLElement) {
+    return node.getAttribute('src');
+  }
 }
 
+Quill.register('formats/video', CoustomVideo, true);
 
-
-Quill.register('formats/video', CoustomVideo);
-
-class CustomAudio extends Video {
+class CustomAudio extends BlockEmbed {
   static blotName = 'audio';
-  static className = 'ql-audio';
-  static tagName = 'DIV';
+  static tagName = 'audio';
 
   static create(value: string) {
-    const node = super.create(value) as HTMLElement;
-
-    // Clear any existing content
-    while (node.firstChild) {
-      node.removeChild(node.firstChild);
-    }
-
-    const audio = document.createElement('audio');
-    audio.setAttribute('controls', 'true');
-    audio.setAttribute('autoplay', 'true');
-    audio.setAttribute('style', "width: 100%");
-    audio.setAttribute('src', value);
-    node.appendChild(audio);
-
+    const node = super.create() as HTMLElement;
+    node.setAttribute('controls', 'true');
+    node.setAttribute('style', 'width: 100%');
+    node.setAttribute('src', value);
     return node;
+  }
+
+  static value(node: HTMLElement) {
+    return node.getAttribute('src');
   }
 }
 
-Quill.register('formats/audio', CustomAudio);
+Quill.register('formats/audio', CustomAudio, true);
 
 interface RuleFormProps {
   rules: Rule[];
@@ -174,6 +165,62 @@ const RuleForm: React.FC<RuleFormProps> = ({
   const quillRef = useRef<ReactQuill>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const [trimUrl, setTrimUrl] = useState<string | null>(null);
+
+  const draftMediaUrl = findMediaDataUrl(draftRule.content);
+
+  // Swap the just-trimmed media back into the editor. We replace the embed
+  // through the Quill API (delete + re-insert at the same index) rather than
+  // editing the HTML string — feeding modified HTML back via the value prop
+  // makes Quill re-parse, and the custom audio/video blots don't round-trip.
+  const handleTrimApply = (newUrl: string) => {
+    const quill = quillRef.current?.getEditor();
+    if (quill && trimUrl) {
+      const ops = quill.getContents().ops || [];
+      let index = 0;
+      let found = -1;
+      let format = '';
+      for (const op of ops) {
+        if (typeof op.insert === 'string') {
+          index += op.insert.length;
+        } else if (op.insert && typeof op.insert === 'object') {
+          const key = (op.insert as any).audio !== undefined ? 'audio'
+            : (op.insert as any).video !== undefined ? 'video' : '';
+          if (key && (op.insert as any)[key] === trimUrl) { found = index; format = key; break; }
+          index += 1;
+        }
+      }
+      if (found >= 0) {
+        quill.deleteText(found, 1, 'user');
+        quill.insertEmbed(found, format, newUrl, 'user');
+      }
+    } else if (trimUrl) {
+      // Fallback: string replace (no editor handle)
+      const content = draftRule.content || '';
+      if (content.includes(trimUrl)) onDraftRuleChange({ ...draftRule, content: content.replace(trimUrl, newUrl) });
+    }
+    setTrimUrl(null);
+  };
+
+  // Embed an image/audio/video file into the editor as a base64 data URL
+  const insertMediaFile = (file: File) => {
+    const format = file.type.startsWith('video/') ? 'video'
+      : file.type.startsWith('audio/') ? 'audio'
+        : file.type.startsWith('image/') ? 'image'
+          : null;
+    if (!format) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result as string;
+      const quill = quillRef.current?.getEditor();
+      if (!quill) return;
+      const range = quill.getSelection(true) || { index: quill.getLength(), length: 0 };
+      quill.insertEmbed(range.index, format, base64);
+      quill.setSelection(range.index + 1, 0);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const videoHandler = () => {
     fileInputRef.current?.click();
@@ -185,18 +232,7 @@ const RuleForm: React.FC<RuleFormProps> = ({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const base64 = reader.result as string;
-        const quill = quillRef.current?.getEditor();
-        if (quill) {
-          const range = quill.getSelection(true);
-          quill.insertEmbed(range.index, 'video', base64);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
+    if (file) insertMediaFile(file);
     // Reset input so same file can be selected again
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -205,22 +241,30 @@ const RuleForm: React.FC<RuleFormProps> = ({
 
   const handleAudioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const base64 = reader.result as string;
-        const quill = quillRef.current?.getEditor();
-        if (quill) {
-          const range = quill.getSelection(true);
-          quill.insertEmbed(range.index, 'audio', base64);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
+    if (file) insertMediaFile(file);
     // Reset input so same file can be selected again
     if (audioInputRef.current) {
       audioInputRef.current.value = '';
     }
+  };
+
+  // Drag & drop: intercept on the capture phase so Quill's own handling never
+  // sees the drop (it would otherwise try to embed images its own way).
+  const handleDrop = (e: React.DragEvent) => {
+    const files = Array.from(e.dataTransfer?.files || [])
+      .filter(f => /^(image|audio|video)\//.test(f.type));
+    if (files.length === 0) { setDragOver(false); return; }
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(false);
+    files.forEach(insertMediaFile);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    if (!Array.from(e.dataTransfer?.items || []).some(i => i.kind === 'file')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (!dragOver) setDragOver(true);
   };
 
   const modules = useMemo(() => ({
@@ -258,19 +302,45 @@ const RuleForm: React.FC<RuleFormProps> = ({
           <Typography variant="body2" gutterBottom>
             {t('ruleForm.content')}
           </Typography>
-          <Box sx={{
-            maxHeight: '400px',
-            width: '100%',
-            overflow: 'auto',
-            '& .ql-container': {
+          <Box
+            onDropCapture={handleDrop}
+            onDragOverCapture={handleDragOver}
+            onDragLeave={() => setDragOver(false)}
+            sx={{
+              position: 'relative',
               maxHeight: '400px',
               width: '100%',
-            },
-            '& .ql-editor': {
-              maxHeight: '400px',
-              width: '100%',
-            }
-          }}>
+              overflow: 'auto',
+              borderRadius: '6px',
+              outline: dragOver ? '2px dashed var(--primary)' : 'none',
+              outlineOffset: '-2px',
+              '& .ql-container': {
+                maxHeight: '400px',
+                width: '100%',
+              },
+              '& .ql-editor': {
+                maxHeight: '400px',
+                width: '100%',
+              }
+            }}>
+            {dragOver && (
+              <Box sx={{
+                position: 'absolute',
+                inset: 0,
+                zIndex: 5,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'var(--input-bg)',
+                opacity: 0.92,
+                pointerEvents: 'none',
+                borderRadius: '6px',
+                color: 'var(--primary)',
+                fontWeight: 600,
+              }}>
+                {t('ruleForm.dropMedia')}
+              </Box>
+            )}
             <ReactQuill
               ref={quillRef}
               theme="snow"
@@ -294,6 +364,18 @@ const RuleForm: React.FC<RuleFormProps> = ({
               onChange={handleAudioChange}
             />
           </Box>
+
+          {draftMediaUrl && (
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<ContentCutIcon />}
+              onClick={() => setTrimUrl(draftMediaUrl)}
+              sx={{ alignSelf: 'flex-start' }}
+            >
+              {t('ruleForm.trimMedia')}
+            </Button>
+          )}
 
           <TextField
             fullWidth
@@ -369,6 +451,13 @@ const RuleForm: React.FC<RuleFormProps> = ({
           </React.Fragment>
         ))}
       </List>
+
+      <MediaTrimmer
+        open={trimUrl !== null}
+        media={trimUrl || ''}
+        onClose={() => setTrimUrl(null)}
+        onApply={handleTrimApply}
+      />
     </Box>
   );
 };

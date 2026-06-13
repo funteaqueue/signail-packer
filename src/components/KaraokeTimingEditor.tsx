@@ -6,22 +6,30 @@ import {
     Dialog,
     Divider,
     IconButton,
+    CircularProgress,
     MenuItem,
     Select,
+    Slider,
     Typography,
 } from '@mui/material';
 import {
+    Check as CheckIcon,
     ChevronLeft as ChevronLeftIcon,
     ChevronRight as ChevronRightIcon,
     Close as CloseIcon,
+    ContentCut as ContentCutIcon,
     DeleteSweep as DeleteSweepIcon,
     Pause as PauseIcon,
     PlayArrow as PlayArrowIcon,
     Replay5 as Replay5Icon,
     Save as SaveIcon,
     Undo as UndoIcon,
+    VolumeDown as VolumeDownIcon,
+    VolumeOff as VolumeOffIcon,
+    VolumeUp as VolumeUpIcon,
 } from '@mui/icons-material';
 import { useTranslation } from '../i18n/LanguageContext';
+import { trimMedia } from '../utils/mediaTrim';
 
 // Interactive word-timing editor: the author taps a key or word as it is sung
 // to stamp it with the current playback time. Saved as enhanced LRC -
@@ -78,6 +86,7 @@ const effectiveEnd = (g: number, times: (number | null)[], ends: (number | null)
 // working on any keyboard layout
 const KEYBINDS_STORAGE = 'karaokeTimingKeys';
 const DEFAULT_KEYBINDS = { play: 'Space', tap: 'KeyS' };
+const VOLUME_STORAGE = 'karaokeTimingVolume';
 
 const NUDGE_STEPS = [-200, -20, 20, 200];
 const NEG_STEPS = NUDGE_STEPS.filter(d => d < 0); // shown left of the label
@@ -335,9 +344,11 @@ interface KaraokeTimingEditorProps {
     lyrics: string;
     onClose: () => void;
     onSave: (lyrics: string, anyTimed: boolean) => void;
+    /** Persist a trimmed track. Without it, in-editor trimming is disabled. */
+    onMediaChange?: (media: string) => void;
 }
 
-const KaraokeTimingEditor: React.FC<KaraokeTimingEditorProps> = ({ open, media, lyrics, onClose, onSave }) => {
+const KaraokeTimingEditor: React.FC<KaraokeTimingEditorProps> = ({ open, media, lyrics, onClose, onSave, onMediaChange }) => {
     const { t } = useTranslation();
 
     const [doc, setDoc] = useState<DocLine[]>([]);
@@ -349,6 +360,11 @@ const KaraokeTimingEditor: React.FC<KaraokeTimingEditorProps> = ({ open, media, 
     const [isPlaying, setIsPlaying] = useState(false);
     const [durationMs, setDurationMs] = useState(0);
     const [speed, setSpeed] = useState(1);
+    const [volume, setVolume] = useState<number>(() => {
+        const stored = Number(localStorage.getItem(VOLUME_STORAGE));
+        return Number.isFinite(stored) && stored >= 0 && stored <= 1 ? stored : 1;
+    });
+    const [muted, setMuted] = useState(false);
     const [keyBinds, setKeyBinds] = useState<{ play: string; tap: string }>(() => {
         try {
             const stored = JSON.parse(localStorage.getItem(KEYBINDS_STORAGE) || '');
@@ -365,13 +381,33 @@ const KaraokeTimingEditor: React.FC<KaraokeTimingEditorProps> = ({ open, media, 
     const [undoCount, setUndoCount] = useState(0);
     const [peaks, setPeaks] = useState<number[] | null>(null);
     const [mediaSrc, setMediaSrc] = useState<string | undefined>(undefined);
+    // Trim: a deferred edit. The trimmed WAV lives locally (and drives the
+    // waveform/playback) until Save commits it via onMediaChange, so closing
+    // without saving leaves both the track and its timings untouched.
+    const [trimmedMedia, setTrimmedMedia] = useState<string | null>(null);
+    const [trimMode, setTrimMode] = useState(false);
+    const [trimStartMs, setTrimStartMs] = useState(0);
+    const [trimEndMs, setTrimEndMs] = useState(0);
+    const [trimBusy, setTrimBusy] = useState(false);
+    const [trimProgress, setTrimProgress] = useState(0);
+    const workMedia = trimmedMedia ?? media;
 
     const mediaRef = useRef<HTMLMediaElement | null>(null);
     const timesRef = useRef<(number | null)[]>([]);
     const endsRef = useRef<(number | null)[]>([]);
-    const undoRef = useRef<{ t: (number | null)[]; e: (number | null)[] }[]>([]);
+    // Trim entries also snapshot the pre-trim track + lines so they revert too.
+    const undoRef = useRef<{
+        t: (number | null)[];
+        e: (number | null)[];
+        m?: string | null;
+        d?: DocLine[];
+    }[]>([]);
     const previewStopRef = useRef<number | null>(null);
     const finePeaksRef = useRef<Float32Array | null>(null); // 10ms buckets for the zoom strip
+    const audioBufferRef = useRef<AudioBuffer | null>(null); // decoded track, for trimming
+    const trimDragRef = useRef<'start' | 'end' | null>(null);
+    const trimStateRef = useRef({ start: 0, end: 0 });
+    trimStateRef.current = { start: trimStartMs, end: trimEndMs };
     const zoomWinRef = useRef<{ t0: number; span: number } | null>(null);
     const zoomBoxRef = useRef<HTMLDivElement | null>(null);
     const zoomCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -433,6 +469,10 @@ const KaraokeTimingEditor: React.FC<KaraokeTimingEditorProps> = ({ open, media, 
         setDurationMs(0);
         setNowMs(0);
         setPeaks(null);
+        setTrimmedMedia(null);
+        setTrimMode(false);
+        setTrimBusy(false);
+        audioBufferRef.current = null;
         const firstUntimed = parsed.times.findIndex(tm => tm === null);
         setCursor(firstUntimed === -1 ? parsed.times.length : firstUntimed);
         tapHoldRef.current = null;
@@ -444,10 +484,10 @@ const KaraokeTimingEditor: React.FC<KaraokeTimingEditorProps> = ({ open, media, 
 
     // Element src: a Blob URL (minted per open - data URLs make miserable src)
     useEffect(() => {
-        if (!open || !media) return;
-        const decoded = dataUrlToBytes(media);
+        if (!open || !workMedia) return;
+        const decoded = dataUrlToBytes(workMedia);
         if (!decoded) {
-            setMediaSrc(media);
+            setMediaSrc(workMedia);
             return () => setMediaSrc(undefined);
         }
         const buffer = new ArrayBuffer(decoded.bytes.length);
@@ -458,16 +498,17 @@ const KaraokeTimingEditor: React.FC<KaraokeTimingEditorProps> = ({ open, media, 
             URL.revokeObjectURL(url);
             setMediaSrc(undefined);
         };
-    }, [open, media]);
+    }, [open, workMedia]);
 
     // Waveform peaks (decode the audio track; videos may fail -> flat bar)
     useEffect(() => {
-        if (!open || !media) return;
+        if (!open || !workMedia) return;
         let cancelled = false;
         finePeaksRef.current = null;
+        audioBufferRef.current = null;
         (async () => {
             try {
-                const decoded = dataUrlToBytes(media);
+                const decoded = dataUrlToBytes(workMedia);
                 if (!decoded) return;
                 const AC: typeof AudioContext = window.AudioContext || (window as any).webkitAudioContext;
                 const ctx = new AC();
@@ -506,6 +547,7 @@ const KaraokeTimingEditor: React.FC<KaraokeTimingEditorProps> = ({ open, media, 
                 ctx.close();
                 if (!cancelled) {
                     finePeaksRef.current = fine;
+                    audioBufferRef.current = audio;
                     setPeaks(result);
                 }
             } catch {
@@ -513,11 +555,19 @@ const KaraokeTimingEditor: React.FC<KaraokeTimingEditorProps> = ({ open, media, 
             }
         })();
         return () => { cancelled = true; };
-    }, [open, media]);
+    }, [open, workMedia]);
 
     useEffect(() => {
         if (mediaRef.current) mediaRef.current.playbackRate = speed;
     }, [speed, mediaSrc]);
+
+    useEffect(() => {
+        if (mediaRef.current) {
+            mediaRef.current.volume = volume;
+            mediaRef.current.muted = muted;
+        }
+        try { localStorage.setItem(VOLUME_STORAGE, String(volume)); } catch { /* private mode */ }
+    }, [volume, muted, mediaSrc]);
 
     useEffect(() => {
         try { localStorage.setItem(KEYBINDS_STORAGE, JSON.stringify(keyBinds)); } catch { /* private mode */ }
@@ -646,6 +696,65 @@ const KaraokeTimingEditor: React.FC<KaraokeTimingEditorProps> = ({ open, media, 
         setDirty(true);
     };
 
+    // ---------- trim (truncate the track from either side) ----------
+
+    const enterTrimMode = () => {
+        if (!audioBufferRef.current) return;
+        setTrimStartMs(0);
+        setTrimEndMs(durationMs);
+        setTrimMode(true);
+    };
+
+    // Cut [trimStart, trimEnd] out of the track and slide every timestamp so it
+    // still lines up. The track + timings shift together; nothing leaves the
+    // editor until Save. Words that fall outside the kept window are dropped.
+    // ffmpeg.wasm re-encodes the kept window to a compact mp3.
+    const applyTrim = async () => {
+        const s = trimStartMs;
+        const e = trimEndMs;
+        if (!audioBufferRef.current || !(e - s > 50)) return;
+        setTrimBusy(true);
+        setTrimProgress(0);
+        let url: string;
+        try {
+            url = await trimMedia(workMedia, s / 1000, e / 1000, setTrimProgress);
+        } catch {
+            setTrimBusy(false);
+            window.alert(t('timing.trimError'));
+            return;
+        }
+        setTrimBusy(false);
+        // One undo step that also carries the pre-trim track and lines
+        undoRef.current.push({ t: timesRef.current, e: endsRef.current, m: trimmedMedia, d: doc });
+        if (undoRef.current.length > 100) undoRef.current.shift();
+        setUndoCount(undoRef.current.length);
+        lastStampWallRef.current = 0;
+
+        const inWindow = (ms: number) => ms >= s && ms <= e;
+        const nextTimes = timesRef.current.map(tm => (tm === null || !inWindow(tm) ? null : tm - s));
+        const nextEnds = endsRef.current.map((em, i) => {
+            if (nextTimes[i] === null || em === null) return null;
+            return Math.max(0, Math.min(e, em) - s); // clamp a fill that ran past the cut
+        });
+        const nextDoc = doc.map(line => {
+            if (line.passthrough !== null || line.origTimeMs === null) return line;
+            return { ...line, origTimeMs: inWindow(line.origTimeMs) ? line.origTimeMs - s : null };
+        });
+
+        timesRef.current = nextTimes;
+        endsRef.current = nextEnds;
+        setTimes(nextTimes);
+        setEnds(nextEnds);
+        setDoc(nextDoc);
+        setTrimmedMedia(url);
+        setSelected(-1);
+        setNowMs(0);
+        const el = mediaRef.current;
+        if (el) el.currentTime = 0;
+        setDirty(true);
+        setTrimMode(false);
+    };
+
     const undo = () => {
         const snapshot = undoRef.current.pop();
         if (!snapshot) return;
@@ -661,6 +770,9 @@ const KaraokeTimingEditor: React.FC<KaraokeTimingEditorProps> = ({ open, media, 
         }
         setTimes(snapshot.t);
         setEnds(snapshot.e);
+        // Trim snapshots also restore the track and line tags
+        if ('d' in snapshot && snapshot.d) setDoc(snapshot.d);
+        if ('m' in snapshot) setTrimmedMedia(snapshot.m ?? null);
         setDirty(true);
     };
 
@@ -914,6 +1026,7 @@ const KaraokeTimingEditor: React.FC<KaraokeTimingEditorProps> = ({ open, media, 
     };
 
     const save = () => {
+        if (trimmedMedia !== null) onMediaChange?.(trimmedMedia);
         const result = serializeDoc(doc, timesRef.current, endsRef.current);
         onSave(result.lyrics, result.anyTimed);
     };
@@ -1088,6 +1201,7 @@ const KaraokeTimingEditor: React.FC<KaraokeTimingEditorProps> = ({ open, media, 
     };
 
     const handleWaveSeek = (e: React.PointerEvent) => {
+        if (trimDragRef.current) return; // dragging a trim handle, not seeking
         const el = mediaRef.current;
         const box = waveBoxRef.current;
         if (!el || !box || !Number.isFinite(el.duration) || el.duration <= 0) return;
@@ -1095,6 +1209,33 @@ const KaraokeTimingEditor: React.FC<KaraokeTimingEditorProps> = ({ open, media, 
         const frac = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
         el.currentTime = frac * el.duration;
     };
+
+    // Drag the trim handles along the waveform (bound once; live values via ref)
+    const beginTrimDrag = (which: 'start' | 'end') => (e: React.PointerEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        trimDragRef.current = which;
+    };
+    useEffect(() => {
+        const onMove = (e: PointerEvent) => {
+            const which = trimDragRef.current;
+            const box = waveBoxRef.current;
+            if (!which || !box || durationMs <= 0) return;
+            const rect = box.getBoundingClientRect();
+            const frac = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+            const ms = Math.round(frac * durationMs);
+            const { start, end } = trimStateRef.current;
+            if (which === 'start') setTrimStartMs(Math.min(ms, end - 50));
+            else setTrimEndMs(Math.max(ms, start + 50));
+        };
+        const onUp = () => { trimDragRef.current = null; };
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+        return () => {
+            window.removeEventListener('pointermove', onMove);
+            window.removeEventListener('pointerup', onUp);
+        };
+    }, [durationMs]);
 
     // ---------- media element events ----------
 
@@ -1361,6 +1502,22 @@ const KaraokeTimingEditor: React.FC<KaraokeTimingEditorProps> = ({ open, media, 
                             <MenuItem key={v} value={v}>{v}×</MenuItem>
                         ))}
                     </Select>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 130 }}>
+                        <IconButton size="small" onClick={() => setMuted(m => !m)} title={t('timing.volume')}>
+                            {muted || volume === 0 ? <VolumeOffIcon fontSize="small" />
+                                : volume < 0.5 ? <VolumeDownIcon fontSize="small" />
+                                    : <VolumeUpIcon fontSize="small" />}
+                        </IconButton>
+                        <Slider
+                            size="small"
+                            min={0}
+                            max={100}
+                            value={muted ? 0 : Math.round(volume * 100)}
+                            onChange={(_, v) => { setMuted(false); setVolume((v as number) / 100); }}
+                            aria-label={t('timing.volume')}
+                            sx={{ width: 84 }}
+                        />
+                    </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         <Button
                             size="small"
@@ -1398,6 +1555,16 @@ const KaraokeTimingEditor: React.FC<KaraokeTimingEditorProps> = ({ open, media, 
                         ))}
                     </Box>
                     <Box sx={{ flex: 1 }} />
+                    {onMediaChange && !isVideo && (
+                        <IconButton
+                            onClick={() => (trimMode ? setTrimMode(false) : enterTrimMode())}
+                            disabled={!peaks}
+                            title={t('timing.trim')}
+                            sx={trimMode ? { color: 'var(--accent)' } : undefined}
+                        >
+                            <ContentCutIcon />
+                        </IconButton>
+                    )}
                     <IconButton onClick={undo} disabled={undoCount === 0} title={t('timing.undo')}>
                         <UndoIcon />
                     </IconButton>
@@ -1426,7 +1593,71 @@ const KaraokeTimingEditor: React.FC<KaraokeTimingEditorProps> = ({ open, media, 
                     <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
                     <Box ref={playedRef} sx={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 0, background: 'var(--primary)', opacity: 0.14, pointerEvents: 'none' }} />
                     <Box ref={playheadRef} sx={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: '2px', background: 'var(--accent)', boxShadow: '0 0 8px var(--accent-glow)', pointerEvents: 'none' }} />
+                    {trimMode && durationMs > 0 && (() => {
+                        const startPct = (trimStartMs / durationMs) * 100;
+                        const endPct = (trimEndMs / durationMs) * 100;
+                        return (
+                            <>
+                                <Box sx={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: `${startPct}%`, background: 'rgba(0,0,0,0.55)', pointerEvents: 'none' }} />
+                                <Box sx={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: `${100 - endPct}%`, background: 'rgba(0,0,0,0.55)', pointerEvents: 'none' }} />
+                                {(['start', 'end'] as const).map(which => (
+                                    <Box
+                                        key={which}
+                                        onPointerDown={beginTrimDrag(which)}
+                                        sx={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            bottom: 0,
+                                            left: `${which === 'start' ? startPct : endPct}%`,
+                                            width: 14,
+                                            ml: '-7px',
+                                            cursor: 'ew-resize',
+                                            zIndex: 2,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            '&::before': { content: '""', width: 3, height: '100%', background: 'var(--accent)' },
+                                            '&::after': { content: '""', position: 'absolute', top: '50%', transform: 'translateY(-50%)', width: 14, height: 30, borderRadius: '4px', background: 'var(--accent)', boxShadow: '0 0 8px var(--accent-glow)' },
+                                        }}
+                                    />
+                                ))}
+                            </>
+                        );
+                    })()}
                 </Box>
+
+                {/* trim controls */}
+                {trimMode && (
+                    <Box sx={{
+                        display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap',
+                        px: 1.5, py: 0.75, flexShrink: 0, borderRadius: '10px',
+                        border: '1px solid var(--accent)', background: 'var(--surface-soft)',
+                    }}>
+                        <ContentCutIcon sx={{ color: 'var(--accent)' }} fontSize="small" />
+                        <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
+                            {formatClock(trimStartMs)} → {formatClock(trimEndMs)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
+                            {t('timing.trimNewDuration', { dur: formatClock(Math.max(0, trimEndMs - trimStartMs)) })}
+                        </Typography>
+                        <Box sx={{ flex: 1 }} />
+                        <Typography variant="caption" sx={{ color: 'var(--text-secondary)', mr: 1 }}>
+                            {trimBusy ? t('timing.trimFirstRunNote') : t('timing.trimHint')}
+                        </Typography>
+                        <Button size="small" onClick={() => setTrimMode(false)} disabled={trimBusy}>
+                            {t('timing.trimCancel')}
+                        </Button>
+                        <Button
+                            size="small"
+                            variant="contained"
+                            startIcon={trimBusy ? <CircularProgress size={16} color="inherit" /> : <CheckIcon />}
+                            disabled={trimEndMs - trimStartMs <= 50 || trimBusy}
+                            onClick={applyTrim}
+                        >
+                            {trimBusy ? t('timing.trimProcessing', { pct: Math.round(trimProgress * 100) }) : t('timing.trimApply')}
+                        </Button>
+                    </Box>
+                )}
 
                 {/* fine-tune panel for the selected word */}
                 {selected >= 0 && selected < times.length && times[selected] !== null && (() => {
