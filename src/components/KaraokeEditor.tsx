@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
     Box,
     Button,
@@ -8,10 +8,12 @@ import {
     ToggleButtonGroup,
     Paper,
     IconButton,
+    Tooltip,
 } from '@mui/material';
-import { CloudUpload as CloudUploadIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { CloudUpload as CloudUploadIcon, Delete as DeleteIcon, Timer as TimerIcon } from '@mui/icons-material';
 import { LyricsFormat } from '../types/quiz';
 import { useTranslation } from '../i18n/LanguageContext';
+import KaraokeTimingEditor from './KaraokeTimingEditor';
 
 // Same line-level LRC subset the game renders: "[mm:ss.xx] line"
 // (multiple timestamps per line allowed, metadata tags like [ti:...] ignored)
@@ -37,7 +39,11 @@ export const parseLrcLines = (text: string): { timeMs: number; text: string }[] 
             tailStart = LRC_TIME_RE.lastIndex;
         }
         if (times.length === 0) continue;
-        const content = raw.slice(tailStart).trim();
+        // Enhanced-LRC word stamps ("<mm:ss.xx>word") are display noise here
+        const content = raw.slice(tailStart)
+            .replace(/<(\d{1,2}):(\d{2})(?:[.:]\d{1,3})?>/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
         times.forEach(timeMs => lines.push({ timeMs, text: content }));
     }
     return lines.sort((a, b) => a.timeMs - b.timeMs);
@@ -69,6 +75,7 @@ const KaraokeEditor: React.FC<KaraokeEditorProps> = ({
 }) => {
     const { t } = useTranslation();
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [timingOpen, setTimingOpen] = useState(false);
 
     const readFile = (file: File) => {
         if (!file.type.startsWith('audio/') && !file.type.startsWith('video/')) return;
@@ -105,6 +112,15 @@ const KaraokeEditor: React.FC<KaraokeEditorProps> = ({
         () => (lyricsFormat === 'lrc' ? parseLrcLines(lyrics) : []),
         [lyrics, lyricsFormat]
     );
+
+    // Any singable word left after stripping the LRC tags?
+    const hasWords = useMemo(() => lyrics
+        .replace(/\[(\d{1,2}):(\d{2})(?:[.:]\d{1,3})?\]/g, ' ')
+        .replace(/<(\d{1,2}):(\d{2})(?:[.:]\d{1,3})?>/g, ' ')
+        .split(/\r?\n/)
+        .some(line => !/^\s*\[[a-zA-Z#][^\]]*\]\s*$/.test(line) && line.trim().length > 0),
+        [lyrics]);
+    const canOpenTiming = !!media && hasWords;
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -173,15 +189,30 @@ const KaraokeEditor: React.FC<KaraokeEditorProps> = ({
             <Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1, flexWrap: 'wrap', gap: 1 }}>
                     <Typography variant="subtitle1">{t('karaoke.lyricsTitle')}</Typography>
-                    <ToggleButtonGroup
-                        value={lyricsFormat}
-                        exclusive
-                        size="small"
-                        onChange={(_, value) => { if (value) onLyricsFormatChange(value as LyricsFormat); }}
-                    >
-                        <ToggleButton value="plain">{t('karaoke.formatPlain')}</ToggleButton>
-                        <ToggleButton value="lrc">{t('karaoke.formatLrc')}</ToggleButton>
-                    </ToggleButtonGroup>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                        <Tooltip title={canOpenTiming ? '' : t('karaoke.timingNeedsBoth')}>
+                            <span>
+                                <Button
+                                    size="small"
+                                    variant="outlined"
+                                    startIcon={<TimerIcon />}
+                                    disabled={!canOpenTiming}
+                                    onClick={() => setTimingOpen(true)}
+                                >
+                                    {t('karaoke.timingButton')}
+                                </Button>
+                            </span>
+                        </Tooltip>
+                        <ToggleButtonGroup
+                            value={lyricsFormat}
+                            exclusive
+                            size="small"
+                            onChange={(_, value) => { if (value) onLyricsFormatChange(value as LyricsFormat); }}
+                        >
+                            <ToggleButton value="plain">{t('karaoke.formatPlain')}</ToggleButton>
+                            <ToggleButton value="lrc">{t('karaoke.formatLrc')}</ToggleButton>
+                        </ToggleButtonGroup>
+                    </Box>
                 </Box>
                 <TextField
                     fullWidth
@@ -220,6 +251,20 @@ const KaraokeEditor: React.FC<KaraokeEditorProps> = ({
                     </Paper>
                 )}
             </Box>
+
+            {media && (
+                <KaraokeTimingEditor
+                    open={timingOpen}
+                    media={media}
+                    lyrics={lyrics}
+                    onClose={() => setTimingOpen(false)}
+                    onSave={(newLyrics, anyTimed) => {
+                        onLyricsChange(newLyrics);
+                        onLyricsFormatChange(anyTimed ? 'lrc' : 'plain');
+                        setTimingOpen(false);
+                    }}
+                />
+            )}
         </Box>
     );
 };
