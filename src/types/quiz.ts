@@ -87,7 +87,8 @@ export enum QuestionType {
   Choice = 'choice',
   TextAnswer = 'text-answer',
   ProgressiveReveal = 'progressive-reveal',
-  Karaoke = 'karaoke'
+  Karaoke = 'karaoke',
+  Crocodile = 'crocodile'
 }
 
 export enum RuleType {

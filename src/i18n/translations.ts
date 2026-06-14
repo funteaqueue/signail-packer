@@ -76,6 +76,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'question.correctAnswerHelper': 'Players submit numbers; the closest one wins',
     'question.durationSeconds': 'Duration (seconds)',
     'question.durationHelper': 'Time window to submit answers',
+    'question.crocodileDurationHelper': 'Time window for everyone to guess the response',
     'question.perfectBonus': 'Perfect guess bonus',
     'question.perfectBonusHelper': 'Extra points for the exact answer. 0 = none',
     'question.questionTitle': 'Question',
@@ -95,6 +96,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'questionType.textAnswer': 'Text Answer',
     'questionType.progressiveReveal': 'Progressive Reveal',
     'questionType.karaoke': 'Karaoke',
+    'questionType.crocodile': 'Crocodile',
 
     // Question modal tabs
     'tab.findACatEditor': 'Find-a-Cat Editor',
@@ -202,6 +204,45 @@ export const translations: Record<Language, Record<string, string>> = {
     'mediaTrim.processing': 'Processing… {pct}%',
     'mediaTrim.firstRunNote': 'The first trim downloads the converter (~30 MB); later trims are faster.',
     'mediaTrim.error': 'Could not trim this file. Try a different format.',
+
+    // Audio recorder
+    'audioRec.title': 'Record audio',
+    'audioRec.start': 'Start recording',
+    'audioRec.stop': 'Stop',
+    'audioRec.retake': 'Record again',
+    'audioRec.insert': 'Insert',
+    'audioRec.error': 'Could not access the microphone. Please allow microphone access and try again.',
+
+    // YouTube import
+    'youtube.title': 'Insert video',
+    'youtube.hint': 'Paste a YouTube (or other supported) link. The video is downloaded and embedded as base64, so it plays offline.',
+    'youtube.urlLabel': 'Video URL',
+    'youtube.invalid': 'Enter a valid video link starting with http(s).',
+    'youtube.download': 'Download',
+    'youtube.resolving': 'Resolving video…',
+    'youtube.downloading': 'Downloading…',
+    'youtube.downloadingPct': 'Downloading… {pct}%',
+    'youtube.fallback': 'Primary downloader unavailable — trying backup…',
+    'youtube.fallbackPct': 'Downloading via backup… {pct}%',
+    'youtube.error': 'Could not download this video. The link may be unsupported or private, or both downloaders are unavailable.',
+    'youtube.insert': 'Insert',
+
+    // Paint / drawing
+    'paint.title': 'Draw',
+    'paint.titleEdit': 'Edit image',
+    'paint.brushSize': 'Size',
+    'paint.brush': 'Brush',
+    'paint.fill': 'Fill',
+    'paint.eraser': 'Eraser',
+    'paint.bg': 'Background:',
+    'paint.bgColor': 'Background color',
+    'paint.transparent': 'Transparent',
+    'paint.image': 'Image',
+    'paint.undo': 'Undo',
+    'paint.clear': 'Clear',
+    'paint.customColor': 'Custom color',
+    'paint.insert': 'Insert',
+    'paint.save': 'Save',
 
     // Choice options editor
     'choice.multipleCorrect': 'Multiple correct answers',
@@ -347,6 +388,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'question.correctAnswerHelper': 'Гравці надсилають числа; перемагає найближче',
     'question.durationSeconds': 'Тривалість (секунд)',
     'question.durationHelper': 'Час на надсилання відповідей',
+    'question.crocodileDurationHelper': 'Час, за який усі мають відгадати відповідь',
     'question.perfectBonus': 'Бонус за точну відповідь',
     'question.perfectBonusHelper': 'Додаткові бали за абсолютно точну відповідь. 0 = без бонусу',
     'question.questionTitle': 'Питання',
@@ -366,6 +408,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'questionType.textAnswer': 'Текстова відповідь',
     'questionType.progressiveReveal': 'Поступове відкриття',
     'questionType.karaoke': 'Караоке',
+    'questionType.crocodile': 'Крокодил',
 
     // Question modal tabs
     'tab.findACatEditor': 'Редактор «Знайди кота»',
@@ -473,6 +516,45 @@ export const translations: Record<Language, Record<string, string>> = {
     'mediaTrim.processing': 'Обробка… {pct}%',
     'mediaTrim.firstRunNote': 'Перше обрізання завантажує конвертер (~30 МБ); наступні — швидші.',
     'mediaTrim.error': 'Не вдалося обрізати цей файл. Спробуйте інший формат.',
+
+    // Audio recorder
+    'audioRec.title': 'Записати аудіо',
+    'audioRec.start': 'Почати запис',
+    'audioRec.stop': 'Зупинити',
+    'audioRec.retake': 'Записати знову',
+    'audioRec.insert': 'Вставити',
+    'audioRec.error': 'Не вдалося отримати доступ до мікрофона. Дозвольте доступ до мікрофона та спробуйте ще раз.',
+
+    // YouTube import
+    'youtube.title': 'Вставити відео',
+    'youtube.hint': 'Вставте посилання на YouTube (чи інший підтримуваний сайт). Відео завантажиться та вбудується як base64, тож відтворюватиметься офлайн.',
+    'youtube.urlLabel': 'Посилання на відео',
+    'youtube.invalid': 'Введіть дійсне посилання, що починається з http(s).',
+    'youtube.download': 'Завантажити',
+    'youtube.resolving': 'Отримання відео…',
+    'youtube.downloading': 'Завантаження…',
+    'youtube.downloadingPct': 'Завантаження… {pct}%',
+    'youtube.fallback': 'Основний завантажувач недоступний — пробуємо резервний…',
+    'youtube.fallbackPct': 'Завантаження через резервний… {pct}%',
+    'youtube.error': 'Не вдалося завантажити це відео. Можливо, посилання не підтримується чи приватне, або обидва завантажувачі недоступні.',
+    'youtube.insert': 'Вставити',
+
+    // Paint / drawing
+    'paint.title': 'Малювати',
+    'paint.titleEdit': 'Редагувати зображення',
+    'paint.brushSize': 'Розмір',
+    'paint.brush': 'Пензель',
+    'paint.fill': 'Заливка',
+    'paint.eraser': 'Гумка',
+    'paint.bg': 'Фон:',
+    'paint.bgColor': 'Колір фону',
+    'paint.transparent': 'Прозорий',
+    'paint.image': 'Зображення',
+    'paint.undo': 'Скасувати',
+    'paint.clear': 'Очистити',
+    'paint.customColor': 'Власний колір',
+    'paint.insert': 'Вставити',
+    'paint.save': 'Зберегти',
 
     // Choice options editor
     'choice.multipleCorrect': 'Кілька правильних відповідей',

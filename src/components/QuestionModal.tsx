@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import { Question, QuestionType, Rule, RuleType } from '../types/quiz';
 import { isContentEmpty } from '../utils/contentUtils';
+import { embedExternalImages } from '../utils/embedImages';
 import { useTranslation } from '../i18n/LanguageContext';
 import RuleForm from './RuleForm';
 import FindACatEditor from './FindACatEditor';
@@ -200,6 +201,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
     const isTextAnswer = formData.type === QuestionType.TextAnswer;
     const isProgressiveReveal = formData.type === QuestionType.ProgressiveReveal;
     const isKaraoke = formData.type === QuestionType.Karaoke;
+    const isCrocodile = formData.type === QuestionType.Crocodile;
 
     const isFindACatValid = !isFindACat || (
         !!formData.task?.trim() &&
@@ -250,7 +252,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
         return null;
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         let updatedQuestion: Question;
 
         const defaultPriceValue = {
@@ -265,7 +267,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
         if (!isContentEmpty(draftRule.content)) {
             const ruleToAdd = {
                 ...draftRule,
-                content: convertMediaTags(draftRule.content!),
+                content: convertMediaTags(await embedExternalImages(draftRule.content!)),
             } as Rule;
             currentRules.push(ruleToAdd);
         }
@@ -274,7 +276,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
         if (!isContentEmpty(draftAfterRound.content)) {
             const ruleToAdd = {
                 ...draftAfterRound,
-                content: convertMediaTags(draftAfterRound.content!),
+                content: convertMediaTags(await embedExternalImages(draftAfterRound.content!)),
             } as Rule;
             currentAfterRound.push(ruleToAdd);
         }
@@ -366,7 +368,8 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 map: undefined,
                 // Close-enough keeps a numeric answer and an explicit submission window
                 answer: isCloseEnough ? parseFloat(answerInputValue) : undefined,
-                duration: isCloseEnough ? (formData.duration || 30) : undefined,
+                // Close-enough's submission window / crocodile's guess countdown
+                duration: (isCloseEnough || isCrocodile) ? (formData.duration || 30) : undefined,
                 perfect_bonus: isCloseEnough ? (formData.perfect_bonus || undefined) : undefined,
                 // Choice keeps its options and single/multiple mode
                 multiple: isChoice ? !!formData.multiple : undefined,
@@ -530,6 +533,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                         <MenuItem value={QuestionType.TextAnswer}>{t('questionType.textAnswer')}</MenuItem>
                         <MenuItem value={QuestionType.ProgressiveReveal}>{t('questionType.progressiveReveal')}</MenuItem>
                         <MenuItem value={QuestionType.Karaoke}>{t('questionType.karaoke')}</MenuItem>
+                        <MenuItem value={QuestionType.Crocodile}>{t('questionType.crocodile')}</MenuItem>
                     </Select>
                 </Box>
             </DialogTitle>
@@ -699,6 +703,19 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                         </TabPanel>
 
                         <TabPanel value={tabValue} index={1}>
+                            {isCrocodile && (
+                                <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                                    <TextField
+                                        label={t('question.durationSeconds')}
+                                        type="number"
+                                        value={formData.duration || 30}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, duration: parseInt(e.target.value) || 0 }))}
+                                        onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                                        sx={{ minWidth: '180px' }}
+                                        helperText={t('question.crocodileDurationHelper')}
+                                    />
+                                </Box>
+                            )}
                             {isCloseEnough && (
                                 <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
                                     <TextField

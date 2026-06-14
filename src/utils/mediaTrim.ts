@@ -69,7 +69,12 @@ export const trimMedia = async (
     const dur = Math.max(0.05, endSec - startSec);
 
     const ffmpeg = await loadFFmpeg();
-    const onProg = ({ progress }: { progress: number }) => onProgress?.(Math.min(1, Math.max(0, progress)));
+    // ffmpeg.wasm's `progress` ratio is processedTime / fullInputDuration, so a
+    // short cut out of a long clip stalls at a low value then snaps to 1 at the
+    // end. Derive progress ourselves from `time` (microseconds of output
+    // produced) against the trim duration instead.
+    const onProg = ({ time }: { progress: number; time: number }) =>
+        onProgress?.(Math.min(1, Math.max(0, time / 1e6 / dur)));
     if (onProgress) ffmpeg.on('progress', onProg);
     try {
         await ffmpeg.writeFile(inName, await fetchFile(dataUrl));

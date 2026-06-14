@@ -59,12 +59,33 @@ const MediaTrimmer: React.FC<MediaTrimmerProps> = ({ open, media, onClose, onApp
         stopAtRef.current = null;
     }, [open, media]);
 
+    const setFromDuration = (d: number) => {
+        if (Number.isFinite(d) && d > 0) {
+            setDuration(d);
+            setRange([0, d]);
+        }
+    };
+
     const handleLoaded = () => {
         const el = mediaRef.current;
-        if (el && Number.isFinite(el.duration) && el.duration > 0) {
-            setDuration(el.duration);
-            setRange([0, el.duration]);
+        if (!el) return;
+        // MediaRecorder webm/ogg clips report Infinity until the element is
+        // seeked past the end — force a seek, then read the real duration.
+        if (!Number.isFinite(el.duration) || el.duration === 0) {
+            const onSeeked = () => {
+                el.removeEventListener('seeked', onSeeked);
+                setFromDuration(el.duration);
+                el.currentTime = 0;
+            };
+            el.addEventListener('seeked', onSeeked);
+            try {
+                el.currentTime = 1e7;
+            } catch {
+                /* ignore — some sources reject large seeks */
+            }
+            return;
         }
+        setFromDuration(el.duration);
     };
 
     // Stop preview at the end of the selection

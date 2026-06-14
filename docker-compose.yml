@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   app:
     build:
@@ -15,4 +13,28 @@ services:
       - FAST_REFRESH=true
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
-    command: sh -c "npm install --legacy-peer-deps && npm start" 
+      # YouTube/video import endpoints. These are read by CRA at build/start and
+      # baked into the bundle, so they must be URLs the *browser* (not the
+      # container) can reach. localhost:9000 is the cobalt container's published
+      # port; the fallback is your direct-download API.
+      - REACT_APP_COBALT_API=http://localhost:9000
+      - REACT_APP_FALLBACK_API=https://ytproxy.critfail.art
+    depends_on:
+      - cobalt
+    command: sh -c "npm install --legacy-peer-deps && npm start"
+
+  # Self-hosted cobalt download API (https://github.com/imputnet/cobalt).
+  # The app POSTs a video URL here and gets back a tunnel/stream URL to fetch.
+  cobalt:
+    image: ghcr.io/imputnet/cobalt:10
+    init: true
+    read_only: true
+    restart: unless-stopped
+    container_name: cobalt-api
+    ports:
+      - "9000:9000/tcp"
+    environment:
+      # Must match the URL the browser uses to reach this container, because
+      # cobalt builds its tunnel download URLs from it.
+      API_URL: "http://localhost:9000/"
+      # CORS is wildcard by default, so the dev app at localhost:3000 can call it.

@@ -19,8 +19,12 @@ import {
 import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon, Close as CloseIcon, ContentCut as ContentCutIcon } from '@mui/icons-material';
 import { Rule, RuleType } from '../types/quiz';
 import { isContentEmpty } from '../utils/contentUtils';
+import { embedExternalImages } from '../utils/embedImages';
 import { useTranslation } from '../i18n/LanguageContext';
 import MediaTrimmer from './MediaTrimmer';
+import AudioRecorder from './AudioRecorder';
+import PaintCanvas from './PaintCanvas';
+import YoutubeImporter from './YoutubeImporter';
 import ReactQuill, { Quill } from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import '../quill-theme.css';
@@ -111,11 +115,11 @@ const RuleForm: React.FC<RuleFormProps> = ({
     }
   }
 
-  const handleAddRule = () => {
+  const handleAddRule = async () => {
     if (draftRule.type && !isContentEmpty(draftRule.content)) {
       const ruleToSave = {
         ...draftRule,
-        content: convertMediaTags(draftRule.content!),
+        content: convertMediaTags(await embedExternalImages(draftRule.content!)),
       } as Rule;
 
       if (editingIndex !== null) {
@@ -167,6 +171,11 @@ const RuleForm: React.FC<RuleFormProps> = ({
   const audioInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [trimUrl, setTrimUrl] = useState<string | null>(null);
+  const [recordOpen, setRecordOpen] = useState(false);
+  const [paintOpen, setPaintOpen] = useState(false);
+  const [youtubeOpen, setYoutubeOpen] = useState(false);
+  const [paintInitial, setPaintInitial] = useState<string | null>(null);
+  const paintReplaceIndexRef = useRef<number | null>(null);
 
   const draftMediaUrl = findMediaDataUrl(draftRule.content);
 
@@ -222,12 +231,74 @@ const RuleForm: React.FC<RuleFormProps> = ({
     reader.readAsDataURL(file);
   };
 
+  // Embed an already-encoded data URL (e.g. a recording or a drawing) at the cursor
+  const insertMediaUrl = (format: 'image' | 'audio' | 'video', url: string) => {
+    const quill = quillRef.current?.getEditor();
+    if (!quill) return;
+    const range = quill.getSelection(true) || { index: quill.getLength(), length: 0 };
+    quill.insertEmbed(range.index, format, url);
+    quill.setSelection(range.index + 1, 0);
+  };
+
   const videoHandler = () => {
     fileInputRef.current?.click();
   };
 
   const audioHandler = () => {
     audioInputRef.current?.click();
+  };
+
+  const recorderHandler = () => {
+    setRecordOpen(true);
+  };
+
+  const youtubeHandler = () => {
+    setYoutubeOpen(true);
+  };
+
+  // Open the paint tool. If the cursor sits on an embedded image, load that
+  // image for editing and remember where to put the result back; otherwise
+  // start a blank drawing inserted at the cursor.
+  const paintHandler = () => {
+    const quill = quillRef.current?.getEditor();
+    let initial: string | null = null;
+    let replaceIndex: number | null = null;
+    if (quill) {
+      const range = quill.getSelection(true) || { index: quill.getLength(), length: 0 };
+      const ops = quill.getContents().ops || [];
+      let index = 0;
+      for (const op of ops) {
+        if (typeof op.insert === 'string') {
+          index += op.insert.length;
+        } else if (op.insert && typeof op.insert === 'object') {
+          const src = (op.insert as any).image;
+          if (src !== undefined && (index === range.index || index === range.index - 1)) {
+            initial = src as string;
+            replaceIndex = index;
+            break;
+          }
+          index += 1;
+        }
+      }
+    }
+    paintReplaceIndexRef.current = replaceIndex;
+    setPaintInitial(initial);
+    setPaintOpen(true);
+  };
+
+  // Apply the drawing: replace the image being edited in place, or insert a new one
+  const handlePaintApply = (url: string) => {
+    const quill = quillRef.current?.getEditor();
+    const replaceIndex = paintReplaceIndexRef.current;
+    if (quill && replaceIndex !== null) {
+      quill.deleteText(replaceIndex, 1, 'user');
+      quill.insertEmbed(replaceIndex, 'image', url, 'user');
+      quill.setSelection(replaceIndex + 1, 0);
+    } else {
+      insertMediaUrl('image', url);
+    }
+    paintReplaceIndexRef.current = null;
+    setPaintInitial(null);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -273,12 +344,15 @@ const RuleForm: React.FC<RuleFormProps> = ({
         [{ 'header': [1, 2, false] }],
         ['bold', 'italic', 'underline', 'strike', 'blockquote'],
         [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'indent': '-1' }, { 'indent': '+1' }],
-        ['link', 'image', 'video', 'audio'],
+        ['link', 'image', 'video', 'audio', 'recorder', 'paint', 'youtube'],
         ['clean'],
       ],
       handlers: {
         video: videoHandler,
         audio: audioHandler,
+        recorder: recorderHandler,
+        paint: paintHandler,
+        youtube: youtubeHandler,
       },
     },
   }), []);
@@ -457,6 +531,25 @@ const RuleForm: React.FC<RuleFormProps> = ({
         media={trimUrl || ''}
         onClose={() => setTrimUrl(null)}
         onApply={handleTrimApply}
+      />
+
+      <AudioRecorder
+        open={recordOpen}
+        onClose={() => setRecordOpen(false)}
+        onApply={(url) => insertMediaUrl('audio', url)}
+      />
+
+      <PaintCanvas
+        open={paintOpen}
+        initialImage={paintInitial}
+        onClose={() => { setPaintOpen(false); setPaintInitial(null); paintReplaceIndexRef.current = null; }}
+        onApply={handlePaintApply}
+      />
+
+      <YoutubeImporter
+        open={youtubeOpen}
+        onClose={() => setYoutubeOpen(false)}
+        onApply={(url) => insertMediaUrl('video', url)}
       />
     </Box>
   );
