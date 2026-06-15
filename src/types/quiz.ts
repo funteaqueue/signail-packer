@@ -43,9 +43,13 @@ export interface Question {
   /** Karaoke lyrics: plain text or LRC "[mm:ss.xx] line" depending on lyrics_format */
   lyrics?: string;
   lyrics_format?: LyricsFormat;
+  /** Crocodile scoring mode: 'fastest' (only the quickest correct guesser scores) or 'dixit' (everyone submits a text guess and anyone can score) */
+  crocodile_mode?: CrocodileMode;
 }
 
 export type LyricsFormat = 'plain' | 'lrc';
+
+export type CrocodileMode = 'fastest' | 'dixit';
 
 export interface ChoiceOption {
   content: string;

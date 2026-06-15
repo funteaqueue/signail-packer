@@ -103,6 +103,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
         media: '',
         lyrics: '',
         lyrics_format: 'plain',
+        crocodile_mode: 'fastest',
     });
 
     const [draftRule, setDraftRule] = useState<Partial<Rule>>({
@@ -162,6 +163,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 media: '',
                 lyrics: '',
                 lyrics_format: 'plain',
+                crocodile_mode: 'fastest',
             });
             setIncorrectInputValue((-defaultPrice).toString());
             setCorrectInputValue(defaultPrice.toString());
@@ -354,6 +356,35 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 effect: undefined,
                 curve: undefined,
             } as Question;
+        } else if (formData.type === QuestionType.Crocodile) {
+            // Crocodile shows the prompt only to the chosen performer; there is no
+            // pre-authored answer (the performer creates it live), so after_round
+            // stays empty. The mode decides how the rest of the table scores.
+            updatedQuestion = {
+                ...formData,
+                id: formData.id || Date.now(),
+                type: QuestionType.Crocodile,
+                price: formData.price || defaultPriceValue,
+                rules: currentRules,
+                after_round: [],
+                duration: formData.duration || 30,
+                crocodile_mode: formData.crocodile_mode || 'fastest',
+                task: undefined,
+                name: undefined,
+                image: undefined,
+                map: undefined,
+                answer: undefined,
+                perfect_bonus: undefined,
+                max_clicks: undefined,
+                first_place_bonus: undefined,
+                multiple: undefined,
+                options: undefined,
+                effect: undefined,
+                curve: undefined,
+                media: undefined,
+                lyrics: undefined,
+                lyrics_format: undefined,
+            } as Question;
         } else {
             updatedQuestion = {
                 ...formData,
@@ -368,8 +399,8 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 map: undefined,
                 // Close-enough keeps a numeric answer and an explicit submission window
                 answer: isCloseEnough ? parseFloat(answerInputValue) : undefined,
-                // Close-enough's submission window / crocodile's guess countdown
-                duration: (isCloseEnough || isCrocodile) ? (formData.duration || 30) : undefined,
+                // Close-enough's submission window
+                duration: isCloseEnough ? (formData.duration || 30) : undefined,
                 perfect_bonus: isCloseEnough ? (formData.perfect_bonus || undefined) : undefined,
                 // Choice keeps its options and single/multiple mode
                 multiple: isChoice ? !!formData.multiple : undefined,
@@ -564,6 +595,9 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                         <Tab key="options" label={t('tab.options')} />,
                         <Tab key="answer" label={t('tab.answer')} />,
                         <Tab key="price" label={t('tab.price')} />
+                    ] : isCrocodile ? [
+                        <Tab key="question" label={t('tab.question')} />,
+                        <Tab key="price" label={t('tab.price')} />
                     ] : [
                         <Tab key="question" label={t('tab.question')} />,
                         <Tab key="answer" label={t('tab.answer')} />,
@@ -689,6 +723,56 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                             {renderPriceFields()}
                         </TabPanel>
                     </>
+                ) : isCrocodile ? (
+                    <>
+                        <TabPanel value={tabValue} index={0}>
+                            <Box sx={{ display: 'flex', gap: 2, mb: 3, alignItems: 'flex-start' }}>
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                    <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
+                                        {t('question.crocodileMode')}
+                                    </Typography>
+                                    <Select
+                                        value={formData.crocodile_mode || 'fastest'}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, crocodile_mode: e.target.value as 'fastest' | 'dixit' }))}
+                                        size="small"
+                                        sx={{
+                                            minWidth: '240px',
+                                            background: 'var(--input-bg)',
+                                            border: '1px solid var(--glass-border)',
+                                            '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+                                        }}
+                                    >
+                                        <MenuItem value="fastest">{t('question.crocodileModeFastest')}</MenuItem>
+                                        <MenuItem value="dixit">{t('question.crocodileModeDixit')}</MenuItem>
+                                    </Select>
+                                    <Typography variant="caption" sx={{ color: 'var(--text-muted)', maxWidth: '320px' }}>
+                                        {t('question.crocodileModeHelper')}
+                                    </Typography>
+                                </Box>
+                                <TextField
+                                    label={t('question.durationSeconds')}
+                                    type="number"
+                                    value={formData.duration || 30}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, duration: parseInt(e.target.value) || 0 }))}
+                                    onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                                    sx={{ minWidth: '180px' }}
+                                    helperText={t('question.crocodileDurationHelper')}
+                                />
+                            </Box>
+                            <RuleForm
+                                rules={formData.rules || []}
+                                onRulesChange={handleRulesChange}
+                                title={t('question.questionTitle')}
+                                draftRule={draftRule}
+                                onDraftRuleChange={setDraftRule}
+                                buttonLabel={t('question.addQuestion')}
+                            />
+                        </TabPanel>
+
+                        <TabPanel value={tabValue} index={1}>
+                            {renderPriceFields()}
+                        </TabPanel>
+                    </>
                 ) : (
                     <>
                         <TabPanel value={tabValue} index={0}>
@@ -703,19 +787,6 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                         </TabPanel>
 
                         <TabPanel value={tabValue} index={1}>
-                            {isCrocodile && (
-                                <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-                                    <TextField
-                                        label={t('question.durationSeconds')}
-                                        type="number"
-                                        value={formData.duration || 30}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, duration: parseInt(e.target.value) || 0 }))}
-                                        onWheel={(e) => (e.target as HTMLInputElement).blur()}
-                                        sx={{ minWidth: '180px' }}
-                                        helperText={t('question.crocodileDurationHelper')}
-                                    />
-                                </Box>
-                            )}
                             {isCloseEnough && (
                                 <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
                                     <TextField
