@@ -1,0 +1,50 @@
+# Production stack: static-served SPA + the two media download backends.
+#
+# Unlike docker-compose.yml (dev), there are no source mounts and no dev server.
+# The app is built once into a static bundle and served by `serve`.
+#
+# The REACT_APP_* and *_API URLs below must be reachable by the END USER's
+# browser. For a real deployment behind a domain, override them via a .env file
+# (see the variables consumed with `${VAR:-default}` syntax) or your orchestrator.
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+      args:
+        # Baked into the static bundle at build time — must be browser-reachable.
+        REACT_APP_YTDLP_API: ${REACT_APP_YTDLP_API:-http://localhost:9001}
+        REACT_APP_COBALT_API: ${REACT_APP_COBALT_API:-http://localhost:9000}
+        REACT_APP_FALLBACK_API: ${REACT_APP_FALLBACK_API:-https://ytproxy.critfail.art}
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3005}:3005"
+    depends_on:
+      - cobalt
+      - ytdlp
+
+  # yt-dlp download API — primary media path.
+  ytdlp:
+    build:
+      context: ./ytdlp-service
+      dockerfile: Dockerfile
+    init: true
+    restart: unless-stopped
+    container_name: ytdlp-api
+    ports:
+      - "${YTDLP_PORT:-9001}:9001/tcp"
+
+  # Self-hosted cobalt download API — secondary media path.
+  cobalt:
+    image: ghcr.io/imputnet/cobalt:10
+    init: true
+    read_only: true
+    restart: unless-stopped
+    container_name: cobalt-api
+    ports:
+      - "${COBALT_PORT:-9000}:9000/tcp"
+    environment:
+      # Must match the URL the browser uses to reach this container, because
+      # cobalt builds its tunnel download URLs from it.
+      API_URL: "${COBALT_API_URL:-http://localhost:9000/}"

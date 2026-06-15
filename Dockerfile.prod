@@ -1,0 +1,43 @@
+# Production build for the quiz editor SPA.
+#
+# CRA inlines every REACT_APP_* variable into the static bundle at *build time*,
+# and those URLs must be reachable by the **browser**, not the container. So we
+# accept them as build args here and pass them through to `npm run build`.
+
+# ---- Build stage ---------------------------------------------------------
+FROM node:18-alpine AS build
+
+WORKDIR /app
+
+# Media import endpoints baked into the bundle. Override per-deployment via
+# docker-compose build args or `--build-arg`.
+ARG REACT_APP_YTDLP_API=http://localhost:9001
+ARG REACT_APP_COBALT_API=http://localhost:9000
+ARG REACT_APP_FALLBACK_API=https://ytproxy.critfail.art
+ENV REACT_APP_YTDLP_API=$REACT_APP_YTDLP_API \
+    REACT_APP_COBALT_API=$REACT_APP_COBALT_API \
+    REACT_APP_FALLBACK_API=$REACT_APP_FALLBACK_API \
+    NODE_ENV=production
+
+# Install dependencies against the lockfile first for better layer caching.
+COPY package*.json ./
+RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+
+# Build the optimized, tree-shaken static bundle.
+COPY . .
+RUN npm run build
+
+# ---- Serve stage ---------------------------------------------------------
+FROM node:18-alpine AS production
+
+WORKDIR /app
+
+# `serve` is a tiny static file server; -s rewrites all routes to index.html
+# so client-side routing works.
+RUN npm install -g serve
+
+# Only the built assets are needed at runtime.
+COPY --from=build /app/build ./build
+
+EXPOSE 3005
+CMD ["serve", "-s", "build", "-l", "3005"]
