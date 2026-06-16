@@ -104,6 +104,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
         lyrics: '',
         lyrics_format: 'plain',
         crocodile_mode: 'fastest',
+        vote_mode: 'open',
     });
 
     const [draftRule, setDraftRule] = useState<Partial<Rule>>({
@@ -164,6 +165,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 lyrics: '',
                 lyrics_format: 'plain',
                 crocodile_mode: 'fastest',
+                vote_mode: 'open',
             });
             setIncorrectInputValue((-defaultPrice).toString());
             setCorrectInputValue(defaultPrice.toString());
@@ -204,6 +206,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
     const isProgressiveReveal = formData.type === QuestionType.ProgressiveReveal;
     const isKaraoke = formData.type === QuestionType.Karaoke;
     const isCrocodile = formData.type === QuestionType.Crocodile;
+    const isVoting = formData.type === QuestionType.Voting;
 
     const isFindACatValid = !isFindACat || (
         !!formData.task?.trim() &&
@@ -385,6 +388,37 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 lyrics: undefined,
                 lyrics_format: undefined,
             } as Question;
+        } else if (formData.type === QuestionType.Voting) {
+            // Voting shows the prompt to everyone, collects an answer from each
+            // player, then runs a vote. The authored answer (after_round) stays
+            // empty — the players' answers are the content. vote_mode decides
+            // whether tallies are visible live.
+            updatedQuestion = {
+                ...formData,
+                id: formData.id || Date.now(),
+                type: QuestionType.Voting,
+                price: formData.price || defaultPriceValue,
+                rules: currentRules,
+                after_round: [],
+                duration: formData.duration || 60,
+                vote_mode: formData.vote_mode || 'open',
+                task: undefined,
+                name: undefined,
+                image: undefined,
+                map: undefined,
+                answer: undefined,
+                perfect_bonus: undefined,
+                max_clicks: undefined,
+                first_place_bonus: undefined,
+                multiple: undefined,
+                options: undefined,
+                effect: undefined,
+                curve: undefined,
+                media: undefined,
+                lyrics: undefined,
+                lyrics_format: undefined,
+                crocodile_mode: undefined,
+            } as Question;
         } else {
             updatedQuestion = {
                 ...formData,
@@ -565,6 +599,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                         <MenuItem value={QuestionType.ProgressiveReveal}>{t('questionType.progressiveReveal')}</MenuItem>
                         <MenuItem value={QuestionType.Karaoke}>{t('questionType.karaoke')}</MenuItem>
                         <MenuItem value={QuestionType.Crocodile}>{t('questionType.crocodile')}</MenuItem>
+                        <MenuItem value={QuestionType.Voting}>{t('questionType.voting')}</MenuItem>
                     </Select>
                 </Box>
             </DialogTitle>
@@ -596,6 +631,9 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                         <Tab key="answer" label={t('tab.answer')} />,
                         <Tab key="price" label={t('tab.price')} />
                     ] : isCrocodile ? [
+                        <Tab key="question" label={t('tab.question')} />,
+                        <Tab key="price" label={t('tab.price')} />
+                    ] : isVoting ? [
                         <Tab key="question" label={t('tab.question')} />,
                         <Tab key="price" label={t('tab.price')} />
                     ] : [
@@ -757,6 +795,56 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                                     onWheel={(e) => (e.target as HTMLInputElement).blur()}
                                     sx={{ minWidth: '180px' }}
                                     helperText={t('question.crocodileDurationHelper')}
+                                />
+                            </Box>
+                            <RuleForm
+                                rules={formData.rules || []}
+                                onRulesChange={handleRulesChange}
+                                title={t('question.questionTitle')}
+                                draftRule={draftRule}
+                                onDraftRuleChange={setDraftRule}
+                                buttonLabel={t('question.addQuestion')}
+                            />
+                        </TabPanel>
+
+                        <TabPanel value={tabValue} index={1}>
+                            {renderPriceFields()}
+                        </TabPanel>
+                    </>
+                ) : isVoting ? (
+                    <>
+                        <TabPanel value={tabValue} index={0}>
+                            <Box sx={{ display: 'flex', gap: 2, mb: 3, alignItems: 'flex-start' }}>
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                    <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
+                                        {t('question.voteMode')}
+                                    </Typography>
+                                    <Select
+                                        value={formData.vote_mode || 'open'}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, vote_mode: e.target.value as 'open' | 'closed' }))}
+                                        size="small"
+                                        sx={{
+                                            minWidth: '240px',
+                                            background: 'var(--input-bg)',
+                                            border: '1px solid var(--glass-border)',
+                                            '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+                                        }}
+                                    >
+                                        <MenuItem value="open">{t('question.voteModeOpen')}</MenuItem>
+                                        <MenuItem value="closed">{t('question.voteModeClosed')}</MenuItem>
+                                    </Select>
+                                    <Typography variant="caption" sx={{ color: 'var(--text-muted)', maxWidth: '320px' }}>
+                                        {t('question.voteModeHelper')}
+                                    </Typography>
+                                </Box>
+                                <TextField
+                                    label={t('question.durationSeconds')}
+                                    type="number"
+                                    value={formData.duration || 60}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, duration: parseInt(e.target.value) || 0 }))}
+                                    onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                                    sx={{ minWidth: '180px' }}
+                                    helperText={t('question.votingDurationHelper')}
                                 />
                             </Box>
                             <RuleForm

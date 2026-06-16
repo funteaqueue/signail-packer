@@ -15,11 +15,13 @@ import {
     Delete as DeleteIcon,
     Timer as TimerIcon,
     ContentCut as ContentCutIcon,
+    Link as LinkIcon,
 } from '@mui/icons-material';
 import { LyricsFormat } from '../types/quiz';
 import { useTranslation } from '../i18n/LanguageContext';
 import KaraokeTimingEditor from './KaraokeTimingEditor';
 import AudioTrimmer from './AudioTrimmer';
+import MediaImporter from './MediaImporter';
 
 // Same line-level LRC subset the game renders: "[mm:ss.xx] line"
 // (multiple timestamps per line allowed, metadata tags like [ti:...] ignored)
@@ -83,6 +85,7 @@ const KaraokeEditor: React.FC<KaraokeEditorProps> = ({
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [timingOpen, setTimingOpen] = useState(false);
     const [trimOpen, setTrimOpen] = useState(false);
+    const [importOpen, setImportOpen] = useState(false);
 
     const readFile = (file: File) => {
         if (!file.type.startsWith('audio/') && !file.type.startsWith('video/')) return;
@@ -151,13 +154,22 @@ const KaraokeEditor: React.FC<KaraokeEditorProps> = ({
                             gap: 2,
                         }}
                     >
-                        <Button
-                            variant="contained"
-                            startIcon={<CloudUploadIcon />}
-                            onClick={() => fileInputRef.current?.click()}
-                        >
-                            {t('karaoke.uploadButton')}
-                        </Button>
+                        <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', justifyContent: 'center' }}>
+                            <Button
+                                variant="contained"
+                                startIcon={<CloudUploadIcon />}
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                {t('karaoke.uploadButton')}
+                            </Button>
+                            <Button
+                                variant="outlined"
+                                startIcon={<LinkIcon />}
+                                onClick={() => setImportOpen(true)}
+                            >
+                                {t('media.fromLink')}
+                            </Button>
+                        </Box>
                         <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
                             {t('karaoke.dropHint')}
                         </Typography>
@@ -274,6 +286,13 @@ const KaraokeEditor: React.FC<KaraokeEditorProps> = ({
                     </Paper>
                 )}
             </Box>
+
+            <MediaImporter
+                open={importOpen}
+                audioOnly
+                onClose={() => setImportOpen(false)}
+                onApply={(track) => onMediaChange(track)}
+            />
 
             {media && (
                 <KaraokeTimingEditor

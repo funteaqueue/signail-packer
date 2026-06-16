@@ -16,10 +16,12 @@ ARG REACT_APP_COBALT_API=http://localhost:9000
 ARG REACT_APP_FALLBACK_API=https://ytproxy.critfail.art
 ENV REACT_APP_YTDLP_API=$REACT_APP_YTDLP_API \
     REACT_APP_COBALT_API=$REACT_APP_COBALT_API \
-    REACT_APP_FALLBACK_API=$REACT_APP_FALLBACK_API \
-    NODE_ENV=production
+    REACT_APP_FALLBACK_API=$REACT_APP_FALLBACK_API
 
 # Install dependencies against the lockfile first for better layer caching.
+# NOTE: do NOT set NODE_ENV=production here — it makes npm skip devDependencies,
+# and react-scripts (needed for the build) lives there. `npm run build` sets
+# production mode internally for the bundle regardless.
 COPY package*.json ./
 RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
 

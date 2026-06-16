@@ -24,7 +24,7 @@ import { useTranslation } from '../i18n/LanguageContext';
 import MediaTrimmer from './MediaTrimmer';
 import AudioRecorder from './AudioRecorder';
 import PaintCanvas from './PaintCanvas';
-import YoutubeImporter from './YoutubeImporter';
+import MediaImporter from './MediaImporter';
 import ReactQuill, { Quill } from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import '../quill-theme.css';
@@ -546,10 +546,10 @@ const RuleForm: React.FC<RuleFormProps> = ({
         onApply={handlePaintApply}
       />
 
-      <YoutubeImporter
+      <MediaImporter
         open={youtubeOpen}
         onClose={() => setYoutubeOpen(false)}
-        onApply={(url) => insertMediaUrl('video', url)}
+        onApply={(url, kind) => insertMediaUrl(kind, url)}
       />
     </Box>
   );
