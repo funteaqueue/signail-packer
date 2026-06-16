@@ -45,11 +45,15 @@ export interface Question {
   lyrics_format?: LyricsFormat;
   /** Crocodile scoring mode: 'fastest' (only the quickest correct guesser scores) or 'dixit' (everyone submits a text guess and anyone can score) */
   crocodile_mode?: CrocodileMode;
+  /** Voting visibility: 'open' (everyone sees votes live) or 'closed' (hidden until the host reveals) */
+  vote_mode?: VoteMode;
 }
 
 export type LyricsFormat = 'plain' | 'lrc';
 
 export type CrocodileMode = 'fastest' | 'dixit';
+
+export type VoteMode = 'open' | 'closed';
 
 export interface ChoiceOption {
   content: string;
@@ -92,7 +96,8 @@ export enum QuestionType {
   TextAnswer = 'text-answer',
   ProgressiveReveal = 'progressive-reveal',
   Karaoke = 'karaoke',
-  Crocodile = 'crocodile'
+  Crocodile = 'crocodile',
+  Voting = 'voting'
 }
 
 export enum RuleType {

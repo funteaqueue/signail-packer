@@ -13,15 +13,30 @@ services:
       - FAST_REFRESH=true
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
-      # YouTube/video import endpoints. These are read by CRA at build/start and
-      # baked into the bundle, so they must be URLs the *browser* (not the
-      # container) can reach. localhost:9000 is the cobalt container's published
-      # port; the fallback is your direct-download API.
+      # Media import endpoints. These are read by CRA at build/start and baked
+      # into the bundle, so they must be URLs the *browser* (not the container)
+      # can reach. The app tries yt-dlp first (most capable), then cobalt, then
+      # the external fallback proxy.
+      - REACT_APP_YTDLP_API=http://localhost:9001
       - REACT_APP_COBALT_API=http://localhost:9000
       - REACT_APP_FALLBACK_API=https://ytproxy.critfail.art
     depends_on:
       - cobalt
+      - ytdlp
     command: sh -c "npm install --legacy-peer-deps && npm start"
+
+  # yt-dlp download API (https://github.com/yt-dlp/yt-dlp). The app POSTs a link
+  # plus {mode: audio|video} and gets the media bytes streamed back. Supports far
+  # more sites than cobalt and extracts audio cleanly, so it's the primary path.
+  ytdlp:
+    build:
+      context: ./ytdlp-service
+      dockerfile: Dockerfile
+    init: true
+    restart: unless-stopped
+    container_name: ytdlp-api
+    ports:
+      - "9001:9001/tcp"
 
   # Self-hosted cobalt download API (https://github.com/imputnet/cobalt).
   # The app POSTs a video URL here and gets back a tunnel/stream URL to fetch.
