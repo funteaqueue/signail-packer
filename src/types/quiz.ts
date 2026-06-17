@@ -47,7 +47,18 @@ export interface Question {
   crocodile_mode?: CrocodileMode;
   /** Voting visibility: 'open' (everyone sees votes live) or 'closed' (hidden until the host reveals) */
   vote_mode?: VoteMode;
+  // ----- Cross-cutting options (replace the old `secret`/`text-answer` types) -----
+  /** Designate one player: the only one who may answer (buzz types) or the only one who can score (parallel types). Mandatory for karaoke/crocodile. */
+  user_selection?: boolean;
+  /** When user_selection is on, the picker may choose themselves. */
+  allow_self_pick?: boolean;
+  /** Answer method for normal/progressive-reveal questions: buzz race or text field. Defaults to 'buzz'. */
+  response?: ResponseMethod;
+  /** Keep submitted answers masked from other players until the host reveals them. Defaults by type (text/numeric hidden, choice live). */
+  hidden_until_reveal?: boolean;
 }
+
+export type ResponseMethod = 'buzz' | 'text' | 'choice';
 
 export type LyricsFormat = 'plain' | 'lrc';
 

@@ -31,7 +31,6 @@ services:
       dockerfile: Dockerfile
     init: true
     restart: unless-stopped
-    container_name: ytdlp-api
     ports:
       - "${YTDLP_PORT:-9001}:9001/tcp"
 
@@ -41,7 +40,6 @@ services:
     init: true
     read_only: true
     restart: unless-stopped
-    container_name: cobalt-api
     ports:
       - "${COBALT_PORT:-9000}:9000/tcp"
     environment:

@@ -13,8 +13,18 @@ import {
     Select,
     MenuItem,
     Stack,
+    Switch,
+    FormControlLabel,
+    Tooltip,
 } from '@mui/material';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { Question, QuestionType, Rule, RuleType } from '../types/quiz';
+import {
+    normalizeQuestion,
+    SELECTION_OPTIONAL_TYPES,
+    SELECTION_MANDATORY_TYPES,
+    RESPONSE_TOGGLE_TYPES,
+} from '../utils/questionModel';
 import { isContentEmpty } from '../utils/contentUtils';
 import { embedExternalImages } from '../utils/embedImages';
 import { useTranslation } from '../i18n/LanguageContext';
@@ -123,20 +133,22 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
 
     useEffect(() => {
         if (question) {
+            // Open legacy types (secret / text-answer) in the new option-based shape
+            const q = normalizeQuestion(question);
             // Legacy packs store only the target name ("котиків"); rebuild the
             // exact task text the game showed for them so resaving keeps it
             const needsTaskMigration =
-                question.type === QuestionType.FindACat && !question.task && question.name;
+                q.type === QuestionType.FindACat && !q.task && q.name;
             setFormData(needsTaskMigration
                 ? {
-                    ...question,
-                    task: `Знайдіть і клікніть на всіх ${question.name}. Залишилось всього %left%`,
+                    ...q,
+                    task: `Знайдіть і клікніть на всіх ${q.name}. Залишилось всього %left%`,
                     name: undefined,
                 }
-                : question);
-            setIncorrectInputValue(question.price?.incorrect?.toString() || '0');
-            setCorrectInputValue(question.price?.correct?.toString() || '0');
-            setAnswerInputValue(question.answer !== undefined ? question.answer.toString() : '');
+                : q);
+            setIncorrectInputValue(q.price?.incorrect?.toString() || '0');
+            setCorrectInputValue(q.price?.correct?.toString() || '0');
+            setAnswerInputValue(q.answer !== undefined ? q.answer.toString() : '');
         } else {
             // New question - set default price based on index
             const defaultPrice = (questionIndex + 1) * 100;
@@ -201,12 +213,23 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
 
     const isFindACat = formData.type === QuestionType.FindACat;
     const isCloseEnough = formData.type === QuestionType.CloseEnough;
-    const isChoice = formData.type === QuestionType.Choice;
-    const isTextAnswer = formData.type === QuestionType.TextAnswer;
     const isProgressiveReveal = formData.type === QuestionType.ProgressiveReveal;
     const isKaraoke = formData.type === QuestionType.Karaoke;
     const isCrocodile = formData.type === QuestionType.Crocodile;
     const isVoting = formData.type === QuestionType.Voting;
+
+    // Cross-cutting options available for the current type
+    const supportsSelection = SELECTION_OPTIONAL_TYPES.includes(formData.type as string);
+    const mandatorySelection = SELECTION_MANDATORY_TYPES.includes(formData.type as string);
+    const supportsResponseToggle = RESPONSE_TOGGLE_TYPES.includes(formData.type as string);
+    const isTextResponse = supportsResponseToggle && formData.response === 'text';
+    // Choice is an answer method (response: 'choice') on normal/reveal/crocodile.
+    const isChoiceResponse = supportsResponseToggle && formData.response === 'choice';
+    // The "hidden until reveal" option only matters where players submit answers:
+    // choice/close-enough, or normal/reveal with a text field. Crocodile is
+    // always hidden, so no toggle there.
+    const supportsHidden = (isChoiceResponse || isCloseEnough || isTextResponse) && !isCrocodile;
+    const selectionActive = supportsSelection ? !!formData.user_selection : mandatorySelection;
 
     const isFindACatValid = !isFindACat || (
         !!formData.task?.trim() &&
@@ -218,7 +241,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
     const isCloseEnoughValid = !isCloseEnough || Number.isFinite(parseFloat(answerInputValue));
 
     const choiceCorrectCount = (formData.options || []).filter(o => o.correct).length;
-    const isChoiceValid = !isChoice || (
+    const isChoiceValid = !isChoiceResponse || (
         (formData.options || []).length >= 2 &&
         (formData.multiple ? choiceCorrectCount >= 1 : choiceCorrectCount === 1)
     );
@@ -234,7 +257,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
         if (isKaraoke && !isKaraokeValid) {
             return t('validation.karaokeMedia');
         }
-        if (isChoice && !isChoiceValid) {
+        if (isChoiceResponse && !isChoiceValid) {
             if ((formData.options || []).length < 2) {
                 return t('validation.minTwoOptions');
             }
@@ -286,11 +309,35 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
             currentAfterRound.push(ruleToAdd);
         }
 
+        // Cross-cutting options, normalized for the chosen type. These four are
+        // applied (possibly as undefined) in every branch so stale flags from a
+        // type switch are cleared on save.
+        const userSelectionVal = supportsSelection ? (formData.user_selection || undefined) : undefined;
+        const allowSelfPickVal = selectionActive ? (formData.allow_self_pick || undefined) : undefined;
+        // Persist a non-default answer method (buzz is the default, left implicit)
+        const responseVal = supportsResponseToggle && (isTextResponse || isChoiceResponse)
+            ? formData.response : undefined;
+        const hiddenVal = supportsHidden && typeof formData.hidden_until_reveal === 'boolean'
+            ? formData.hidden_until_reveal
+            : undefined;
+        // Choice options ride along whenever the answer method is choice
+        const choiceFields = isChoiceResponse
+            ? { options: formData.options || [], multiple: !!formData.multiple }
+            : { options: undefined, multiple: undefined };
+        const optionFields = {
+            user_selection: userSelectionVal,
+            allow_self_pick: allowSelfPickVal,
+            response: responseVal,
+            hidden_until_reveal: hiddenVal,
+            ...choiceFields,
+        };
+
         if (formData.type === QuestionType.FindACat) {
             updatedQuestion = {
                 ...formData,
                 id: formData.id || Date.now(),
                 type: QuestionType.FindACat,
+                ...optionFields,
                 price: formData.price || defaultPriceValue,
                 task: formData.task || '',
                 name: undefined,
@@ -314,6 +361,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 ...formData,
                 id: formData.id || Date.now(),
                 type: QuestionType.ProgressiveReveal,
+                ...optionFields,
                 price: formData.price || defaultPriceValue,
                 image: formData.image || '',
                 duration: formData.duration || 60,
@@ -326,10 +374,10 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 map: undefined,
                 answer: undefined,
                 max_clicks: undefined,
-                first_place_bonus: undefined,
+                // Choice/text reveals can reward the fastest (correct) answerer
+                first_place_bonus: (isChoiceResponse || isTextResponse) ? (formData.first_place_bonus || undefined) : undefined,
                 perfect_bonus: undefined,
-                multiple: undefined,
-                options: undefined,
+                // multiple/options come from optionFields when response is choice
                 media: undefined,
                 lyrics: undefined,
                 lyrics_format: undefined,
@@ -339,6 +387,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 ...formData,
                 id: formData.id || Date.now(),
                 type: QuestionType.Karaoke,
+                ...optionFields,
                 price: formData.price || defaultPriceValue,
                 media: formData.media || '',
                 lyrics: formData.lyrics || '',
@@ -367,11 +416,13 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 ...formData,
                 id: formData.id || Date.now(),
                 type: QuestionType.Crocodile,
+                ...optionFields,
                 price: formData.price || defaultPriceValue,
                 rules: currentRules,
                 after_round: [],
                 duration: formData.duration || 30,
-                crocodile_mode: formData.crocodile_mode || 'fastest',
+                // Guesser answer method now lives on `response`; legacy field dropped
+                crocodile_mode: undefined,
                 task: undefined,
                 name: undefined,
                 image: undefined,
@@ -380,8 +431,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 perfect_bonus: undefined,
                 max_clicks: undefined,
                 first_place_bonus: undefined,
-                multiple: undefined,
-                options: undefined,
+                // multiple/options come from optionFields when response is choice
                 effect: undefined,
                 curve: undefined,
                 media: undefined,
@@ -397,6 +447,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 ...formData,
                 id: formData.id || Date.now(),
                 type: QuestionType.Voting,
+                ...optionFields,
                 price: formData.price || defaultPriceValue,
                 rules: currentRules,
                 after_round: [],
@@ -424,6 +475,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 ...formData,
                 id: formData.id || Date.now(),
                 type: formData.type || QuestionType.Normal,
+                ...optionFields,
                 price: formData.price || defaultPriceValue,
                 rules: currentRules,
                 after_round: currentAfterRound,
@@ -436,12 +488,10 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 // Close-enough's submission window
                 duration: isCloseEnough ? (formData.duration || 30) : undefined,
                 perfect_bonus: isCloseEnough ? (formData.perfect_bonus || undefined) : undefined,
-                // Choice keeps its options and single/multiple mode
-                multiple: isChoice ? !!formData.multiple : undefined,
-                options: isChoice ? (formData.options || []) : undefined,
+                // multiple/options come from optionFields when response is choice
                 max_clicks: undefined,
                 // Choice/text can reward the fastest (correct) answerer extra
-                first_place_bonus: (isChoice || isTextAnswer) ? (formData.first_place_bonus || undefined) : undefined,
+                first_place_bonus: (isChoiceResponse || isTextResponse) ? (formData.first_place_bonus || undefined) : undefined,
                 effect: undefined,
                 curve: undefined,
                 media: undefined,
@@ -465,6 +515,92 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
     const handleAfterRoundChange = (rules: Rule[]) => {
         setFormData({ ...formData, after_round: rules });
     };
+
+    // A single compact options bar. Replaces the old two stacked "Options" cards
+    // (selection + answer) — they wasted vertical space and, on crocodile, rendered
+    // back-to-back. Now every toggle/select sits in one wrapping row. `sections`
+    // picks which controls show: selection toggles, answer method, or both.
+    const renderOptionsBar = (sections: { selection?: boolean; answer?: boolean } = {}) => {
+        const { selection = false, answer = false } = sections;
+        const showSelection = selection && (supportsSelection || mandatorySelection);
+        const showAnswer = answer && (supportsResponseToggle || supportsHidden);
+        if (!showSelection && !showAnswer) {
+            return null;
+        }
+        const hiddenChecked = formData.hidden_until_reveal !== undefined
+            ? formData.hidden_until_reveal
+            : (isTextResponse || isCloseEnough); // defaults: text/numeric hidden, choice live
+        const switchLabel = (text: string) => (
+            <Typography variant="body2" sx={{ color: 'var(--text-primary)' }}>{text}</Typography>
+        );
+        return (
+            <Box
+                sx={{
+                    mb: 3,
+                    px: 2,
+                    py: 1.25,
+                    border: '1px solid var(--glass-border)',
+                    borderRadius: 2,
+                    background: 'var(--surface-soft)',
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    alignItems: 'center',
+                    columnGap: 3,
+                    rowGap: 1,
+                }}
+            >
+                {showSelection && supportsSelection && (
+                    <FormControlLabel
+                        sx={{ m: 0 }}
+                        control={<Switch size="small" checked={!!formData.user_selection} onChange={(e) => setFormData(prev => ({ ...prev, user_selection: e.target.checked }))} />}
+                        label={switchLabel(t('question.userSelection'))}
+                    />
+                )}
+                {showSelection && selectionActive && (
+                    <FormControlLabel
+                        sx={{ m: 0 }}
+                        control={<Switch size="small" checked={!!formData.allow_self_pick} onChange={(e) => setFormData(prev => ({ ...prev, allow_self_pick: e.target.checked }))} />}
+                        label={switchLabel(t('question.allowSelfPick'))}
+                    />
+                )}
+                {showAnswer && supportsResponseToggle && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>{t('question.responseMethod')}</Typography>
+                        <Select
+                            value={formData.response || 'buzz'}
+                            onChange={(e) => setFormData(prev => ({ ...prev, response: e.target.value as 'buzz' | 'text' | 'choice' }))}
+                            size="small"
+                            sx={{ minWidth: '220px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', '& .MuiOutlinedInput-notchedOutline': { border: 'none' } }}
+                        >
+                            <MenuItem value="buzz">{t('question.responseBuzz')}</MenuItem>
+                            <MenuItem value="text">{t('question.responseText')}</MenuItem>
+                            <MenuItem value="choice">{t('question.responseChoice')}</MenuItem>
+                        </Select>
+                        <Tooltip title={t('question.responseHelper')} arrow>
+                            <InfoOutlinedIcon sx={{ fontSize: 18, color: 'var(--text-muted)', cursor: 'help' }} />
+                        </Tooltip>
+                    </Box>
+                )}
+                {showAnswer && supportsHidden && (
+                    <FormControlLabel
+                        sx={{ m: 0 }}
+                        control={<Switch size="small" checked={hiddenChecked} onChange={(e) => setFormData(prev => ({ ...prev, hidden_until_reveal: e.target.checked }))} />}
+                        label={switchLabel(t('question.hiddenUntilReveal'))}
+                    />
+                )}
+            </Box>
+        );
+    };
+
+    // The choice-options editor rides along whenever the answer method is "choice".
+    const renderChoiceEditor = () => isChoiceResponse ? (
+        <ChoiceOptionsEditor
+            options={formData.options || []}
+            multiple={!!formData.multiple}
+            onOptionsChange={(options) => setFormData(prev => ({ ...prev, options }))}
+            onMultipleChange={(multiple) => setFormData(prev => ({ ...prev, multiple }))}
+        />
+    ) : null;
 
     const renderPriceFields = () => (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -521,7 +657,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 onWheel={(e) => (e.target as HTMLInputElement).blur()}
                 fullWidth
             />
-            {(isChoice || isTextAnswer) && (
+            {(isChoiceResponse || isTextResponse) && (
                 <TextField
                     label={t('question.firstPlaceBonus')}
                     type="number"
@@ -532,7 +668,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                     }))}
                     onWheel={(e) => (e.target as HTMLInputElement).blur()}
                     inputProps={{ min: 0 }}
-                    helperText={isChoice
+                    helperText={isChoiceResponse
                         ? t('question.firstPlaceBonusHelperChoice')
                         : t('question.firstPlaceBonusHelperText')}
                     fullWidth
@@ -590,12 +726,9 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                         }}
                     >
                         <MenuItem value={QuestionType.Normal}>{t('questionType.normal')}</MenuItem>
-                        <MenuItem value={QuestionType.Secret}>{t('questionType.secret')}</MenuItem>
                         <MenuItem value={QuestionType.Empty}>{t('questionType.empty')}</MenuItem>
                         <MenuItem value={QuestionType.FindACat}>{t('questionType.findACat')}</MenuItem>
                         <MenuItem value={QuestionType.CloseEnough}>{t('questionType.closeEnough')}</MenuItem>
-                        <MenuItem value={QuestionType.Choice}>{t('questionType.choice')}</MenuItem>
-                        <MenuItem value={QuestionType.TextAnswer}>{t('questionType.textAnswer')}</MenuItem>
                         <MenuItem value={QuestionType.ProgressiveReveal}>{t('questionType.progressiveReveal')}</MenuItem>
                         <MenuItem value={QuestionType.Karaoke}>{t('questionType.karaoke')}</MenuItem>
                         <MenuItem value={QuestionType.Crocodile}>{t('questionType.crocodile')}</MenuItem>
@@ -625,11 +758,6 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                         <Tab key="image" label={t('tab.imageEffect')} />,
                         <Tab key="answer" label={t('tab.answer')} />,
                         <Tab key="price" label={t('tab.price')} />
-                    ] : isChoice ? [
-                        <Tab key="question" label={t('tab.question')} />,
-                        <Tab key="options" label={t('tab.options')} />,
-                        <Tab key="answer" label={t('tab.answer')} />,
-                        <Tab key="price" label={t('tab.price')} />
                     ] : isCrocodile ? [
                         <Tab key="question" label={t('tab.question')} />,
                         <Tab key="price" label={t('tab.price')} />
@@ -646,6 +774,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 {isFindACat ? (
                     <>
                         <TabPanel value={tabValue} index={0}>
+                            {renderOptionsBar({ selection: true })}
                             <FindACatEditor
                                 image={formData.image}
                                 map={formData.map || []}
@@ -669,6 +798,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 ) : isKaraoke ? (
                     <>
                         <TabPanel value={tabValue} index={0}>
+                            {renderOptionsBar({ selection: true })}
                             <KaraokeEditor
                                 media={formData.media}
                                 lyrics={formData.lyrics || ''}
@@ -680,6 +810,8 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                         </TabPanel>
 
                         <TabPanel value={tabValue} index={1}>
+                            {renderOptionsBar({ answer: true })}
+                            {renderChoiceEditor()}
                             <RuleForm
                                 rules={formData.after_round || []}
                                 onRulesChange={handleAfterRoundChange}
@@ -697,6 +829,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 ) : isProgressiveReveal ? (
                     <>
                         <TabPanel value={tabValue} index={0}>
+                            {renderOptionsBar({ selection: true })}
                             <ProgressiveRevealEditor
                                 image={formData.image}
                                 duration={formData.duration || 60}
@@ -710,6 +843,8 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                         </TabPanel>
 
                         <TabPanel value={tabValue} index={1}>
+                            {renderOptionsBar({ answer: true })}
+                            {renderChoiceEditor()}
                             <RuleForm
                                 rules={formData.after_round || []}
                                 onRulesChange={handleAfterRoundChange}
@@ -724,69 +859,13 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                             {renderPriceFields()}
                         </TabPanel>
                     </>
-                ) : isChoice ? (
-                    <>
-                        <TabPanel value={tabValue} index={0}>
-                            <RuleForm
-                                rules={formData.rules || []}
-                                onRulesChange={handleRulesChange}
-                                title={t('question.questionTitle')}
-                                draftRule={draftRule}
-                                onDraftRuleChange={setDraftRule}
-                                buttonLabel={t('question.addQuestion')}
-                            />
-                        </TabPanel>
-
-                        <TabPanel value={tabValue} index={1}>
-                            <ChoiceOptionsEditor
-                                options={formData.options || []}
-                                multiple={!!formData.multiple}
-                                onOptionsChange={(options) => setFormData(prev => ({ ...prev, options }))}
-                                onMultipleChange={(multiple) => setFormData(prev => ({ ...prev, multiple }))}
-                            />
-                        </TabPanel>
-
-                        <TabPanel value={tabValue} index={2}>
-                            <RuleForm
-                                rules={formData.after_round || []}
-                                onRulesChange={handleAfterRoundChange}
-                                title={t('question.answerExplanationTitle')}
-                                draftRule={draftAfterRound}
-                                onDraftRuleChange={setDraftAfterRound}
-                                buttonLabel={t('question.addAnswer')}
-                            />
-                        </TabPanel>
-
-                        <TabPanel value={tabValue} index={3}>
-                            {renderPriceFields()}
-                        </TabPanel>
-                    </>
                 ) : isCrocodile ? (
                     <>
                         <TabPanel value={tabValue} index={0}>
+                            {/* Selection + answer method (for the guessers) in one bar */}
+                            {renderOptionsBar({ selection: true, answer: true })}
+                            {renderChoiceEditor()}
                             <Box sx={{ display: 'flex', gap: 2, mb: 3, alignItems: 'flex-start' }}>
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                                    <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-                                        {t('question.crocodileMode')}
-                                    </Typography>
-                                    <Select
-                                        value={formData.crocodile_mode || 'fastest'}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, crocodile_mode: e.target.value as 'fastest' | 'dixit' }))}
-                                        size="small"
-                                        sx={{
-                                            minWidth: '240px',
-                                            background: 'var(--input-bg)',
-                                            border: '1px solid var(--glass-border)',
-                                            '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
-                                        }}
-                                    >
-                                        <MenuItem value="fastest">{t('question.crocodileModeFastest')}</MenuItem>
-                                        <MenuItem value="dixit">{t('question.crocodileModeDixit')}</MenuItem>
-                                    </Select>
-                                    <Typography variant="caption" sx={{ color: 'var(--text-muted)', maxWidth: '320px' }}>
-                                        {t('question.crocodileModeHelper')}
-                                    </Typography>
-                                </Box>
                                 <TextField
                                     label={t('question.durationSeconds')}
                                     type="number"
@@ -814,8 +893,22 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 ) : isVoting ? (
                     <>
                         <TabPanel value={tabValue} index={0}>
-                            <Box sx={{ display: 'flex', gap: 2, mb: 3, alignItems: 'flex-start' }}>
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                            <Box
+                                sx={{
+                                    mb: 3,
+                                    px: 2,
+                                    py: 1.25,
+                                    border: '1px solid var(--glass-border)',
+                                    borderRadius: 2,
+                                    background: 'var(--surface-soft)',
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    alignItems: 'center',
+                                    columnGap: 3,
+                                    rowGap: 1.5,
+                                }}
+                            >
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                     <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
                                         {t('question.voteMode')}
                                     </Typography>
@@ -824,7 +917,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                                         onChange={(e) => setFormData(prev => ({ ...prev, vote_mode: e.target.value as 'open' | 'closed' }))}
                                         size="small"
                                         sx={{
-                                            minWidth: '240px',
+                                            minWidth: '220px',
                                             background: 'var(--input-bg)',
                                             border: '1px solid var(--glass-border)',
                                             '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
@@ -833,19 +926,24 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                                         <MenuItem value="open">{t('question.voteModeOpen')}</MenuItem>
                                         <MenuItem value="closed">{t('question.voteModeClosed')}</MenuItem>
                                     </Select>
-                                    <Typography variant="caption" sx={{ color: 'var(--text-muted)', maxWidth: '320px' }}>
-                                        {t('question.voteModeHelper')}
-                                    </Typography>
+                                    <Tooltip title={t('question.voteModeHelper')} arrow>
+                                        <InfoOutlinedIcon sx={{ fontSize: 18, color: 'var(--text-muted)', cursor: 'help' }} />
+                                    </Tooltip>
                                 </Box>
-                                <TextField
-                                    label={t('question.durationSeconds')}
-                                    type="number"
-                                    value={formData.duration || 60}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, duration: parseInt(e.target.value) || 0 }))}
-                                    onWheel={(e) => (e.target as HTMLInputElement).blur()}
-                                    sx={{ minWidth: '180px' }}
-                                    helperText={t('question.votingDurationHelper')}
-                                />
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <TextField
+                                        label={t('question.durationSeconds')}
+                                        type="number"
+                                        value={formData.duration || 60}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, duration: parseInt(e.target.value) || 0 }))}
+                                        onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                                        size="small"
+                                        sx={{ width: '140px' }}
+                                    />
+                                    <Tooltip title={t('question.votingDurationHelper')} arrow>
+                                        <InfoOutlinedIcon sx={{ fontSize: 18, color: 'var(--text-muted)', cursor: 'help' }} />
+                                    </Tooltip>
+                                </Box>
                             </Box>
                             <RuleForm
                                 rules={formData.rules || []}
@@ -864,6 +962,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 ) : (
                     <>
                         <TabPanel value={tabValue} index={0}>
+                            {renderOptionsBar({ selection: true })}
                             <RuleForm
                                 rules={formData.rules || []}
                                 onRulesChange={handleRulesChange}
@@ -875,6 +974,8 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                         </TabPanel>
 
                         <TabPanel value={tabValue} index={1}>
+                            {renderOptionsBar({ answer: true })}
+                            {renderChoiceEditor()}
                             {isCloseEnough && (
                                 <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
                                     <TextField
