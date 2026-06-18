@@ -306,6 +306,8 @@ export const translations: Record<Language, Record<string, string>> = {
     // Theme row
     'theme.addQuestion': 'Add Question',
     'theme.unnamed': 'Unnamed Theme',
+    'theme.moveToRound': 'Move to round',
+    'theme.noOtherRounds': 'No other rounds',
 
     // Question form (legacy step form)
     'questionForm.questions': 'Questions',
@@ -642,6 +644,8 @@ export const translations: Record<Language, Record<string, string>> = {
     // Theme row
     'theme.addQuestion': 'Додати питання',
     'theme.unnamed': 'Тема без назви',
+    'theme.moveToRound': 'Перемістити в раунд',
+    'theme.noOtherRounds': 'Інших раундів немає',
 
     // Question form (legacy step form)
     'questionForm.questions': 'Питання',

@@ -213,6 +213,21 @@ const QuizForm: React.FC = () => {
     });
   };
 
+  const handleMoveThemeToRound = (themeIndex: number, targetRoundIndex: number) => {
+    if (targetRoundIndex === currentRoundIndex) return;
+    setQuizData((prev: Quiz) => {
+      if (targetRoundIndex < 0 || targetRoundIndex >= prev.rounds.length) return prev;
+      const updatedRounds = prev.rounds.map((round) => ({
+        ...round,
+        themes: [...round.themes],
+      }));
+      const [movedTheme] = updatedRounds[currentRoundIndex].themes.splice(themeIndex, 1);
+      if (!movedTheme) return prev;
+      updatedRounds[targetRoundIndex].themes.push(movedTheme);
+      return { ...prev, rounds: updatedRounds };
+    });
+  };
+
   const handleAddQuestion = (themeIndex: number) => {
     const theme = quizData.rounds[currentRoundIndex].themes[themeIndex];
     const questionIndex = theme.questions.length;
@@ -442,6 +457,8 @@ const QuizForm: React.FC = () => {
         onQuestionClick={handleQuestionClick}
         onAddQuestion={handleAddQuestion}
         onDeleteTheme={handleDeleteTheme}
+        onMoveThemeToRound={handleMoveThemeToRound}
+        rounds={quizData.rounds}
         onAddTheme={handleAddTheme}
         onDragEnd={handleDragEnd}
       />

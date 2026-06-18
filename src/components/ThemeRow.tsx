@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Box, TextField, IconButton, Typography } from '@mui/material';
+import { Box, TextField, IconButton, Typography, Menu, MenuItem } from '@mui/material';
 import { Delete as DeleteIcon, DragIndicator as DragIndicatorIcon } from '@mui/icons-material';
 import { useSortable, SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Theme, QuestionType } from '../types/quiz';
+import { Round, Theme, QuestionType } from '../types/quiz';
 import { useTranslation } from '../i18n/LanguageContext';
 import QuestionButton from './QuestionButton';
 import AddButton from './AddButton';
@@ -15,6 +15,9 @@ interface ThemeRowProps {
     onQuestionClick: (questionIndex: number) => void;
     onAddQuestion: () => void;
     onDeleteTheme: () => void;
+    rounds: Round[];
+    currentRoundIndex: number;
+    onMoveToRound: (targetRoundIndex: number) => void;
 }
 
 const ThemeRow: React.FC<ThemeRowProps> = ({
@@ -24,9 +27,26 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
     onQuestionClick,
     onAddQuestion,
     onDeleteTheme,
+    rounds,
+    currentRoundIndex,
+    onMoveToRound,
 }: ThemeRowProps) => {
     const { t } = useTranslation();
     const [isEditingName, setIsEditingName] = useState(false);
+    const [moveMenuAnchor, setMoveMenuAnchor] = useState<null | HTMLElement>(null);
+
+    const handleOpenMoveMenu = (event: React.MouseEvent<HTMLElement>) => {
+        setMoveMenuAnchor(event.currentTarget);
+    };
+
+    const handleCloseMoveMenu = () => {
+        setMoveMenuAnchor(null);
+    };
+
+    const handleSelectRound = (targetRoundIndex: number) => {
+        onMoveToRound(targetRoundIndex);
+        handleCloseMoveMenu();
+    };
 
     const {
         attributes,
@@ -74,10 +94,12 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
                 position: 'relative',
             }}
         >
-            {/* Drag Handle */}
+            {/* Drag Handle — tap to move to another round, hold to drag/reorder */}
             <Box
                 {...attributes}
                 {...listeners}
+                onClick={rounds.length > 1 ? handleOpenMoveMenu : undefined}
+                title={rounds.length > 1 ? t('theme.moveToRound') : undefined}
                 sx={{
                     cursor: 'grab',
                     color: 'var(--text-muted)',
@@ -90,6 +112,22 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
             >
                 <DragIndicatorIcon />
             </Box>
+            {rounds.length > 1 && (
+                <Menu
+                    anchorEl={moveMenuAnchor}
+                    open={Boolean(moveMenuAnchor)}
+                    onClose={handleCloseMoveMenu}
+                >
+                    {rounds
+                        .map((round, index) => ({ round, index }))
+                        .filter(({ index }) => index !== currentRoundIndex)
+                        .map(({ round, index }) => (
+                            <MenuItem key={index} onClick={() => handleSelectRound(index)}>
+                                {round.name || `${t('rounds.roundName')} ${index + 1}`}
+                            </MenuItem>
+                        ))}
+                </Menu>
+            )}
             {/* Theme Name */}
             <Box
                 sx={{

@@ -54,6 +54,8 @@ interface GameBoardGridProps {
     onQuestionClick: (themeIndex: number, questionIndex: number) => void;
     onAddQuestion: (themeIndex: number) => void;
     onDeleteTheme: (themeIndex: number) => void;
+    onMoveThemeToRound: (themeIndex: number, targetRoundIndex: number) => void;
+    rounds: Round[];
     onAddTheme: () => void;
     onDragEnd: (event: DragEndEvent) => void;
 }
@@ -69,6 +71,8 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({
     onQuestionClick,
     onAddQuestion,
     onDeleteTheme,
+    onMoveThemeToRound,
+    rounds,
     onAddTheme,
     onDragEnd,
 }: GameBoardGridProps) => {
@@ -274,6 +278,9 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({
                                     onQuestionClick={(questionIndex: number) => onQuestionClick(themeIndex, questionIndex)}
                                     onAddQuestion={() => onAddQuestion(themeIndex)}
                                     onDeleteTheme={() => onDeleteTheme(themeIndex)}
+                                    rounds={rounds}
+                                    currentRoundIndex={roundIndex}
+                                    onMoveToRound={(targetRoundIndex: number) => onMoveThemeToRound(themeIndex, targetRoundIndex)}
                                 />
                             ))}
                         </SortableContext>
