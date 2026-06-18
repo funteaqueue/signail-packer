@@ -6,7 +6,10 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
+    FormControlLabel,
     IconButton,
+    Switch,
+    Tooltip,
     Typography,
 } from '@mui/material';
 import {
@@ -23,6 +26,27 @@ interface AudioRecorderProps {
     onClose: () => void;
     onApply: (media: string) => void;
 }
+
+const PROCESSING_KEY = 'packer:audio-rec-processing';
+
+// Whether the browser's voice-call DSP (echo cancellation, noise suppression,
+// auto gain) is applied. Off captures the raw mic, which sounds far better when
+// audio is playing through the speakers. The last choice is remembered.
+const getProcessingEnabled = (): boolean => {
+    try {
+        return localStorage.getItem(PROCESSING_KEY) === 'on';
+    } catch {
+        return false;
+    }
+};
+
+const rememberProcessingEnabled = (enabled: boolean) => {
+    try {
+        localStorage.setItem(PROCESSING_KEY, enabled ? 'on' : 'off');
+    } catch {
+        // localStorage unavailable (private mode etc.) — choice just won't persist
+    }
+};
 
 const fmt = (sec: number): string => {
     const total = Math.max(0, Math.floor(sec));
@@ -45,6 +69,12 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ open, onClose, onApply })
     const [elapsed, setElapsed] = useState(0);
     const [recordedUrl, setRecordedUrl] = useState<string | null>(null);
     const [error, setError] = useState(false);
+    const [processingEnabled, setProcessingEnabled] = useState(getProcessingEnabled);
+
+    const handleProcessingChange = (enabled: boolean) => {
+        setProcessingEnabled(enabled);
+        rememberProcessingEnabled(enabled);
+    };
 
     const stopTracks = () => {
         streamRef.current?.getTracks().forEach((tr) => tr.stop());
@@ -86,7 +116,17 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ open, onClose, onApply })
         setRecordedUrl(null);
         chunksRef.current = [];
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            // The browser's voice-call DSP (echo cancellation, noise
+            // suppression, auto gain) is tuned for speech and badly mangles the
+            // signal when audio is playing through the speakers. The user
+            // chooses per recording whether to keep it on or capture the raw mic.
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    echoCancellation: processingEnabled,
+                    noiseSuppression: processingEnabled,
+                    autoGainControl: processingEnabled,
+                },
+            });
             streamRef.current = stream;
             const recorder = new MediaRecorder(stream);
             recorderRef.current = recorder;
@@ -174,13 +214,27 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ open, onClose, onApply })
                 </Box>
 
                 {!recording && !recordedUrl && (
-                    <Button
-                        variant="contained"
-                        startIcon={<MicIcon />}
-                        onClick={startRecording}
-                    >
-                        {t('audioRec.start')}
-                    </Button>
+                    <>
+                        <Button
+                            variant="contained"
+                            startIcon={<MicIcon />}
+                            onClick={startRecording}
+                        >
+                            {t('audioRec.start')}
+                        </Button>
+                        <Tooltip title={t('audioRec.processingHint')}>
+                            <FormControlLabel
+                                control={
+                                    <Switch
+                                        checked={processingEnabled}
+                                        onChange={(e) => handleProcessingChange(e.target.checked)}
+                                    />
+                                }
+                                label={t('audioRec.processing')}
+                                sx={{ color: 'var(--text-secondary)' }}
+                            />
+                        </Tooltip>
+                    </>
                 )}
 
                 {recording && (

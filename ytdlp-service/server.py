@@ -8,6 +8,11 @@ extracts audio cleanly, so the app treats it as the primary downloader.
 
 Endpoints:
   GET  /health               -> "ok"
+  GET  /proxy?url=...         -> fetch an arbitrary http(s) resource (e.g. an
+                                 image referenced by URL in a quiz) server-side
+                                 and stream the bytes back with CORS headers, so
+                                 the browser can inline it as base64 at download
+                                 time without hitting the host's CORS wall.
   POST /download   {url,mode} -> the media bytes (mode: "audio" | "video")
   POST /soundcloud {url}      -> for DRM-locked tracks (Spotify/Deezer): resolve
                                  the title+artist, find it on SoundCloud, and
@@ -20,6 +25,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+import urllib.error
 import urllib.parse
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -30,6 +36,10 @@ DOWNLOAD_TIMEOUT_S = int(os.environ.get("YTDLP_TIMEOUT", "240"))
 # Keep base64 payloads (the whole clip ends up embedded in the quiz JSON) sane.
 MAX_HEIGHT = os.environ.get("YTDLP_MAX_HEIGHT", "720")
 META_TIMEOUT_S = 12
+# Cap proxied resources so a stray huge URL can't blow up memory (each one ends
+# up base64-embedded in the quiz JSON anyway).
+PROXY_MAX_BYTES = int(os.environ.get("PROXY_MAX_BYTES", str(64 * 1024 * 1024)))
+PROXY_TIMEOUT_S = int(os.environ.get("PROXY_TIMEOUT", "30"))
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
 
 SPOTIFY_TRACK_RE = re.compile(r"(?:open\.spotify\.com/(?:[a-z-]+/)?track/|spotify:track:)([A-Za-z0-9]+)", re.I)
@@ -167,7 +177,9 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):  # noqa: N802
-        if self.path.rstrip("/") == "/health":
+        parsed = urllib.parse.urlparse(self.path)
+        route = parsed.path.rstrip("/")
+        if route == "/health":
             body = b"ok"
             self.send_response(200)
             _cors(self)
@@ -175,8 +187,35 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)
+        elif route == "/proxy":
+            self._handle_proxy(parsed.query)
         else:
             self._error(404, "not found")
+
+    def _handle_proxy(self, query_string: str) -> None:
+        params = urllib.parse.parse_qs(query_string)
+        url = (params.get("url") or [""])[0].strip()
+        if not url.lower().startswith(("http://", "https://")):
+            self._error(400, "url must start with http(s)")
+            return
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "*/*"})
+            with urllib.request.urlopen(req, timeout=PROXY_TIMEOUT_S) as resp:
+                ctype = resp.headers.get("Content-Type") or "application/octet-stream"
+                data = resp.read(PROXY_MAX_BYTES + 1)
+            if len(data) > PROXY_MAX_BYTES:
+                self._error(413, "resource exceeds proxy size limit")
+                return
+            self.send_response(200)
+            _cors(self)
+            self.send_header("Content-Type", ctype)
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+        except urllib.error.HTTPError as exc:
+            self._error(502, f"upstream returned {exc.code}")
+        except Exception as exc:  # noqa: BLE001
+            self._error(502, f"proxy fetch failed: {exc}")
 
     def do_POST(self):  # noqa: N802
         route = self.path.rstrip("/")

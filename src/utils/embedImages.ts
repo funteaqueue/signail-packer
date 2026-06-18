@@ -13,17 +13,34 @@ const blobToDataUrl = (blob: Blob): Promise<string> => new Promise((resolve, rej
 
 const isExternalUrl = (src: string): boolean => /^https?:\/\//i.test(src);
 
-const fetchAsDataUrl = async (url: string): Promise<string | null> => {
+// Self-hosted proxy (the yt-dlp service) used to fetch resources the browser
+// can't reach directly because the host doesn't send CORS headers. Baked into
+// the bundle by CRA, so it must be a URL the browser can reach. See
+// docker-compose.yml / ytdlp-service/server.py (`GET /proxy?url=`).
+const YTDLP_API = (process.env.REACT_APP_YTDLP_API || 'http://localhost:9001').replace(/\/$/, '');
+
+const tryFetchAsDataUrl = async (url: string, requireImage: boolean): Promise<string | null> => {
     try {
         const res = await fetch(url);
         if (!res.ok) return null;
         const blob = await res.blob();
-        if (!blob.type.startsWith('image/')) return null;
+        // The proxy preserves the upstream Content-Type, but some hosts mislabel
+        // images as octet-stream — only enforce the image check on direct fetch.
+        if (requireImage && !blob.type.startsWith('image/')) return null;
         return await blobToDataUrl(blob);
     } catch {
-        // CORS rejection, network failure, etc. — keep the original URL
+        // CORS rejection, network failure, etc.
         return null;
     }
+};
+
+export const fetchAsDataUrl = async (url: string): Promise<string | null> => {
+    // Direct fetch first — works whenever the host sends permissive CORS headers.
+    const direct = await tryFetchAsDataUrl(url, true);
+    if (direct) return direct;
+    // Otherwise route through the self-hosted proxy, which fetches server-side
+    // and returns the bytes with the CORS headers the browser needs.
+    return await tryFetchAsDataUrl(`${YTDLP_API}/proxy?url=${encodeURIComponent(url)}`, false);
 };
 
 // Replace every <img> whose src is an http(s) URL with a base64 data URL.

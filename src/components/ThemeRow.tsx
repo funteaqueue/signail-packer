@@ -48,6 +48,12 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
         handleCloseMoveMenu();
     };
 
+    const handleDeleteTheme = () => {
+        if (window.confirm(t('theme.confirmDelete'))) {
+            onDeleteTheme();
+        }
+    };
+
     const {
         attributes,
         listeners,
@@ -178,7 +184,7 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
                     </Box>
                 )}
                 <IconButton
-                    onClick={onDeleteTheme}
+                    onClick={handleDeleteTheme}
                     size="small"
                     sx={{
                         color: 'var(--danger)',

@@ -40,7 +40,7 @@ export const applyRevealCurve = (progress: number, curve: RevealCurve): number =
 };
 
 // Renders the image hidden by the chosen effect at the given progress (0..1)
-const EffectPreview: React.FC<{ src: string; effect: RevealEffect; progress: number }> = ({ src, effect, progress }) => {
+export const EffectPreview: React.FC<{ src: string; effect: RevealEffect; progress: number }> = ({ src, effect, progress }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
   const [loaded, setLoaded] = useState(false);

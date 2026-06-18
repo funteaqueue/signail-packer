@@ -16,6 +16,7 @@ interface QuizHeaderProps {
     onClear: () => void;
     onRepackFile: (file: File) => void;
     repacking: boolean;
+    downloading: boolean;
 }
 
 const QuizHeader: React.FC<QuizHeaderProps> = ({
@@ -28,6 +29,7 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({
     onClear,
     onRepackFile,
     repacking,
+    downloading,
 }) => {
     const { t } = useTranslation();
     const { themeId, setThemeId } = useAppTheme();
@@ -136,8 +138,9 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({
                     startIcon={<Download />}
                     onClick={onDownload}
                     size="small"
+                    disabled={downloading}
                 >
-                    {t('header.download')}
+                    {downloading ? t('header.downloading') : t('header.download')}
                 </Button>
                 <Button
                     variant="outlined"

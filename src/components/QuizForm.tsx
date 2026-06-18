@@ -5,6 +5,7 @@ import { arrayMove } from '@dnd-kit/sortable';
 import { Quiz, Round, Question, Theme } from '../types/quiz';
 import { saveQuiz, loadQuiz, initDB, clearStorage } from '../services/storage';
 import { convertSIQFromFile } from '../services/siqConverter';
+import { packQuiz } from '../utils/packQuiz';
 import { useTranslation } from '../i18n/LanguageContext';
 import QuizHeader from './QuizHeader';
 import GameBoardGrid from './GameBoardGrid';
@@ -27,6 +28,7 @@ const QuizForm: React.FC = () => {
   const saveTimeoutRef = useRef<number | null>(null);
   const latestQuizRef = useRef(quizData);
   const [repacking, setRepacking] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   // Question Modal State
   const [modalOpen, setModalOpen] = useState(false);
@@ -380,8 +382,20 @@ const QuizForm: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
-  const handleDownload = () => {
-    downloadQuiz(quizData);
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      // Inline any externally-hosted images as base64 so the exported file
+      // stays self-contained even if the remote host later disappears.
+      const packed = await packQuiz(quizData);
+      downloadQuiz(packed);
+    } catch (error) {
+      console.error('Error packing quiz for download:', error);
+      // Fall back to exporting whatever we have rather than blocking download.
+      downloadQuiz(quizData);
+    } finally {
+      setDownloading(false);
+    }
   };
 
   const handleRepackFile = async (file: File) => {
@@ -444,6 +458,7 @@ const QuizForm: React.FC = () => {
         onRepackFile={handleRepackFile}
         onClear={handleClearStorage}
         repacking={repacking}
+        downloading={downloading}
       />
 
       <GameBoardGrid

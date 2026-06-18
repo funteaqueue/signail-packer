@@ -18,6 +18,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'header.repack': 'Repack',
     'header.repacking': 'Repacking...',
     'header.download': 'Download',
+    'header.downloading': 'Packing...',
     'header.clear': 'Clear',
     'header.design': 'Design',
 
@@ -231,6 +232,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'audioRec.retake': 'Record again',
     'audioRec.insert': 'Insert',
     'audioRec.error': 'Could not access the microphone. Please allow microphone access and try again.',
+    'audioRec.processing': 'Noise suppression',
+    'audioRec.processingHint': 'Applies the browser\'s echo cancellation, noise suppression and auto gain. Good for plain voice, but distorts the sound when audio is playing through your speakers. Turn off to capture the raw mic.',
 
     // Media import from a link (video or audio)
     'media.title': 'Add media from a link',
@@ -308,6 +311,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'theme.unnamed': 'Unnamed Theme',
     'theme.moveToRound': 'Move to round',
     'theme.noOtherRounds': 'No other rounds',
+    'theme.confirmDelete': 'Delete this theme and all its questions? This cannot be undone.',
 
     // Question form (legacy step form)
     'questionForm.questions': 'Questions',
@@ -356,6 +360,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'header.repack': 'Перепакувати',
     'header.repacking': 'Перепакування...',
     'header.download': 'Завантажити',
+    'header.downloading': 'Пакування...',
     'header.clear': 'Очистити',
     'header.design': 'Дизайн',
 
@@ -569,6 +574,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'audioRec.retake': 'Записати знову',
     'audioRec.insert': 'Вставити',
     'audioRec.error': 'Не вдалося отримати доступ до мікрофона. Дозвольте доступ до мікрофона та спробуйте ще раз.',
+    'audioRec.processing': 'Шумозаглушення',
+    'audioRec.processingHint': 'Вмикає ехопридушення, шумозаглушення та автопідсилення браузера. Підходить для звичайного голосу, але спотворює звук, коли аудіо грає через динаміки. Вимкніть, щоб записати чистий сигнал мікрофона.',
 
     // YouTube import
     'media.title': 'Додати медіа за посиланням',
@@ -646,6 +653,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'theme.unnamed': 'Тема без назви',
     'theme.moveToRound': 'Перемістити в раунд',
     'theme.noOtherRounds': 'Інших раундів немає',
+    'theme.confirmDelete': 'Видалити цю тему та всі її питання? Цю дію не можна скасувати.',
 
     // Question form (legacy step form)
     'questionForm.questions': 'Питання',

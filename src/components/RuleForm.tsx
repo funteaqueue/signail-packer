@@ -18,9 +18,10 @@ import {
   Switch,
   FormControlLabel,
   Popover,
+  Slider,
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon, Close as CloseIcon, ContentCut as ContentCutIcon } from '@mui/icons-material';
-import { Rule, RuleType } from '../types/quiz';
+import { Rule, RuleType, RevealEffect, RevealCurve } from '../types/quiz';
 import { isContentEmpty } from '../utils/contentUtils';
 import { embedExternalImages } from '../utils/embedImages';
 import { useTranslation } from '../i18n/LanguageContext';
@@ -31,6 +32,7 @@ import MediaImporter from './MediaImporter';
 import ReactQuill, { Quill } from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import '../quill-theme.css';
+import { EffectPreview, applyRevealCurve } from './ProgressiveRevealEditor';
 
 // First embedded audio/video data URL in the rule's HTML, if any
 const MEDIA_DATA_URL_RE = /data:(?:audio|video)\/[\w.+-]+;base64,[A-Za-z0-9+/=]+/;
@@ -398,6 +400,8 @@ const RuleForm: React.FC<RuleFormProps> = ({
   const [revealAnchor, setRevealAnchor] = useState<
     { index: number; left: number; top: number; src: string; reveal: boolean; effect: string; curve: string } | null
   >(null);
+  // Slider position (0..100) for previewing the reveal at a given progress
+  const [previewProgress, setPreviewProgress] = useState(0);
 
   const handleEditorClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
@@ -411,6 +415,7 @@ const RuleForm: React.FC<RuleFormProps> = ({
     } catch { /* not a Quill-managed node */ }
     if (index < 0) return;
     const rect = target.getBoundingClientRect();
+    setPreviewProgress(0); // start the preview fully hidden
     setRevealAnchor({
       index,
       left: rect.left + rect.width / 2,
@@ -672,8 +677,9 @@ const RuleForm: React.FC<RuleFormProps> = ({
         anchorReference="anchorPosition"
         anchorPosition={revealAnchor ? { top: revealAnchor.top, left: revealAnchor.left } : undefined}
         transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+        PaperProps={{ sx: { maxHeight: '80vh', overflowY: 'auto' } }}
       >
-        <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5, minWidth: 240 }}>
+        <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5, width: 300, maxWidth: '90vw' }}>
           <FormControlLabel
             control={
               <Switch
@@ -709,6 +715,33 @@ const RuleForm: React.FC<RuleFormProps> = ({
                   <MenuItem value="fast-start">{t('reveal.fastStart')}</MenuItem>
                 </Select>
               </FormControl>
+
+              {/* Preview the reveal at a draggable progress (as it was previously) */}
+              <Box sx={{
+                borderRadius: '8px',
+                overflow: 'hidden',
+                border: '1px solid var(--glass-border)',
+                backgroundColor: 'var(--bg-darker)',
+                maxHeight: 200,
+              }}>
+                <EffectPreview
+                  src={revealAnchor.src}
+                  effect={revealAnchor.effect as RevealEffect}
+                  progress={applyRevealCurve(previewProgress / 100, revealAnchor.curve as RevealCurve)}
+                />
+              </Box>
+              <Box sx={{ px: 0.5 }}>
+                <Typography variant="caption" color="text.secondary">
+                  {t('reveal.simulateProgress', { percent: previewProgress })}
+                </Typography>
+                <Slider
+                  size="small"
+                  value={previewProgress}
+                  onChange={(_, v) => setPreviewProgress(v as number)}
+                  min={0}
+                  max={100}
+                />
+              </Box>
             </>
           )}
         </Box>
