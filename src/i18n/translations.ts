@@ -283,6 +283,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'basicInfo.title': 'Basic Information',
 
     // Progressive reveal editor
+    'reveal.progressiveReveal': 'Progressive reveal',
     'reveal.hidingEffect': 'Hiding effect',
     'reveal.blur': 'Blur',
     'reveal.pixelate': 'Pixelate',
@@ -618,6 +619,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'basicInfo.title': 'Основна інформація',
 
     // Progressive reveal editor
+    'reveal.progressiveReveal': 'Поступове відкриття',
     'reveal.hidingEffect': 'Ефект приховування',
     'reveal.blur': 'Розмиття',
     'reveal.pixelate': 'Пікселізація',

@@ -22,6 +22,21 @@ export function normalizeQuestion(q: Question): Question {
   if (!q || typeof q !== 'object') return q;
   const legacy = LEGACY_TYPE_MAP[q.type as string];
   if (legacy) return { ...q, ...legacy };
+  // Progressive-reveal is now an inline-image option: migrate the question-level
+  // image + effect/curve into a normal question whose content is a reveal image.
+  if ((q.type as string) === 'progressive-reveal') {
+    const effect = q.effect || 'blur';
+    const curve = q.curve || 'linear';
+    const content = `<p><img src="${q.image || ''}" data-reveal="true" data-effect="${effect}" data-curve="${curve}"></p>`;
+    return {
+      ...q,
+      type: 'normal' as Question['type'],
+      rules: [{ type: 'embedded', content, duration: q.duration || 60 }] as Question['rules'],
+      image: undefined,
+      effect: undefined,
+      curve: undefined,
+    } as Question;
+  }
   // Crocodile: fold the legacy crocodile_mode into the unified response axis.
   if (q.type === 'crocodile' && q.response === undefined && q.crocodile_mode) {
     return { ...q, response: (q.crocodile_mode === 'dixit' ? 'text' : 'buzz') as Question['response'] };

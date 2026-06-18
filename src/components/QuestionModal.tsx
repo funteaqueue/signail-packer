@@ -729,7 +729,6 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                         <MenuItem value={QuestionType.Empty}>{t('questionType.empty')}</MenuItem>
                         <MenuItem value={QuestionType.FindACat}>{t('questionType.findACat')}</MenuItem>
                         <MenuItem value={QuestionType.CloseEnough}>{t('questionType.closeEnough')}</MenuItem>
-                        <MenuItem value={QuestionType.ProgressiveReveal}>{t('questionType.progressiveReveal')}</MenuItem>
                         <MenuItem value={QuestionType.Karaoke}>{t('questionType.karaoke')}</MenuItem>
                         <MenuItem value={QuestionType.Crocodile}>{t('questionType.crocodile')}</MenuItem>
                         <MenuItem value={QuestionType.Voting}>{t('questionType.voting')}</MenuItem>

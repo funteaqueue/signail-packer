@@ -15,6 +15,9 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Switch,
+  FormControlLabel,
+  Popover,
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon, Close as CloseIcon, ContentCut as ContentCutIcon } from '@mui/icons-material';
 import { Rule, RuleType } from '../types/quiz';
@@ -79,6 +82,58 @@ class CustomAudio extends BlockEmbed {
 }
 
 Quill.register('formats/audio', CustomAudio, true);
+
+// Custom image blot that round-trips progressive-reveal config. A plain image
+// is still stored as a bare src string (default behavior); a reveal image is
+// stored as { src, reveal, effect, curve } and renders <img data-reveal
+// data-effect data-curve> so the game can drive the reveal.
+const ImageBlot = Quill.import('formats/image') as any;
+class RevealImage extends ImageBlot {
+  static blotName = 'image';
+  static tagName = 'IMG';
+
+  static create(value: any) {
+    const src = typeof value === 'string' ? value : (value && value.src);
+    const node = super.create(src) as HTMLElement;
+    if (value && typeof value === 'object' && value.reveal) {
+      node.setAttribute('data-reveal', 'true');
+      node.setAttribute('data-effect', value.effect || 'blur');
+      node.setAttribute('data-curve', value.curve || 'linear');
+    }
+    return node;
+  }
+
+  static value(node: HTMLElement) {
+    const src = node.getAttribute('src');
+    if (node.hasAttribute('data-reveal')) {
+      return {
+        src,
+        reveal: true,
+        effect: node.getAttribute('data-effect') || 'blur',
+        curve: node.getAttribute('data-curve') || 'linear',
+      };
+    }
+    return src;
+  }
+}
+Quill.register('formats/image', RevealImage, true);
+
+// Preserve the reveal data-attributes when HTML is parsed into the editor
+// (loading a saved question, or pasting) — the default img matcher drops them.
+const DeltaCtor = Quill.import('delta') as any;
+const revealImageMatcher = (node: any, delta: any) => {
+  if (node && node.getAttribute && node.getAttribute('data-reveal')) {
+    return new DeltaCtor().insert({
+      image: {
+        src: node.getAttribute('src'),
+        reveal: true,
+        effect: node.getAttribute('data-effect') || 'blur',
+        curve: node.getAttribute('data-curve') || 'linear',
+      },
+    });
+  }
+  return delta;
+};
 
 interface RuleFormProps {
   rules: Rule[];
@@ -338,6 +393,54 @@ const RuleForm: React.FC<RuleFormProps> = ({
     if (!dragOver) setDragOver(true);
   };
 
+  // Clicking an image in the editor opens a popover to toggle progressive
+  // reveal and pick its effect/curve, stored on that image.
+  const [revealAnchor, setRevealAnchor] = useState<
+    { index: number; left: number; top: number; src: string; reveal: boolean; effect: string; curve: string } | null
+  >(null);
+
+  const handleEditorClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (!target || target.tagName !== 'IMG') return;
+    const quill = quillRef.current?.getEditor();
+    if (!quill) return;
+    let index = -1;
+    try {
+      const blot = (Quill as any).find(target);
+      index = quill.getIndex(blot);
+    } catch { /* not a Quill-managed node */ }
+    if (index < 0) return;
+    const rect = target.getBoundingClientRect();
+    setRevealAnchor({
+      index,
+      left: rect.left + rect.width / 2,
+      top: rect.bottom,
+      src: target.getAttribute('src') || '',
+      reveal: target.hasAttribute('data-reveal'),
+      effect: target.getAttribute('data-effect') || 'blur',
+      curve: target.getAttribute('data-curve') || 'linear',
+    });
+  };
+
+  // Re-insert the clicked image with the updated reveal config (replacing the
+  // embed in place so the change round-trips through Quill's model).
+  const applyReveal = (patch: Partial<{ reveal: boolean; effect: string; curve: string }>) => {
+    setRevealAnchor(prev => {
+      if (!prev) return prev;
+      const next = { ...prev, ...patch };
+      const quill = quillRef.current?.getEditor();
+      if (quill) {
+        quill.deleteText(next.index, 1, 'user');
+        const value = next.reveal
+          ? { src: next.src, reveal: true, effect: next.effect, curve: next.curve }
+          : next.src;
+        quill.insertEmbed(next.index, 'image', value as any, 'user');
+        quill.setSelection(next.index + 1, 0);
+      }
+      return next;
+    });
+  };
+
   const modules = useMemo(() => ({
     toolbar: {
       container: [
@@ -354,6 +457,9 @@ const RuleForm: React.FC<RuleFormProps> = ({
         paint: paintHandler,
         youtube: youtubeHandler,
       },
+    },
+    clipboard: {
+      matchers: [['img', revealImageMatcher]],
     },
   }), []);
 
@@ -380,6 +486,7 @@ const RuleForm: React.FC<RuleFormProps> = ({
             onDropCapture={handleDrop}
             onDragOverCapture={handleDragOver}
             onDragLeave={() => setDragOver(false)}
+            onClick={handleEditorClick}
             sx={{
               position: 'relative',
               maxHeight: '400px',
@@ -395,7 +502,13 @@ const RuleForm: React.FC<RuleFormProps> = ({
               '& .ql-editor': {
                 maxHeight: '400px',
                 width: '100%',
-              }
+              },
+              // Click any image to configure reveal; reveal images are outlined
+              '& .ql-editor img': { cursor: 'pointer' },
+              '& .ql-editor img[data-reveal]': {
+                outline: '3px solid var(--primary)',
+                outlineOffset: '2px',
+              },
             }}>
             {dragOver && (
               <Box sx={{
@@ -551,6 +664,55 @@ const RuleForm: React.FC<RuleFormProps> = ({
         onClose={() => setYoutubeOpen(false)}
         onApply={(url, kind) => insertMediaUrl(kind, url)}
       />
+
+      {/* Per-image progressive-reveal config (opened by clicking an image) */}
+      <Popover
+        open={!!revealAnchor}
+        onClose={() => setRevealAnchor(null)}
+        anchorReference="anchorPosition"
+        anchorPosition={revealAnchor ? { top: revealAnchor.top, left: revealAnchor.left } : undefined}
+        transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5, minWidth: 240 }}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={!!revealAnchor?.reveal}
+                onChange={(e) => applyReveal({ reveal: e.target.checked })}
+              />
+            }
+            label={t('reveal.progressiveReveal')}
+          />
+          {revealAnchor?.reveal && (
+            <>
+              <FormControl size="small" fullWidth>
+                <InputLabel>{t('reveal.hidingEffect')}</InputLabel>
+                <Select
+                  label={t('reveal.hidingEffect')}
+                  value={revealAnchor.effect}
+                  onChange={(e) => applyReveal({ effect: e.target.value })}
+                >
+                  <MenuItem value="blur">{t('reveal.blur')}</MenuItem>
+                  <MenuItem value="pixelate">{t('reveal.pixelate')}</MenuItem>
+                  <MenuItem value="zoom">{t('reveal.zoomOut')}</MenuItem>
+                </Select>
+              </FormControl>
+              <FormControl size="small" fullWidth>
+                <InputLabel>{t('reveal.speed')}</InputLabel>
+                <Select
+                  label={t('reveal.speed')}
+                  value={revealAnchor.curve}
+                  onChange={(e) => applyReveal({ curve: e.target.value })}
+                >
+                  <MenuItem value="linear">{t('reveal.linear')}</MenuItem>
+                  <MenuItem value="slow-start">{t('reveal.slowStart')}</MenuItem>
+                  <MenuItem value="fast-start">{t('reveal.fastStart')}</MenuItem>
+                </Select>
+              </FormControl>
+            </>
+          )}
+        </Box>
+      </Popover>
     </Box>
   );
 };
