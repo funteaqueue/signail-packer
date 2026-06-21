@@ -15,8 +15,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'header.quizName': 'Quiz Name',
     'header.author': 'Author',
     'header.upload': 'Upload',
-    'header.repack': 'Repack',
-    'header.repacking': 'Repacking...',
     'header.download': 'Download',
     'header.downloading': 'Packing...',
     'header.clear': 'Clear',
@@ -216,6 +214,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'ruleForm.durationLabel': 'Duration:',
     'ruleForm.dropMedia': 'Drop image, audio or video to add it',
     'ruleForm.trimMedia': 'Trim audio/video',
+    'ruleForm.pasteImageLinkWarning': '{count} image(s) were pasted as a web link, not a file, so they aren\'t embedded in the quiz and may break later. Tip: use the browser\'s "Copy image" (not "Copy link"), or save the image to your device and paste the file.',
     'mediaTrim.title': 'Trim media',
     'mediaTrim.preview': 'Preview selection',
     'mediaTrim.stop': 'Stop',
@@ -334,8 +333,6 @@ export const translations: Record<Language, Record<string, string>> = {
 
     // Quiz form alerts
     'quiz.uploadError': "Error loading JSON file. Please make sure it's a valid quiz JSON file.",
-    'quiz.repackError': 'Failed to repack SIQ package. {message}',
-    'quiz.repackErrorFallback': 'Please make sure the SIQ archive is valid.',
 
     // Review form
     'review.title': 'Review Quiz',
@@ -357,8 +354,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'header.quizName': 'Назва квізу',
     'header.author': 'Автор',
     'header.upload': 'Імпортувати',
-    'header.repack': 'Перепакувати',
-    'header.repacking': 'Перепакування...',
     'header.download': 'Завантажити',
     'header.downloading': 'Пакування...',
     'header.clear': 'Очистити',
@@ -558,6 +553,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'ruleForm.durationLabel': 'Тривалість:',
     'ruleForm.dropMedia': 'Перетягніть зображення, аудіо або відео, щоб додати',
     'ruleForm.trimMedia': 'Обрізати аудіо/відео',
+    'ruleForm.pasteImageLinkWarning': 'Зображень вставлено як веб-посилання, а не як файл: {count}. Вони не вбудовані у вікторину й згодом можуть не відкритися. Порада: скористайтеся «Копіювати зображення» (а не «Копіювати посилання») або збережіть зображення на пристрій і вставте файл.',
     'mediaTrim.title': 'Обрізати медіа',
     'mediaTrim.preview': 'Прослухати вибране',
     'mediaTrim.stop': 'Стоп',
@@ -676,8 +672,6 @@ export const translations: Record<Language, Record<string, string>> = {
 
     // Quiz form alerts
     'quiz.uploadError': 'Помилка завантаження JSON-файлу. Переконайтеся, що це коректний файл квізу.',
-    'quiz.repackError': 'Не вдалося перепакувати SIQ-пакет. {message}',
-    'quiz.repackErrorFallback': 'Переконайтеся, що SIQ-архів коректний.',
 
     // Review form
     'review.title': 'Перевірка квізу',

@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { Box, TextField, Button, Typography, Select, MenuItem } from '@mui/material';
-import { Upload, Download, DeleteForever, Autorenew } from '@mui/icons-material';
+import { Upload, Download, DeleteForever } from '@mui/icons-material';
 import { useTranslation } from '../i18n/LanguageContext';
 import LanguageSwitcher from '../i18n/LanguageSwitcher';
 import { THEMES } from '../theme/themes';
@@ -14,8 +14,6 @@ interface QuizHeaderProps {
     onUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
     onDownload: () => void;
     onClear: () => void;
-    onRepackFile: (file: File) => void;
-    repacking: boolean;
     downloading: boolean;
 }
 
@@ -27,32 +25,21 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({
     onUpload,
     onDownload,
     onClear,
-    onRepackFile,
-    repacking,
     downloading,
 }) => {
     const { t } = useTranslation();
     const { themeId, setThemeId } = useAppTheme();
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const repackInputRef = useRef<HTMLInputElement>(null);
-
-    const handleRepackChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            onRepackFile(file);
-        }
-        if (repackInputRef.current) {
-            repackInputRef.current.value = '';
-        }
-    };
 
     return (
         <Box
             sx={{
                 display: 'flex',
+                flexWrap: 'wrap',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                padding: '20px 32px',
+                gap: 2,
+                padding: { xs: '16px 20px', md: '20px 32px' },
                 background: 'var(--glass-bg)',
                 backdropFilter: 'blur(10px)',
                 border: '1px solid var(--glass-border)',
@@ -60,8 +47,17 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({
                 marginBottom: '24px',
             }}
         >
-            <Box sx={{ display: 'flex', gap: 3, alignItems: 'center', flex: 1 }}>
-                <Typography variant="h5" className="gradient-text" sx={{ fontWeight: 700 }}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: { xs: 1.5, md: 3 },
+                    alignItems: 'center',
+                    flex: '1 1 320px',
+                    minWidth: 0,
+                }}
+            >
+                <Typography variant="h5" className="gradient-text" sx={{ fontWeight: 700, whiteSpace: 'nowrap' }}>
                     {t('header.title')}
                 </Typography>
                 <TextField
@@ -69,18 +65,18 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({
                     value={quizName}
                     onChange={(e) => onQuizNameChange(e.target.value)}
                     size="small"
-                    sx={{ width: '250px' }}
+                    sx={{ flex: '1 1 200px', minWidth: 140, maxWidth: 250 }}
                 />
                 <TextField
                     label={t('header.author')}
                     value={author}
                     onChange={(e) => onAuthorChange(e.target.value)}
                     size="small"
-                    sx={{ width: '200px' }}
+                    sx={{ flex: '1 1 160px', minWidth: 120, maxWidth: 200 }}
                 />
             </Box>
 
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center' }}>
                 <Select
                     value={themeId}
                     onChange={(e) => setThemeId(e.target.value)}
@@ -109,13 +105,6 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({
                     style={{ display: 'none' }}
                     ref={fileInputRef}
                 />
-                <input
-                    type="file"
-                    accept=".siq"
-                    onChange={handleRepackChange}
-                    style={{ display: 'none' }}
-                    ref={repackInputRef}
-                />
                 <Button
                     variant="outlined"
                     startIcon={<Upload />}
@@ -123,15 +112,6 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({
                     size="small"
                 >
                     {t('header.upload')}
-                </Button>
-                <Button
-                    variant="outlined"
-                    startIcon={<Autorenew />}
-                    onClick={() => repackInputRef.current?.click()}
-                    size="small"
-                    disabled={repacking}
-                >
-                    {repacking ? t('header.repacking') : t('header.repack')}
                 </Button>
                 <Button
                     variant="outlined"

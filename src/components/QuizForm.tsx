@@ -4,7 +4,6 @@ import { DragEndEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { Quiz, Round, Question, Theme } from '../types/quiz';
 import { saveQuiz, loadQuiz, initDB, clearStorage } from '../services/storage';
-import { convertSIQFromFile } from '../services/siqConverter';
 import { packQuiz } from '../utils/packQuiz';
 import { useTranslation } from '../i18n/LanguageContext';
 import QuizHeader from './QuizHeader';
@@ -27,7 +26,6 @@ const QuizForm: React.FC = () => {
   const [dbReady, setDbReady] = useState(false);
   const saveTimeoutRef = useRef<number | null>(null);
   const latestQuizRef = useRef(quizData);
-  const [repacking, setRepacking] = useState(false);
   const [downloading, setDownloading] = useState(false);
 
   // Question Modal State
@@ -398,25 +396,6 @@ const QuizForm: React.FC = () => {
     }
   };
 
-  const handleRepackFile = async (file: File) => {
-    setRepacking(true);
-    try {
-      const convertedQuiz = await convertSIQFromFile(file);
-      const safeQuiz = {
-        ...convertedQuiz,
-        rounds: convertedQuiz.rounds && convertedQuiz.rounds.length > 0 ? convertedQuiz.rounds : [{ name: 'Round 1', themes: [] }],
-      };
-      setQuizData(ensureQuizIds(safeQuiz));
-      setCurrentRoundIndex(0);
-    } catch (error) {
-      console.error('Error repacking SIQ package:', error);
-      const message = error instanceof Error ? error.message : t('quiz.repackErrorFallback');
-      alert(t('quiz.repackError', { message }));
-    } finally {
-      setRepacking(false);
-    }
-  };
-
   const handleClearStorage = async () => {
     try {
       await clearStorage();
@@ -455,9 +434,7 @@ const QuizForm: React.FC = () => {
         onAuthorChange={(author: string) => setQuizData((prev: Quiz) => ({ ...prev, author }))}
         onUpload={handleFileUpload}
         onDownload={handleDownload}
-        onRepackFile={handleRepackFile}
         onClear={handleClearStorage}
-        repacking={repacking}
         downloading={downloading}
       />
 

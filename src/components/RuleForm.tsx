@@ -1,4 +1,4 @@
-import React, { useState, Component, useEffect, useRef, useMemo } from 'react';
+import React, { useState, Component, useRef, useMemo } from 'react';
 import {
   Box,
   Button,
@@ -19,11 +19,14 @@ import {
   FormControlLabel,
   Popover,
   Slider,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon, Close as CloseIcon, ContentCut as ContentCutIcon } from '@mui/icons-material';
 import { Rule, RuleType, RevealEffect, RevealCurve } from '../types/quiz';
 import { isContentEmpty } from '../utils/contentUtils';
 import { embedExternalImages } from '../utils/embedImages';
+import { usePasteImageBytes } from '../hooks/usePasteImageBytes';
 import { useTranslation } from '../i18n/LanguageContext';
 import MediaTrimmer from './MediaTrimmer';
 import AudioRecorder from './AudioRecorder';
@@ -224,6 +227,11 @@ const RuleForm: React.FC<RuleFormProps> = ({
   };
 
   const quillRef = useRef<ReactQuill>(null);
+  // Pasting an image as bytes (vs. a remote link) is handled by a shared hook.
+  const { pasteWarning, clearPasteWarning } = usePasteImageBytes(
+    quillRef,
+    (count) => t('ruleForm.pasteImageLinkWarning', { count }),
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -746,6 +754,17 @@ const RuleForm: React.FC<RuleFormProps> = ({
           )}
         </Box>
       </Popover>
+
+      <Snackbar
+        open={!!pasteWarning}
+        autoHideDuration={9000}
+        onClose={clearPasteWarning}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="info" variant="filled" onClose={clearPasteWarning}>
+          {pasteWarning}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

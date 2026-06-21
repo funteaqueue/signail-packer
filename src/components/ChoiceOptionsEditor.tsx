@@ -10,6 +10,8 @@ import {
   Checkbox,
   Radio,
   Tooltip,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -23,6 +25,7 @@ import { useTranslation } from '../i18n/LanguageContext';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import '../quill-theme.css';
+import { usePasteImageBytes } from '../hooks/usePasteImageBytes';
 // RuleForm registers the custom video/audio Quill blots on import; QuestionModal
 // always imports RuleForm, so the formats are available here as well.
 
@@ -59,6 +62,11 @@ const ChoiceOptionsEditor: React.FC<ChoiceOptionsEditorProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
+  // Prefer clipboard image bytes over remote <img> links on paste (shared with RuleForm).
+  const { pasteWarning, clearPasteWarning } = usePasteImageBytes(
+    quillRef,
+    (count) => t('ruleForm.pasteImageLinkWarning', { count }),
+  );
 
   const handleMediaFile = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -293,6 +301,17 @@ const ChoiceOptionsEditor: React.FC<ChoiceOptionsEditorProps> = ({
           </IconButton>
         </Paper>
       ))}
+
+      <Snackbar
+        open={!!pasteWarning}
+        autoHideDuration={9000}
+        onClose={clearPasteWarning}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="info" variant="filled" onClose={clearPasteWarning}>
+          {pasteWarning}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
