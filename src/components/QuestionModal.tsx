@@ -315,7 +315,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
         const userSelectionVal = supportsSelection ? (formData.user_selection || undefined) : undefined;
         const allowSelfPickVal = selectionActive ? (formData.allow_self_pick || undefined) : undefined;
         // Persist a non-default answer method (buzz is the default, left implicit)
-        const responseVal = supportsResponseToggle && (isTextResponse || isChoiceResponse)
+        const responseVal = supportsResponseToggle && formData.response && formData.response !== 'buzz'
             ? formData.response : undefined;
         const hiddenVal = supportsHidden && typeof formData.hidden_until_reveal === 'boolean'
             ? formData.hidden_until_reveal
@@ -568,11 +568,12 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                         <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>{t('question.responseMethod')}</Typography>
                         <Select
                             value={formData.response || 'buzz'}
-                            onChange={(e) => setFormData(prev => ({ ...prev, response: e.target.value as 'buzz' | 'text' | 'choice' }))}
+                            onChange={(e) => setFormData(prev => ({ ...prev, response: e.target.value as 'buzz' | 'multi-buzz' | 'text' | 'choice' }))}
                             size="small"
                             sx={{ minWidth: '220px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', '& .MuiOutlinedInput-notchedOutline': { border: 'none' } }}
                         >
                             <MenuItem value="buzz">{t('question.responseBuzz')}</MenuItem>
+                            <MenuItem value="multi-buzz">{t('question.responseMultiBuzz')}</MenuItem>
                             <MenuItem value="text">{t('question.responseText')}</MenuItem>
                             <MenuItem value="choice">{t('question.responseChoice')}</MenuItem>
                         </Select>

@@ -51,6 +51,7 @@ interface GameBoardGridProps {
     onNextRound: () => void;
     onRoundNameChange: (name: string) => void;
     onThemeNameChange: (themeIndex: number, name: string) => void;
+    onThemeOrderedToggle: (themeIndex: number) => void;
     onQuestionClick: (themeIndex: number, questionIndex: number) => void;
     onAddQuestion: (themeIndex: number) => void;
     onDeleteTheme: (themeIndex: number) => void;
@@ -68,6 +69,7 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({
     onNextRound,
     onRoundNameChange,
     onThemeNameChange,
+    onThemeOrderedToggle,
     onQuestionClick,
     onAddQuestion,
     onDeleteTheme,
@@ -275,6 +277,7 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({
                                     theme={theme}
                                     themeIndex={themeIndex}
                                     onThemeNameChange={(name: string) => onThemeNameChange(themeIndex, name)}
+                                    onThemeOrderedToggle={() => onThemeOrderedToggle(themeIndex)}
                                     onQuestionClick={(questionIndex: number) => onQuestionClick(themeIndex, questionIndex)}
                                     onAddQuestion={() => onAddQuestion(themeIndex)}
                                     onDeleteTheme={() => onDeleteTheme(themeIndex)}

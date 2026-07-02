@@ -90,9 +90,10 @@ export const translations: Record<Language, Record<string, string>> = {
     'question.allowSelfPick': 'Picker can choose themselves',
     'question.responseMethod': 'Answer method',
     'question.responseBuzz': 'Buzz (race on the spacebar)',
+    'question.responseMultiBuzz': 'Multi buzz (repeat answers)',
     'question.responseText': 'Text field (everyone submits)',
     'question.responseChoice': 'Multiple choice (pick from options)',
-    'question.responseHelper': 'Buzz: fastest correct answer takes the board. Text field / choice: everyone submits and the host awards +/- to each.',
+    'question.responseHelper': 'Buzz: fastest correct answer takes the board. Multi buzz: after the host judges an answer the same player may buzz again while time remains — for questions with many valid answers. Text field / choice: everyone submits and the host awards +/- to each.',
     'question.hiddenUntilReveal': 'Hide answers until I reveal them',
     'question.perfectBonus': 'Perfect guess bonus',
     'question.perfectBonusHelper': 'Extra points for the exact answer. 0 = none',
@@ -311,6 +312,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'theme.moveToRound': 'Move to round',
     'theme.noOtherRounds': 'No other rounds',
     'theme.confirmDelete': 'Delete this theme and all its questions? This cannot be undone.',
+    'theme.orderedOn': 'Ordered theme: in the game, questions unlock left to right. Click to make free-pick.',
+    'theme.orderedOff': 'Free-pick theme: any question can be opened. Click to make ordered (left to right).',
 
     // Question form (legacy step form)
     'questionForm.questions': 'Questions',
@@ -429,9 +432,10 @@ export const translations: Record<Language, Record<string, string>> = {
     'question.allowSelfPick': 'Можна обрати самого себе',
     'question.responseMethod': 'Спосіб відповіді',
     'question.responseBuzz': 'Кнопка (гонка на пробілі)',
+    'question.responseMultiBuzz': 'Мультикнопка (повторні відповіді)',
     'question.responseText': 'Текстове поле (усі надсилають)',
     'question.responseChoice': 'Вибір варіанта (з опцій)',
-    'question.responseHelper': 'Кнопка: найшвидша правильна відповідь забирає хід. Текстове поле / вибір: усі надсилають відповідь, а ведучий нараховує +/− кожному.',
+    'question.responseHelper': 'Кнопка: найшвидша правильна відповідь забирає хід. Мультикнопка: після вердикту ведучого той самий гравець може натискати знову, поки є час — для питань із багатьма правильними відповідями. Текстове поле / вибір: усі надсилають відповідь, а ведучий нараховує +/− кожному.',
     'question.hiddenUntilReveal': 'Приховати відповіді до показу',
     'question.perfectBonus': 'Бонус за точну відповідь',
     'question.perfectBonusHelper': 'Додаткові бали за абсолютно точну відповідь. 0 = без бонусу',
@@ -650,6 +654,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'theme.moveToRound': 'Перемістити в раунд',
     'theme.noOtherRounds': 'Інших раундів немає',
     'theme.confirmDelete': 'Видалити цю тему та всі її питання? Цю дію не можна скасувати.',
+    'theme.orderedOn': 'Впорядкована тема: у грі питання відкриваються зліва направо. Натисніть, щоб зробити вільний вибір.',
+    'theme.orderedOff': 'Вільний вибір: можна відкрити будь-яке питання. Натисніть, щоб зробити тему впорядкованою (зліва направо).',
 
     // Question form (legacy step form)
     'questionForm.questions': 'Питання',

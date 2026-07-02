@@ -61,5 +61,8 @@ export function hasUserSelection(q: Question): boolean {
 // Types whose answer method (buzz / text field / choice) can be chosen.
 export const RESPONSE_TOGGLE_TYPES = ['normal', 'progressive-reveal', 'crocodile'];
 
-// Response methods offered by the answer-method picker.
-export type ResponseMethodOption = 'buzz' | 'text' | 'choice';
+// Response methods offered by the answer-method picker. 'multi-buzz' is a
+// buzz race where the host's verdict consumes the buzz instead of ending the
+// player's participation — the same player may buzz again while the timer
+// runs (for open questions with many valid answers).
+export type ResponseMethodOption = 'buzz' | 'multi-buzz' | 'text' | 'choice';

@@ -182,6 +182,23 @@ const QuizForm: React.FC = () => {
     });
   };
 
+  // Ordered theme: in the game its questions unlock strictly left to right.
+  // The toggle is written immutably: an in-place `ordered = !ordered` would
+  // flip twice under StrictMode's double-invoked updaters.
+  const handleThemeOrderedToggle = (themeIndex: number) => {
+    setQuizData((prev: Quiz) => ({
+      ...prev,
+      rounds: prev.rounds.map((round, rIdx) =>
+        rIdx !== currentRoundIndex ? round : {
+          ...round,
+          themes: round.themes.map((theme, tIdx) =>
+            tIdx !== themeIndex ? theme : { ...theme, ordered: !theme.ordered }
+          ),
+        }
+      ),
+    }));
+  };
+
   const handleAddTheme = () => {
     setQuizData((prev: Quiz) => {
       let maxThemeId = 0;
@@ -446,6 +463,7 @@ const QuizForm: React.FC = () => {
         onNextRound={handleNextRound}
         onRoundNameChange={handleRoundNameChange}
         onThemeNameChange={handleThemeNameChange}
+        onThemeOrderedToggle={handleThemeOrderedToggle}
         onQuestionClick={handleQuestionClick}
         onAddQuestion={handleAddQuestion}
         onDeleteTheme={handleDeleteTheme}

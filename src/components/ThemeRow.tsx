@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Box, TextField, IconButton, Typography, Menu, MenuItem } from '@mui/material';
-import { Delete as DeleteIcon, DragIndicator as DragIndicatorIcon } from '@mui/icons-material';
+import { Box, TextField, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
+import { Delete as DeleteIcon, DragIndicator as DragIndicatorIcon, ArrowRightAlt as ArrowRightAltIcon } from '@mui/icons-material';
 import { useSortable, SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Round, Theme, QuestionType } from '../types/quiz';
@@ -12,6 +12,7 @@ interface ThemeRowProps {
     theme: Theme;
     themeIndex: number;
     onThemeNameChange: (name: string) => void;
+    onThemeOrderedToggle: () => void;
     onQuestionClick: (questionIndex: number) => void;
     onAddQuestion: () => void;
     onDeleteTheme: () => void;
@@ -24,6 +25,7 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
     theme,
     themeIndex,
     onThemeNameChange,
+    onThemeOrderedToggle,
     onQuestionClick,
     onAddQuestion,
     onDeleteTheme,
@@ -183,19 +185,41 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
                         {theme.name || t('theme.unnamed')}
                     </Box>
                 )}
-                <IconButton
-                    onClick={handleDeleteTheme}
-                    size="small"
-                    sx={{
-                        color: 'var(--danger)',
-                        '&:hover': {
+                {/* Compact icon column so the fixed-width name box keeps its
+                    room for text: ordered toggle on top, delete below */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <Tooltip title={t(theme.ordered ? 'theme.orderedOn' : 'theme.orderedOff')} arrow>
+                        <IconButton
+                            onClick={onThemeOrderedToggle}
+                            size="small"
+                            sx={{
+                                padding: '2px',
+                                color: theme.ordered ? 'var(--primary)' : 'var(--text-muted)',
+                                background: theme.ordered ? 'var(--surface-soft)' : 'transparent',
+                                '&:hover': {
+                                    color: 'var(--primary)',
+                                    background: 'var(--surface-soft)',
+                                },
+                            }}
+                        >
+                            <ArrowRightAltIcon sx={{ fontSize: 16 }} />
+                        </IconButton>
+                    </Tooltip>
+                    <IconButton
+                        onClick={handleDeleteTheme}
+                        size="small"
+                        sx={{
+                            padding: '2px',
                             color: 'var(--danger)',
-                            background: 'var(--surface-soft)',
-                        },
-                    }}
-                >
-                    <DeleteIcon fontSize="small" />
-                </IconButton>
+                            '&:hover': {
+                                color: 'var(--danger)',
+                                background: 'var(--surface-soft)',
+                            },
+                        }}
+                    >
+                        <DeleteIcon sx={{ fontSize: 16 }} />
+                    </IconButton>
+                </Box>
             </Box>
 
             {/* Questions Grid */}

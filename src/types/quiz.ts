@@ -52,13 +52,13 @@ export interface Question {
   user_selection?: boolean;
   /** When user_selection is on, the picker may choose themselves. */
   allow_self_pick?: boolean;
-  /** Answer method for normal/progressive-reveal questions: buzz race or text field. Defaults to 'buzz'. */
+  /** Answer method for normal/progressive-reveal/crocodile questions: buzz race, multi-buzz (a judged answer lets the player buzz again), text field or choice. Defaults to 'buzz'. */
   response?: ResponseMethod;
   /** Keep submitted answers masked from other players until the host reveals them. Defaults by type (text/numeric hidden, choice live). */
   hidden_until_reveal?: boolean;
 }
 
-export type ResponseMethod = 'buzz' | 'text' | 'choice';
+export type ResponseMethod = 'buzz' | 'multi-buzz' | 'text' | 'choice';
 
 export type LyricsFormat = 'plain' | 'lrc';
 
