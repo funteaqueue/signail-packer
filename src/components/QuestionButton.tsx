@@ -1,9 +1,10 @@
 import React from 'react';
-import { Box } from '@mui/material';
-import { Edit as EditIcon } from '@mui/icons-material';
+import { Box, IconButton, Tooltip } from '@mui/material';
+import { ContentCopy as ContentCopyIcon, DeleteOutline as DeleteIcon } from '@mui/icons-material';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Question } from '../types/quiz';
+import { useTranslation } from '../i18n/LanguageContext';
 
 interface QuestionButtonProps {
     id: string;
@@ -11,12 +12,15 @@ interface QuestionButtonProps {
     price: number;
     onClick: () => void;
     hasContent: boolean;
+    onDuplicate?: () => void;
+    onDelete?: () => void;
     // Theme-row index: in Party Mix every row gets its own tile color
     // (html[data-theme="party"] .q-cell--r* rules in index.css)
     rowIndex?: number;
 }
 
-const QuestionButton: React.FC<QuestionButtonProps> = ({ id, question, price, onClick, hasContent, rowIndex }) => {
+const QuestionButton: React.FC<QuestionButtonProps> = ({ id, question, price, onClick, onDuplicate, onDelete, hasContent, rowIndex }) => {
+    const { t } = useTranslation();
     const {
         attributes,
         listeners,
@@ -46,6 +50,7 @@ const QuestionButton: React.FC<QuestionButtonProps> = ({ id, question, price, on
                 color: 'var(--cell-text)',
                 textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
                 borderRadius: '12px',
+                position: 'relative',
                 padding: '24px 32px',
                 minWidth: '120px',
                 display: 'flex',
@@ -63,6 +68,11 @@ const QuestionButton: React.FC<QuestionButtonProps> = ({ id, question, price, on
                 '&:active': {
                     cursor: 'grabbing',
                 },
+                '&:hover .question-actions, &:focus .question-actions, &:focus-within .question-actions': {
+                    opacity: 1,
+                    visibility: 'visible',
+                    pointerEvents: 'auto',
+                },
             }}
         >
             <Box
@@ -76,40 +86,59 @@ const QuestionButton: React.FC<QuestionButtonProps> = ({ id, question, price, on
                 {question?.price?.text || price}
             </Box>
 
-            {/* Edit Indicator */}
             <Box
-                className="edit-indicator"
+                className="question-actions"
                 sx={{
                     position: 'absolute',
-                    top: '8px',
-                    right: '8px',
+                    top: '6px',
+                    right: '6px',
                     opacity: 0,
-                    transition: 'opacity 0.2s ease',
-                    color: 'rgba(255, 255, 255, 0.8)',
+                    visibility: 'hidden',
+                    pointerEvents: 'none',
+                    transition: 'opacity 0.15s ease',
                     display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'rgba(0, 0, 0, 0.2)',
-                    borderRadius: '50%',
-                    padding: '4px',
-                    '& .MuiSvgIcon-root': {
-                        fontSize: '16px',
-                    }
+                    gap: '2px',
+                    padding: '2px',
+                    borderRadius: '9px',
+                    background: 'rgba(0, 0, 0, 0.34)',
                 }}
             >
-                <EditIcon />
+                {onDuplicate && (
+                    <Tooltip title={t('question.duplicate')} arrow>
+                        <IconButton
+                            size="small"
+                            aria-label={t('question.duplicate')}
+                            onPointerDown={(event) => event.stopPropagation()}
+                            onKeyDown={(event) => event.stopPropagation()}
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                onDuplicate();
+                            }}
+                            sx={{ color: 'rgba(255,255,255,.88)', p: '4px' }}
+                        >
+                            <ContentCopyIcon sx={{ fontSize: 15 }} />
+                        </IconButton>
+                    </Tooltip>
+                )}
+                {onDelete && (
+                    <Tooltip title={t('question.delete')} arrow>
+                        <IconButton
+                            size="small"
+                            aria-label={t('question.delete')}
+                            onPointerDown={(event) => event.stopPropagation()}
+                            onKeyDown={(event) => event.stopPropagation()}
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                onDelete();
+                            }}
+                            sx={{ color: 'var(--danger)', p: '4px' }}
+                        >
+                            <DeleteIcon sx={{ fontSize: 16 }} />
+                        </IconButton>
+                    </Tooltip>
+                )}
             </Box>
 
-            <style>
-                {`
-                    .edit-indicator {
-                        transition: opacity 0.2s ease;
-                    }
-                    div:hover > .edit-indicator {
-                        opacity: 1;
-                    }
-                `}
-            </style>
         </Box>
     );
 };

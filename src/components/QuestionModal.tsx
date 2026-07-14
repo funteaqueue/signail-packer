@@ -34,6 +34,7 @@ import ChoiceOptionsEditor from './ChoiceOptionsEditor';
 import ProgressiveRevealEditor from './ProgressiveRevealEditor';
 import KaraokeEditor from './KaraokeEditor';
 import PointOnImageEditor from './PointOnImageEditor';
+import SpectrumEditor from './SpectrumEditor';
 
 
 interface QuestionModalProps {
@@ -117,6 +118,14 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
         lyrics_format: 'plain',
         crocodile_mode: 'fastest',
         vote_mode: 'open',
+        spectrum_left: '',
+        spectrum_right: '',
+        spectrum_range: 20,
+        spectrum_target_mode: 'random',
+        spectrum_target: 50,
+        spectrum_risk_mode: 'risk',
+        spectrum_clue_mode: 'text',
+        spectrum_clue_bonus: 50,
     });
 
     const [draftRule, setDraftRule] = useState<Partial<Rule>>({
@@ -181,6 +190,14 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 lyrics_format: 'plain',
                 crocodile_mode: 'fastest',
                 vote_mode: 'open',
+                spectrum_left: '',
+                spectrum_right: '',
+                spectrum_range: 20,
+                spectrum_target_mode: 'random',
+                spectrum_target: 50,
+                spectrum_risk_mode: 'risk',
+                spectrum_clue_mode: 'text',
+                spectrum_clue_bonus: 50,
             });
             setIncorrectInputValue((-defaultPrice).toString());
             setCorrectInputValue(defaultPrice.toString());
@@ -221,6 +238,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
     const isCrocodile = formData.type === QuestionType.Crocodile;
     const isVoting = formData.type === QuestionType.Voting;
     const isPointOnImage = formData.type === QuestionType.PointOnImage;
+    const isSpectrum = formData.type === QuestionType.Spectrum;
 
     // Cross-cutting options available for the current type
     const supportsSelection = SELECTION_OPTIONAL_TYPES.includes(formData.type as string);
@@ -262,6 +280,13 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
         Number(formData.accuracy_percent) <= 20
     );
 
+    const isSpectrumValid = !isSpectrum || (
+        !!formData.spectrum_left?.trim()
+        && !!formData.spectrum_right?.trim()
+        && Number(formData.spectrum_range) >= 1
+        && Number(formData.spectrum_range) <= 50
+    );
+
     const getValidationErrorMessage = () => {
         if (isCloseEnough && !isCloseEnoughValid) {
             return t('validation.closeEnough');
@@ -271,6 +296,9 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
         }
         if (isPointOnImage && !isPointOnImageValid) {
             return t('validation.pointOnImage');
+        }
+        if (isSpectrum && !isSpectrumValid) {
+            return t('validation.spectrum');
         }
         if (isChoiceResponse && !isChoiceValid) {
             if ((formData.options || []).length < 2) {
@@ -391,6 +419,47 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 map: undefined,
                 answer: undefined,
                 max_clicks: undefined,
+                perfect_bonus: undefined,
+                multiple: undefined,
+                options: undefined,
+                effect: undefined,
+                curve: undefined,
+                media: undefined,
+                lyrics: undefined,
+                lyrics_format: undefined,
+                crocodile_mode: undefined,
+                vote_mode: undefined,
+            } as Question;
+        } else if (formData.type === QuestionType.Spectrum) {
+            updatedQuestion = {
+                ...formData,
+                id: formData.id || Date.now(),
+                type: QuestionType.Spectrum,
+                ...optionFields,
+                price: {
+                    ...(formData.price || defaultPriceValue),
+                    incorrect: -Math.abs(Number(formData.price?.correct) || Number(defaultPriceValue.correct)),
+                },
+                spectrum_left: formData.spectrum_left?.trim() || '',
+                spectrum_right: formData.spectrum_right?.trim() || '',
+                spectrum_range: Math.min(50, Math.max(1, Number(formData.spectrum_range) || 20)),
+                spectrum_target_mode: formData.spectrum_target_mode === 'fixed' ? 'fixed' : 'random',
+                spectrum_target: formData.spectrum_target_mode === 'fixed'
+                    ? ((Number(formData.spectrum_target) % 100) + 100) % 100
+                    : undefined,
+                spectrum_risk_mode: formData.spectrum_risk_mode === 'safe' ? 'safe' : 'risk',
+                spectrum_clue_mode: formData.spectrum_clue_mode === 'verbal' ? 'verbal' : 'text',
+                spectrum_clue_bonus: Math.max(0, Number(formData.spectrum_clue_bonus ?? 50) || 0),
+                duration: formData.duration || 60,
+                rules: [],
+                after_round: [],
+                task: undefined,
+                name: undefined,
+                image: undefined,
+                map: undefined,
+                answer: undefined,
+                max_clicks: undefined,
+                first_place_bonus: Math.max(0, Number(formData.first_place_bonus ?? 100) || 0),
                 perfect_bonus: undefined,
                 multiple: undefined,
                 options: undefined,
@@ -552,6 +621,17 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
             updatedQuestion.accuracy_percent = undefined;
         }
 
+        if (updatedQuestion.type !== QuestionType.Spectrum) {
+            updatedQuestion.spectrum_left = undefined;
+            updatedQuestion.spectrum_right = undefined;
+            updatedQuestion.spectrum_range = undefined;
+            updatedQuestion.spectrum_target_mode = undefined;
+            updatedQuestion.spectrum_target = undefined;
+            updatedQuestion.spectrum_risk_mode = undefined;
+            updatedQuestion.spectrum_clue_mode = undefined;
+            updatedQuestion.spectrum_clue_bonus = undefined;
+        }
+
         if (updatedQuestion.type === QuestionType.FindACat) {
             rememberFindACatTask(updatedQuestion.task || '');
         }
@@ -692,7 +772,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 }
                 fullWidth
             />
-            <TextField
+            {!isSpectrum && <TextField
                 label={t('question.incorrectPoints')}
                 type="number"
                 value={incorrectInputValue}
@@ -709,7 +789,12 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 }}
                 onWheel={(e) => (e.target as HTMLInputElement).blur()}
                 fullWidth
-            />
+            />}
+            {isSpectrum && (
+                <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
+                    {t('spectrum.priceHelper')}
+                </Typography>
+            )}
             {(isChoiceResponse || isTextResponse) && (
                 <TextField
                     label={t('question.firstPlaceBonus')}
@@ -788,6 +873,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                         <MenuItem value={QuestionType.Karaoke}>{t('questionType.karaoke')}</MenuItem>
                         <MenuItem value={QuestionType.Crocodile}>{t('questionType.crocodile')}</MenuItem>
                         <MenuItem value={QuestionType.Voting}>{t('questionType.voting')}</MenuItem>
+                        <MenuItem value={QuestionType.Spectrum}>{t('questionType.spectrum')}</MenuItem>
                     </Select>
                 </Box>
             </DialogTitle>
@@ -802,7 +888,10 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                         marginBottom: 2,
                     }}
                 >
-                    {isFindACat ? [
+                    {isSpectrum ? [
+                        <Tab key="spectrum" label={t('tab.spectrumEditor')} />,
+                        <Tab key="price" label={t('tab.price')} />
+                    ] : isFindACat ? [
                         <Tab key="find-a-cat" label={t('tab.findACatEditor')} />,
                         <Tab key="price" label={t('tab.price')} />
                     ] : isPointOnImage ? [
@@ -829,7 +918,37 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                     ]}
                 </Tabs>
 
-                {isFindACat ? (
+                {isSpectrum ? (
+                    <>
+                        <TabPanel value={tabValue} index={0}>
+                            <SpectrumEditor
+                                left={formData.spectrum_left || ''}
+                                right={formData.spectrum_right || ''}
+                                range={formData.spectrum_range || 20}
+                                targetMode={formData.spectrum_target_mode || 'random'}
+                                target={formData.spectrum_target ?? 50}
+                                riskMode={formData.spectrum_risk_mode || 'risk'}
+                                clueMode={formData.spectrum_clue_mode || 'text'}
+                                firstCorrectBonus={formData.first_place_bonus ?? 100}
+                                clueGiverCorrectBonus={formData.spectrum_clue_bonus ?? 50}
+                                allowSelfPick={!!formData.allow_self_pick}
+                                duration={formData.duration || 60}
+                                onLeftChange={spectrum_left => setFormData(prev => ({ ...prev, spectrum_left }))}
+                                onRightChange={spectrum_right => setFormData(prev => ({ ...prev, spectrum_right }))}
+                                onRangeChange={spectrum_range => setFormData(prev => ({ ...prev, spectrum_range }))}
+                                onTargetModeChange={spectrum_target_mode => setFormData(prev => ({ ...prev, spectrum_target_mode }))}
+                                onTargetChange={spectrum_target => setFormData(prev => ({ ...prev, spectrum_target }))}
+                                onRiskModeChange={spectrum_risk_mode => setFormData(prev => ({ ...prev, spectrum_risk_mode }))}
+                                onClueModeChange={spectrum_clue_mode => setFormData(prev => ({ ...prev, spectrum_clue_mode }))}
+                                onFirstCorrectBonusChange={first_place_bonus => setFormData(prev => ({ ...prev, first_place_bonus }))}
+                                onClueGiverCorrectBonusChange={spectrum_clue_bonus => setFormData(prev => ({ ...prev, spectrum_clue_bonus }))}
+                                onAllowSelfPickChange={allow_self_pick => setFormData(prev => ({ ...prev, allow_self_pick }))}
+                                onDurationChange={duration => setFormData(prev => ({ ...prev, duration }))}
+                            />
+                        </TabPanel>
+                        <TabPanel value={tabValue} index={1}>{renderPriceFields()}</TabPanel>
+                    </>
+                ) : isFindACat ? (
                     <>
                         <TabPanel value={tabValue} index={0}>
                             {renderOptionsBar({ selection: true })}

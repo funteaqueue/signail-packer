@@ -5,6 +5,7 @@ import { arrayMove } from '@dnd-kit/sortable';
 import { Quiz, Round, Question, Theme } from '../types/quiz';
 import { saveQuiz, loadQuiz, initDB, clearStorage } from '../services/storage';
 import { packQuiz } from '../utils/packQuiz';
+import { duplicateQuestion, getNextQuestionId } from '../utils/duplicateQuestion';
 import { useTranslation } from '../i18n/LanguageContext';
 import QuizHeader from './QuizHeader';
 import GameBoardGrid from './GameBoardGrid';
@@ -269,6 +270,51 @@ const QuizForm: React.FC = () => {
     setModalOpen(true);
   };
 
+  const handleDuplicateQuestion = (themeIndex: number, questionIndex: number) => {
+    setQuizData((prev: Quiz) => {
+      const source = prev.rounds[currentRoundIndex]?.themes[themeIndex]?.questions[questionIndex];
+      if (!source) return prev;
+
+      const copy = duplicateQuestion(source, getNextQuestionId(prev));
+
+      return {
+        ...prev,
+        rounds: prev.rounds.map((round, roundIndex) =>
+          roundIndex !== currentRoundIndex ? round : {
+            ...round,
+            themes: round.themes.map((theme, index) =>
+              index !== themeIndex ? theme : {
+                ...theme,
+                questions: [
+                  ...theme.questions.slice(0, questionIndex + 1),
+                  copy,
+                  ...theme.questions.slice(questionIndex + 1),
+                ],
+              }
+            ),
+          }
+        ),
+      };
+    });
+  };
+
+  const handleDeleteQuestion = (themeIndex: number, questionIndex: number) => {
+    setQuizData((prev: Quiz) => ({
+      ...prev,
+      rounds: prev.rounds.map((round, roundIndex) =>
+        roundIndex !== currentRoundIndex ? round : {
+          ...round,
+          themes: round.themes.map((theme, index) =>
+            index !== themeIndex ? theme : {
+              ...theme,
+              questions: theme.questions.filter((_, index) => index !== questionIndex),
+            }
+          ),
+        }
+      ),
+    }));
+  };
+
   const handleSaveQuestion = (question: Question) => {
     if (!editingQuestion) return;
 
@@ -465,6 +511,8 @@ const QuizForm: React.FC = () => {
         onThemeNameChange={handleThemeNameChange}
         onThemeOrderedToggle={handleThemeOrderedToggle}
         onQuestionClick={handleQuestionClick}
+        onDuplicateQuestion={handleDuplicateQuestion}
+        onDeleteQuestion={handleDeleteQuestion}
         onAddQuestion={handleAddQuestion}
         onDeleteTheme={handleDeleteTheme}
         onMoveThemeToRound={handleMoveThemeToRound}

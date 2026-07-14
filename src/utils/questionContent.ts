@@ -13,6 +13,8 @@ export const questionHasContent = (question?: Question): boolean => {
       return !!question.image && !!question.correct_point;
     case QuestionType.Karaoke:
       return !!question.media;
+    case QuestionType.Spectrum:
+      return !!question.spectrum_left?.trim() && !!question.spectrum_right?.trim();
     default:
       return !!(
         (question.rules && question.rules.length > 0)

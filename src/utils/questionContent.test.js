@@ -8,6 +8,14 @@ const baseQuestion = {
 };
 
 describe('questionHasContent', () => {
+  test('recognizes a spectrum with two authored poles', () => {
+    expect(questionHasContent({
+      id: 2,
+      type: QuestionType.Spectrum,
+      spectrum_left: 'Cold',
+      spectrum_right: 'Hot',
+    })).toBe(true);
+  });
   test('recognizes a complete point-on-image question as filled', () => {
     expect(questionHasContent({
       ...baseQuestion,

@@ -46,7 +46,7 @@ export function normalizeQuestion(q: Question): Question {
 
 export const SELECTION_EXCLUSIVE_TYPES = ['normal', 'progressive-reveal'];
 export const SELECTION_PARALLEL_TYPES = ['find-a-cat'];
-export const SELECTION_MANDATORY_TYPES = ['karaoke', 'crocodile'];
+export const SELECTION_MANDATORY_TYPES = ['karaoke', 'crocodile', 'spectrum'];
 
 // Types that expose the "user selection" option (optionally, in the editor).
 export const SELECTION_OPTIONAL_TYPES = [...SELECTION_EXCLUSIVE_TYPES, ...SELECTION_PARALLEL_TYPES];

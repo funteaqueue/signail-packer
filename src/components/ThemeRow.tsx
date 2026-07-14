@@ -15,6 +15,8 @@ interface ThemeRowProps {
     onThemeNameChange: (name: string) => void;
     onThemeOrderedToggle: () => void;
     onQuestionClick: (questionIndex: number) => void;
+    onDuplicateQuestion: (questionIndex: number) => void;
+    onDeleteQuestion: (questionIndex: number) => void;
     onAddQuestion: () => void;
     onDeleteTheme: () => void;
     rounds: Round[];
@@ -28,6 +30,8 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
     onThemeNameChange,
     onThemeOrderedToggle,
     onQuestionClick,
+    onDuplicateQuestion,
+    onDeleteQuestion,
     onAddQuestion,
     onDeleteTheme,
     rounds,
@@ -246,6 +250,10 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
                                 price={price}
                                 rowIndex={themeIndex}
                                 onClick={() => onQuestionClick(index)}
+                                onDuplicate={question ? () => onDuplicateQuestion(index) : undefined}
+                                onDelete={question ? () => {
+                                    if (window.confirm(t('question.confirmDelete'))) onDeleteQuestion(index);
+                                } : undefined}
                                 hasContent={hasContent}
                             />
                         );

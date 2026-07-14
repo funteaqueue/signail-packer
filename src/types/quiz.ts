@@ -63,6 +63,16 @@ export interface Question {
   response?: ResponseMethod;
   /** Keep submitted answers masked from other players until the host reveals them. Defaults by type (text/numeric hidden, choice live). */
   hidden_until_reveal?: boolean;
+  spectrum_left?: string;
+  spectrum_right?: string;
+  /** Total positive-zone width, from 1 to 50 percent of the circular scale. */
+  spectrum_range?: number;
+  spectrum_target_mode?: 'random' | 'fixed';
+  spectrum_target?: number;
+  spectrum_risk_mode?: 'risk' | 'safe';
+  spectrum_clue_mode?: 'text' | 'verbal';
+  /** Extra clue-giver points for every correct Spectrum guess after the first. */
+  spectrum_clue_bonus?: number;
 }
 
 export type ResponseMethod = 'buzz' | 'multi-buzz' | 'text' | 'choice';
@@ -121,7 +131,8 @@ export enum QuestionType {
   Karaoke = 'karaoke',
   Crocodile = 'crocodile',
   Voting = 'voting',
-  PointOnImage = 'point-on-image'
+  PointOnImage = 'point-on-image',
+  Spectrum = 'spectrum'
 }
 
 export enum RuleType {
