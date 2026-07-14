@@ -3,10 +3,11 @@ import { Box, TextField, IconButton, Menu, MenuItem, Tooltip } from '@mui/materi
 import { Delete as DeleteIcon, DragIndicator as DragIndicatorIcon, ArrowRightAlt as ArrowRightAltIcon } from '@mui/icons-material';
 import { useSortable, SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Round, Theme, QuestionType } from '../types/quiz';
+import { Round, Theme } from '../types/quiz';
 import { useTranslation } from '../i18n/LanguageContext';
 import QuestionButton from './QuestionButton';
 import AddButton from './AddButton';
+import { getQuestionSlotPrices, questionHasContent } from '../utils/questionContent';
 
 interface ThemeRowProps {
     theme: Theme;
@@ -71,11 +72,11 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
         opacity: isDragging ? 0.5 : 1,
     };
 
-    // Standard prices for questions
-    const standardPrices = [100, 200, 300, 400, 500];
+    // Keep the five classic slots, then grow with every authored question.
+    const slotPrices = getQuestionSlotPrices(theme.questions.length);
 
     // Generate stable IDs for all slots (some might be empty)
-    const questionIds = standardPrices.map((_, index) => {
+    const questionIds = slotPrices.map((_, index) => {
         const question = theme.questions[index];
         return question?.id ? `q-${question.id}` : `empty-${themeIndex}-${index}`;
     });
@@ -232,17 +233,9 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
                 }}
             >
                 <SortableContext items={questionIds} strategy={horizontalListSortingStrategy}>
-                    {standardPrices.map((price, index) => {
+                    {slotPrices.map((price, index) => {
                         const question = theme.questions[index];
-                        const hasContent = !!(
-                            question && (
-                                question.type === QuestionType.FindACat
-                                    ? !!question.image
-                                    : question.type === QuestionType.Karaoke
-                                        ? !!question.media
-                                        : ((question.rules && question.rules.length > 0) || (question.after_round && question.after_round.length > 0))
-                            )
-                        );
+                        const hasContent = questionHasContent(question);
                         const id = questionIds[index];
 
                         return (

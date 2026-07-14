@@ -33,6 +33,7 @@ import FindACatEditor from './FindACatEditor';
 import ChoiceOptionsEditor from './ChoiceOptionsEditor';
 import ProgressiveRevealEditor from './ProgressiveRevealEditor';
 import KaraokeEditor from './KaraokeEditor';
+import PointOnImageEditor from './PointOnImageEditor';
 
 
 interface QuestionModalProps {
@@ -106,6 +107,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
         max_clicks: 0,
         first_place_bonus: 100,
         perfect_bonus: 500,
+        accuracy_percent: 2,
         multiple: false,
         options: [],
         effect: 'blur',
@@ -170,6 +172,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 max_clicks: 0,
                 first_place_bonus: 100,
                 perfect_bonus: 500,
+                accuracy_percent: 2,
                 multiple: false,
                 options: [],
                 effect: 'blur',
@@ -217,6 +220,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
     const isKaraoke = formData.type === QuestionType.Karaoke;
     const isCrocodile = formData.type === QuestionType.Crocodile;
     const isVoting = formData.type === QuestionType.Voting;
+    const isPointOnImage = formData.type === QuestionType.PointOnImage;
 
     // Cross-cutting options available for the current type
     const supportsSelection = SELECTION_OPTIONAL_TYPES.includes(formData.type as string);
@@ -250,12 +254,23 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
 
     const isKaraokeValid = !isKaraoke || !!formData.media;
 
+    const isPointOnImageValid = !isPointOnImage || (
+        !!formData.task?.trim() &&
+        !!formData.image &&
+        !!formData.correct_point &&
+        Number(formData.accuracy_percent) > 0 &&
+        Number(formData.accuracy_percent) <= 20
+    );
+
     const getValidationErrorMessage = () => {
         if (isCloseEnough && !isCloseEnoughValid) {
             return t('validation.closeEnough');
         }
         if (isKaraoke && !isKaraokeValid) {
             return t('validation.karaokeMedia');
+        }
+        if (isPointOnImage && !isPointOnImageValid) {
+            return t('validation.pointOnImage');
         }
         if (isChoiceResponse && !isChoiceValid) {
             if ((formData.options || []).length < 2) {
@@ -355,6 +370,37 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 media: undefined,
                 lyrics: undefined,
                 lyrics_format: undefined,
+            } as Question;
+        } else if (formData.type === QuestionType.PointOnImage) {
+            updatedQuestion = {
+                ...formData,
+                id: formData.id || Date.now(),
+                type: QuestionType.PointOnImage,
+                ...optionFields,
+                price: formData.price || defaultPriceValue,
+                task: formData.task || '',
+                image: formData.image || '',
+                correct_point: formData.correct_point,
+                image_aspect_ratio: formData.image_aspect_ratio || 1,
+                accuracy_percent: formData.accuracy_percent || 2,
+                duration: formData.duration || 60,
+                first_place_bonus: formData.first_place_bonus ?? 100,
+                rules: [],
+                after_round: [],
+                name: undefined,
+                map: undefined,
+                answer: undefined,
+                max_clicks: undefined,
+                perfect_bonus: undefined,
+                multiple: undefined,
+                options: undefined,
+                effect: undefined,
+                curve: undefined,
+                media: undefined,
+                lyrics: undefined,
+                lyrics_format: undefined,
+                crocodile_mode: undefined,
+                vote_mode: undefined,
             } as Question;
         } else if (formData.type === QuestionType.ProgressiveReveal) {
             updatedQuestion = {
@@ -498,6 +544,12 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 lyrics: undefined,
                 lyrics_format: undefined,
             } as Question;
+        }
+
+        if (updatedQuestion.type !== QuestionType.PointOnImage) {
+            updatedQuestion.correct_point = undefined;
+            updatedQuestion.image_aspect_ratio = undefined;
+            updatedQuestion.accuracy_percent = undefined;
         }
 
         if (updatedQuestion.type === QuestionType.FindACat) {
@@ -711,7 +763,9 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                                 // Pre-fill find-a-cat with the remembered task text
                                 task: newType === QuestionType.FindACat && !prev.task?.trim()
                                     ? getDefaultFindACatTask()
-                                    : prev.task,
+                                    : newType === QuestionType.PointOnImage && !prev.correct_point
+                                        ? ''
+                                        : prev.task,
                             }));
                             setTabValue(0);
                         }}
@@ -730,6 +784,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                         <MenuItem value={QuestionType.Empty}>{t('questionType.empty')}</MenuItem>
                         <MenuItem value={QuestionType.FindACat}>{t('questionType.findACat')}</MenuItem>
                         <MenuItem value={QuestionType.CloseEnough}>{t('questionType.closeEnough')}</MenuItem>
+                        <MenuItem value={QuestionType.PointOnImage}>{t('questionType.pointOnImage')}</MenuItem>
                         <MenuItem value={QuestionType.Karaoke}>{t('questionType.karaoke')}</MenuItem>
                         <MenuItem value={QuestionType.Crocodile}>{t('questionType.crocodile')}</MenuItem>
                         <MenuItem value={QuestionType.Voting}>{t('questionType.voting')}</MenuItem>
@@ -749,6 +804,9 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 >
                     {isFindACat ? [
                         <Tab key="find-a-cat" label={t('tab.findACatEditor')} />,
+                        <Tab key="price" label={t('tab.price')} />
+                    ] : isPointOnImage ? [
+                        <Tab key="point-on-image" label={t('tab.pointOnImageEditor')} />,
                         <Tab key="price" label={t('tab.price')} />
                     ] : isKaraoke ? [
                         <Tab key="karaoke" label={t('tab.karaokeEditor')} />,
@@ -791,6 +849,30 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                             />
                         </TabPanel>
 
+                        <TabPanel value={tabValue} index={1}>
+                            {renderPriceFields()}
+                        </TabPanel>
+                    </>
+                ) : isPointOnImage ? (
+                    <>
+                        <TabPanel value={tabValue} index={0}>
+                            <PointOnImageEditor
+                                image={formData.image}
+                                task={formData.task || ''}
+                                correctPoint={formData.correct_point}
+                                imageAspectRatio={formData.image_aspect_ratio}
+                                duration={formData.duration || 60}
+                                accuracyPercent={formData.accuracy_percent || 2}
+                                firstPlaceBonus={formData.first_place_bonus ?? 100}
+                                onImageChange={(image) => setFormData(prev => ({ ...prev, image, correct_point: undefined }))}
+                                onTaskChange={(task) => setFormData(prev => ({ ...prev, task }))}
+                                onCorrectPointChange={(correct_point) => setFormData(prev => ({ ...prev, correct_point }))}
+                                onImageAspectRatioChange={(image_aspect_ratio) => setFormData(prev => ({ ...prev, image_aspect_ratio }))}
+                                onDurationChange={(duration) => setFormData(prev => ({ ...prev, duration }))}
+                                onAccuracyPercentChange={(accuracy_percent) => setFormData(prev => ({ ...prev, accuracy_percent }))}
+                                onFirstPlaceBonusChange={(first_place_bonus) => setFormData(prev => ({ ...prev, first_place_bonus }))}
+                            />
+                        </TabPanel>
                         <TabPanel value={tabValue} index={1}>
                             {renderPriceFields()}
                         </TabPanel>
@@ -1035,7 +1117,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                     <Button onClick={onClose} variant="outlined">
                         {t('common.cancel')}
                     </Button>
-                    <Button onClick={handleSave} variant="contained" disabled={!isFindACatValid || !isCloseEnoughValid || !isChoiceValid || !isProgressiveRevealValid || !isKaraokeValid}>
+                    <Button onClick={handleSave} variant="contained" disabled={!isFindACatValid || !isCloseEnoughValid || !isChoiceValid || !isProgressiveRevealValid || !isKaraokeValid || !isPointOnImageValid}>
                         {t('question.save')}
                     </Button>
                 </Stack>

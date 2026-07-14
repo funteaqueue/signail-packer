@@ -23,14 +23,21 @@ export interface Question {
   type: QuestionType;
   rules?: Rule[];
   after_round?: Rule[];
-  /** Find-a-cat task text shown to players; supports %total% and %left% placeholders */
+  /** Task text shown to players; find-a-cat also supports %total% and %left% placeholders. */
   task?: string;
   /** @deprecated Legacy find-a-cat target name (e.g. "котиків"); converted to `task` on edit */
   name?: string;
   image?: string;
+  /** Correct normalized point for point-on-image questions (0..1 on each axis). */
+  correct_point?: PointCoordinate;
+  /** Width / height of the authored image, used for aspect-correct distance and circles. */
+  image_aspect_ratio?: number;
+  /** Maximum distance from the correct point, as a percentage of the image diagonal. */
+  accuracy_percent?: number;
   map?: MapArea[];
   duration?: number;
   max_clicks?: number;
+  /** Extra points for the first successful player on supported multi-player types. */
   first_place_bonus?: number;
   answer?: number;
   perfect_bonus?: number;
@@ -83,6 +90,11 @@ export interface MapArea {
   color?: string;
 }
 
+export interface PointCoordinate {
+  x: number;
+  y: number;
+}
+
 export interface Price {
   text: string;
   correct: number;
@@ -108,10 +120,11 @@ export enum QuestionType {
   ProgressiveReveal = 'progressive-reveal',
   Karaoke = 'karaoke',
   Crocodile = 'crocodile',
-  Voting = 'voting'
+  Voting = 'voting',
+  PointOnImage = 'point-on-image'
 }
 
 export enum RuleType {
   App = 'app',
   Embedded = 'embedded'
-} 
+}

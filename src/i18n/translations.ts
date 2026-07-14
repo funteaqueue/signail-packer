@@ -60,6 +60,20 @@ export const translations: Record<Language, Record<string, string>> = {
     'findACat.deleteArea': 'Delete Area',
     'findACat.imageAlt': 'Cat search board',
 
+    // Point-on-image editor
+    'pointOnImage.prompt': 'Prompt*',
+    'pointOnImage.promptHelper': 'The task shown above the image, e.g. “Point to Vinnytsia”.',
+    'pointOnImage.duration': 'Duration (seconds)',
+    'pointOnImage.accuracy': 'Correctness radius (%)*',
+    'pointOnImage.accuracyHelper': 'Distance from the correct point as a percentage of the image diagonal.',
+    'pointOnImage.firstPlaceBonus': 'First correct bonus',
+    'pointOnImage.firstPlaceBonusHelper': 'Extra points for the fastest answer inside the correctness radius.',
+    'pointOnImage.uploadImage': 'Upload image',
+    'pointOnImage.imageUrl': 'Image URL',
+    'pointOnImage.loadUrl': 'Load URL',
+    'pointOnImage.dropImage': 'Drop an image here, upload one, paste from the clipboard, or enter a URL.',
+    'pointOnImage.clickCorrectPoint': 'Click the image to set the correct point.',
+
     // Question modal
     'question.editTitle': 'Edit Question',
     'question.newTitle': 'New Question',
@@ -116,9 +130,11 @@ export const translations: Record<Language, Record<string, string>> = {
     'questionType.karaoke': 'Karaoke',
     'questionType.crocodile': 'Crocodile',
     'questionType.voting': 'Voting',
+    'questionType.pointOnImage': 'Point on Image',
 
     // Question modal tabs
     'tab.findACatEditor': 'Find-a-Cat Editor',
+    'tab.pointOnImageEditor': 'Point on Image Editor',
     'tab.price': 'Price',
     'tab.imageEffect': 'Image & Effect',
     'tab.answer': 'Answer',
@@ -195,6 +211,7 @@ export const translations: Record<Language, Record<string, string>> = {
 
     // Question modal validation
     'validation.closeEnough': 'Please enter the numeric correct answer to save the question.',
+    'validation.pointOnImage': 'Add a prompt and image, click the correct point, and set a correctness radius from 0.1% to 20%.',
     'validation.minTwoOptions': 'Please add at least two options to save the question.',
     'validation.atLeastOneCorrect': 'Please mark at least one option as correct.',
     'validation.exactlyOneCorrect': 'Please mark exactly one option as correct.',
@@ -402,6 +419,20 @@ export const translations: Record<Language, Record<string, string>> = {
     'findACat.deleteArea': 'Видалити область',
     'findACat.imageAlt': 'Ігрове поле пошуку',
 
+    // Редактор точки на зображенні
+    'pointOnImage.prompt': 'Промпт*',
+    'pointOnImage.promptHelper': 'Завдання над зображенням, наприклад: «Вкажіть Вінницю».',
+    'pointOnImage.duration': 'Тривалість (секунд)',
+    'pointOnImage.accuracy': 'Радіус правильної відповіді (%)*',
+    'pointOnImage.accuracyHelper': 'Відстань до правильної точки у відсотках діагоналі зображення.',
+    'pointOnImage.firstPlaceBonus': 'Бонус першому правильному',
+    'pointOnImage.firstPlaceBonusHelper': 'Додаткові бали найшвидшій відповіді в межах правильного радіуса.',
+    'pointOnImage.uploadImage': 'Завантажити зображення',
+    'pointOnImage.imageUrl': 'URL зображення',
+    'pointOnImage.loadUrl': 'Завантажити URL',
+    'pointOnImage.dropImage': 'Перетягніть зображення сюди, завантажте файл, вставте з буфера або вкажіть URL.',
+    'pointOnImage.clickCorrectPoint': 'Клацніть на зображенні, щоб установити правильну точку.',
+
     // Question modal
     'question.editTitle': 'Редагувати питання',
     'question.newTitle': 'Нове питання',
@@ -458,9 +489,11 @@ export const translations: Record<Language, Record<string, string>> = {
     'questionType.karaoke': 'Караоке',
     'questionType.crocodile': 'Крокодил',
     'questionType.voting': 'Голосування',
+    'questionType.pointOnImage': 'Точка на зображенні',
 
     // Question modal tabs
     'tab.findACatEditor': 'Редактор «Знайди кота»',
+    'tab.pointOnImageEditor': 'Редактор точки на зображенні',
     'tab.price': 'Бали',
     'tab.imageEffect': 'Зображення та ефект',
     'tab.answer': 'Відповідь',
@@ -537,6 +570,7 @@ export const translations: Record<Language, Record<string, string>> = {
 
     // Question modal validation
     'validation.closeEnough': 'Вкажіть числову правильну відповідь, щоб зберегти питання.',
+    'validation.pointOnImage': 'Додайте промпт і зображення, клацніть правильну точку та задайте радіус від 0,1% до 20%.',
     'validation.minTwoOptions': 'Додайте щонайменше два варіанти, щоб зберегти питання.',
     'validation.atLeastOneCorrect': 'Позначте принаймні один варіант як правильний.',
     'validation.exactlyOneCorrect': 'Позначте рівно один варіант як правильний.',
