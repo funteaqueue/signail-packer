@@ -61,8 +61,14 @@ export const translations: Record<Language, Record<string, string>> = {
     'findACat.imageAlt': 'Cat search board',
 
     // Point-on-image editor
-    'pointOnImage.prompt': 'Prompt*',
-    'pointOnImage.promptHelper': 'The task shown above the image, e.g. “Point to Vinnytsia”.',
+    'pointOnImage.prompt': 'Prompt',
+    'pointOnImage.promptHelper': 'Add text, a prompt image, or both. For example, show a landmark and ask players to locate it on the map.',
+    'pointOnImage.promptImage': 'Prompt image (optional)',
+    'pointOnImage.promptImageHelper': 'This clue is shown above the clickable answer image.',
+    'pointOnImage.uploadPromptImage': 'Upload prompt image',
+    'pointOnImage.removePromptImage': 'Remove prompt image',
+    'pointOnImage.promptImageUrl': 'Prompt image URL',
+    'pointOnImage.answerImage': 'Clickable answer image',
     'pointOnImage.duration': 'Duration (seconds)',
     'pointOnImage.accuracy': 'Correctness radius (%)*',
     'pointOnImage.accuracyHelper': 'Distance from the correct point as a percentage of the image diagonal.',
@@ -153,7 +159,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'spectrum.leftFallback': 'Left pole',
     'spectrum.rightFallback': 'Right pole',
     'spectrum.range': 'Positive zone width',
-    'spectrum.rangeHelper': 'The full +100% / +50% / +25% area, from 1% to 50% of the circular scale.',
+    'spectrum.rangeHelper': 'The full positive scoring area, from 1% to 50% of the circular scale.',
     'spectrum.targetMode': 'Target',
     'spectrum.targetRandom': 'Random each time',
     'spectrum.targetFixed': 'Fixed position',
@@ -172,7 +178,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'spectrum.dragPreview': 'Draggable circular spectrum preview',
     'spectrum.randomPreviewHint': 'Drag the colours to preview edge wrapping. The saved question still chooses a new random target each play.',
     'spectrum.fixedPreviewHint': 'Drag the colours to set the saved target. Moving past an edge wraps to the other side.',
-    'spectrum.priceHelper': 'Spectrum suggestions are calculated from the maximum score: +100%, +50%, +25%, -25%, -50%, and -100%.',
+    'spectrum.priceHelper': 'Spectrum suggestions are calculated from the maximum score; the preview shows the concrete points for every zone.',
     'validation.spectrum': 'Add both spectrum labels and choose a positive-zone width from 1% to 50%.',
 
     // Karaoke editor
@@ -244,7 +250,7 @@ export const translations: Record<Language, Record<string, string>> = {
 
     // Question modal validation
     'validation.closeEnough': 'Please enter the numeric correct answer to save the question.',
-    'validation.pointOnImage': 'Add a prompt and image, click the correct point, and set a correctness radius from 0.1% to 20%.',
+    'validation.pointOnImage': 'Add prompt text or a prompt image, add the clickable answer image, click the correct point, and set a correctness radius from 0.1% to 20%.',
     'validation.minTwoOptions': 'Please add at least two options to save the question.',
     'validation.atLeastOneCorrect': 'Please mark at least one option as correct.',
     'validation.exactlyOneCorrect': 'Please mark exactly one option as correct.',
@@ -453,8 +459,14 @@ export const translations: Record<Language, Record<string, string>> = {
     'findACat.imageAlt': 'Ігрове поле пошуку',
 
     // Редактор точки на зображенні
-    'pointOnImage.prompt': 'Промпт*',
-    'pointOnImage.promptHelper': 'Завдання над зображенням, наприклад: «Вкажіть Вінницю».',
+    'pointOnImage.prompt': 'Промпт',
+    'pointOnImage.promptHelper': 'Додайте текст, зображення-підказку або обидва. Наприклад, покажіть пам’ятку та попросіть знайти її на мапі.',
+    'pointOnImage.promptImage': 'Зображення промпту (необов’язково)',
+    'pointOnImage.promptImageHelper': 'Цю підказку буде показано над клікабельним зображенням для відповіді.',
+    'pointOnImage.uploadPromptImage': 'Завантажити зображення промпту',
+    'pointOnImage.removePromptImage': 'Видалити зображення промпту',
+    'pointOnImage.promptImageUrl': 'URL зображення промпту',
+    'pointOnImage.answerImage': 'Клікабельне зображення для відповіді',
     'pointOnImage.duration': 'Тривалість (секунд)',
     'pointOnImage.accuracy': 'Радіус правильної відповіді (%)*',
     'pointOnImage.accuracyHelper': 'Відстань до правильної точки у відсотках діагоналі зображення.',
@@ -545,7 +557,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'spectrum.leftFallback': 'Лівий полюс',
     'spectrum.rightFallback': 'Правий полюс',
     'spectrum.range': 'Ширина правильної зони',
-    'spectrum.rangeHelper': 'Повна область +100% / +50% / +25% — від 1% до 50% кругової шкали.',
+    'spectrum.rangeHelper': 'Повна область позитивних балів — від 1% до 50% кругової шкали.',
     'spectrum.targetMode': 'Ціль',
     'spectrum.targetRandom': 'Випадкова щоразу',
     'spectrum.targetFixed': 'Визначена позиція',
@@ -564,7 +576,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'spectrum.dragPreview': 'Круговий спектр, який можна перетягувати',
     'spectrum.randomPreviewHint': 'Перетягуйте кольори, щоб перевірити перехід через край. У грі ціль однаково буде випадковою.',
     'spectrum.fixedPreviewHint': 'Перетягуйте кольори, щоб установити ціль. Після виходу за край зона продовжиться з іншого боку.',
-    'spectrum.priceHelper': 'Підказки Spectrum рахуються від максимального балу: +100%, +50%, +25%, -25%, -50% та -100%.',
+    'spectrum.priceHelper': 'Бали спектра рахуються від максимального балу; у прев’ю показані конкретні значення для кожної зони.',
     'validation.spectrum': 'Заповніть обидві сторони спектра та виберіть ширину правильної зони від 1% до 50%.',
 
     // Karaoke editor
@@ -636,7 +648,7 @@ export const translations: Record<Language, Record<string, string>> = {
 
     // Question modal validation
     'validation.closeEnough': 'Вкажіть числову правильну відповідь, щоб зберегти питання.',
-    'validation.pointOnImage': 'Додайте промпт і зображення, клацніть правильну точку та задайте радіус від 0,1% до 20%.',
+    'validation.pointOnImage': 'Додайте текст або зображення промпту, додайте клікабельне зображення, клацніть правильну точку та задайте радіус від 0,1% до 20%.',
     'validation.minTwoOptions': 'Додайте щонайменше два варіанти, щоб зберегти питання.',
     'validation.atLeastOneCorrect': 'Позначте принаймні один варіант як правильний.',
     'validation.exactlyOneCorrect': 'Позначте рівно один варіант як правильний.',

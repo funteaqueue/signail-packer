@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Box, FormControlLabel, MenuItem, Select, Slider, Switch, TextField, Typography } from '@mui/material';
 import { useTranslation } from '../i18n/LanguageContext';
-import { getSpectrumSegments, SPECTRUM_ZONE_COLORS, wrapSpectrumPosition } from '../utils/spectrum';
+import { formatSpectrumPoints, getSpectrumSegments, SPECTRUM_ZONE_COLORS, wrapSpectrumPosition } from '../utils/spectrum';
 
 interface SpectrumEditorProps {
   left: string;
@@ -10,6 +10,7 @@ interface SpectrumEditorProps {
   targetMode: 'random' | 'fixed';
   target: number;
   riskMode: 'risk' | 'safe';
+  baseScore: number;
   clueMode: 'text' | 'verbal';
   firstCorrectBonus: number;
   clueGiverCorrectBonus: number;
@@ -35,6 +36,7 @@ const SpectrumEditor: React.FC<SpectrumEditorProps> = ({
   targetMode,
   target,
   riskMode,
+  baseScore,
   clueMode,
   firstCorrectBonus,
   clueGiverCorrectBonus,
@@ -57,7 +59,10 @@ const SpectrumEditor: React.FC<SpectrumEditorProps> = ({
   const dragRef = useRef<{ x: number; target: number } | null>(null);
   const [previewTarget, setPreviewTarget] = useState(() => wrapSpectrumPosition(targetMode === 'fixed' ? target : 50));
   const visibleTarget = targetMode === 'fixed' ? wrapSpectrumPosition(target) : previewTarget;
-  const segments = useMemo(() => getSpectrumSegments(visibleTarget, range), [visibleTarget, range]);
+  const segments = useMemo(
+    () => getSpectrumSegments(visibleTarget, range, baseScore, riskMode),
+    [visibleTarget, range, baseScore, riskMode],
+  );
 
   useEffect(() => {
     if (targetMode === 'fixed') setPreviewTarget(wrapSpectrumPosition(target));
@@ -185,7 +190,7 @@ const SpectrumEditor: React.FC<SpectrumEditorProps> = ({
                   ? `linear-gradient(rgba(75, 85, 99, 0.48), rgba(75, 85, 99, 0.48)), ${color}`
                   : color,
               }} />
-              {Number(value) > 0 ? '+' : ''}{Number(value) * 100}%
+              {formatSpectrumPoints(Number(value), baseScore, riskMode)}
             </Box>
           ))}
         </Box>

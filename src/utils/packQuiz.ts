@@ -24,13 +24,14 @@ const packOption = async (option: ChoiceOption): Promise<ChoiceOption> =>
   option.content ? { ...option, content: await embedExternalImages(option.content) } : option;
 
 const packQuestion = async (question: Question): Promise<Question> => {
-  const [image, rules, afterRound, options] = await Promise.all([
+  const [image, promptImage, rules, afterRound, options] = await Promise.all([
     packImageField(question.image),
+    packImageField(question.prompt_image),
     question.rules ? Promise.all(question.rules.map(packRule)) : undefined,
     question.after_round ? Promise.all(question.after_round.map(packRule)) : undefined,
     question.options ? Promise.all(question.options.map(packOption)) : undefined,
   ]);
-  return { ...question, image, rules, after_round: afterRound, options };
+  return { ...question, image, prompt_image: promptImage, rules, after_round: afterRound, options };
 };
 
 // Returns a deep-cloned quiz with every external image fetched and inlined as a

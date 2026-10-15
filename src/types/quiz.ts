@@ -28,6 +28,8 @@ export interface Question {
   /** @deprecated Legacy find-a-cat target name (e.g. "котиків"); converted to `task` on edit */
   name?: string;
   image?: string;
+  /** Optional visual clue shown with the prompt above point-on-image questions. */
+  prompt_image?: string;
   /** Correct normalized point for point-on-image questions (0..1 on each axis). */
   correct_point?: PointCoordinate;
   /** Width / height of the authored image, used for aspect-correct distance and circles. */

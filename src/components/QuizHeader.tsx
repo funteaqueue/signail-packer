@@ -37,9 +37,9 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({
                 display: 'flex',
                 flexWrap: 'wrap',
                 justifyContent: 'space-between',
-                alignItems: 'center',
+                alignItems: { xs: 'stretch', md: 'center' },
                 gap: 2,
-                padding: { xs: '16px 20px', md: '20px 32px' },
+                padding: { xs: '16px', md: '20px 32px' },
                 background: 'var(--glass-bg)',
                 backdropFilter: 'blur(10px)',
                 border: '1px solid var(--glass-border)',
@@ -51,10 +51,12 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({
                 sx={{
                     display: 'flex',
                     flexWrap: 'wrap',
+                    flexDirection: { xs: 'column', sm: 'row' },
                     gap: { xs: 1.5, md: 3 },
-                    alignItems: 'center',
+                    alignItems: { xs: 'stretch', sm: 'center' },
                     flex: '1 1 320px',
                     minWidth: 0,
+                    width: '100%',
                 }}
             >
                 <Typography variant="h5" className="gradient-text" sx={{ fontWeight: 700, whiteSpace: 'nowrap' }}>
@@ -65,18 +67,38 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({
                     value={quizName}
                     onChange={(e) => onQuizNameChange(e.target.value)}
                     size="small"
-                    sx={{ flex: '1 1 200px', minWidth: 140, maxWidth: 250 }}
+                    sx={{
+                        flex: { xs: '0 0 auto', sm: '1 1 200px' },
+                        minWidth: 0,
+                        maxWidth: { xs: 'none', sm: 250 },
+                        '& .MuiInputBase-root': { minHeight: 44 },
+                    }}
                 />
                 <TextField
                     label={t('header.author')}
                     value={author}
                     onChange={(e) => onAuthorChange(e.target.value)}
                     size="small"
-                    sx={{ flex: '1 1 160px', minWidth: 120, maxWidth: 200 }}
+                    sx={{
+                        flex: { xs: '0 0 auto', sm: '1 1 160px' },
+                        minWidth: 0,
+                        maxWidth: { xs: 'none', sm: 200 },
+                        '& .MuiInputBase-root': { minHeight: 44 },
+                    }}
                 />
             </Box>
 
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center' }}>
+            <Box sx={{
+                display: { xs: 'grid', sm: 'flex' },
+                gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))' },
+                flexWrap: 'wrap',
+                gap: { xs: 1.25, sm: 2 },
+                alignItems: 'center',
+                width: { xs: '100%', md: 'auto' },
+                '& > .MuiButton-root': {
+                    minHeight: 44,
+                },
+            }}>
                 <Select
                     value={themeId}
                     onChange={(e) => setThemeId(e.target.value)}
@@ -84,8 +106,9 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({
                     aria-label={t('header.design')}
                     title={t('header.design')}
                     sx={{
-                        height: '36px',
-                        minWidth: '140px',
+                        minHeight: '44px',
+                        minWidth: 0,
+                        width: { xs: '100%', sm: 'auto' },
                         background: 'var(--input-bg)',
                         border: '1px solid var(--glass-border)',
                         '& .MuiOutlinedInput-notchedOutline': {
@@ -97,7 +120,9 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({
                         <MenuItem key={option.id} value={option.id}>{option.name}</MenuItem>
                     ))}
                 </Select>
-                <LanguageSwitcher />
+                <Box sx={{ display: 'flex', justifyContent: { xs: 'stretch', sm: 'flex-start' }, '& > div': { width: { xs: '100%', sm: 'auto' } }, '& button': { flex: 1, minHeight: 44 } }}>
+                    <LanguageSwitcher />
+                </Box>
                 <input
                     type="file"
                     accept=".json"
@@ -128,6 +153,7 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({
                     startIcon={<DeleteForever />}
                     onClick={onClear}
                     size="small"
+                    sx={{ gridColumn: { xs: '1 / -1', sm: 'auto' } }}
                 >
                     {t('header.clear')}
                 </Button>

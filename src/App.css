@@ -3,3 +3,53 @@
   padding: 20px;
   position: relative;
 }
+
+@media (max-width: 600px) {
+  .App {
+    min-height: 100dvh;
+    padding: 8px;
+  }
+
+  .MuiContainer-root {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .MuiDialog-root .MuiDialog-paper {
+    width: 100% !important;
+    max-width: none !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  .MuiDialogTitle-root {
+    padding: 14px 16px !important;
+  }
+
+  .MuiDialogContent-root {
+    padding: 12px 16px !important;
+  }
+
+  .MuiDialogActions-root {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom)) !important;
+    background: var(--bg-dark);
+    border-top: 1px solid var(--glass-border);
+  }
+
+  .MuiButton-root,
+  .MuiIconButton-root,
+  .MuiToggleButton-root {
+    min-height: 44px;
+  }
+
+  .ql-toolbar {
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+}

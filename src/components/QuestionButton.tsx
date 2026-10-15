@@ -51,13 +51,15 @@ const QuestionButton: React.FC<QuestionButtonProps> = ({ id, question, price, on
                 textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
                 borderRadius: '12px',
                 position: 'relative',
-                padding: '24px 32px',
-                minWidth: '120px',
+                padding: { xs: '20px 10px', sm: '24px 32px' },
+                minWidth: { xs: 0, sm: '120px' },
+                width: { xs: '100%', sm: 'auto' },
+                minHeight: { xs: 84, sm: 96 },
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'grab',
-                touchAction: 'none',
+                touchAction: { xs: 'manipulation', md: 'none' },
                 transition: 'transform 0.3s ease, box-shadow 0.3s ease, border 0.3s ease',
                 border: hasContent ? '2px solid var(--cell-border)' : '2px solid transparent',
                 '&:hover': {
@@ -77,7 +79,7 @@ const QuestionButton: React.FC<QuestionButtonProps> = ({ id, question, price, on
         >
             <Box
                 sx={{
-                    fontSize: '32px',
+                    fontSize: { xs: '24px', sm: '32px' },
                     fontWeight: 700,
                     pointerEvents: 'none',
                     zIndex: 2,
@@ -92,9 +94,9 @@ const QuestionButton: React.FC<QuestionButtonProps> = ({ id, question, price, on
                     position: 'absolute',
                     top: '6px',
                     right: '6px',
-                    opacity: 0,
-                    visibility: 'hidden',
-                    pointerEvents: 'none',
+                    opacity: { xs: 1, md: 0 },
+                    visibility: { xs: 'visible', md: 'hidden' },
+                    pointerEvents: { xs: 'auto', md: 'none' },
                     transition: 'opacity 0.15s ease',
                     display: 'flex',
                     gap: '2px',
@@ -114,7 +116,7 @@ const QuestionButton: React.FC<QuestionButtonProps> = ({ id, question, price, on
                                 event.stopPropagation();
                                 onDuplicate();
                             }}
-                            sx={{ color: 'rgba(255,255,255,.88)', p: '4px' }}
+                            sx={{ color: 'rgba(255,255,255,.88)', p: '4px', width: 44, height: 44 }}
                         >
                             <ContentCopyIcon sx={{ fontSize: 15 }} />
                         </IconButton>
@@ -131,7 +133,7 @@ const QuestionButton: React.FC<QuestionButtonProps> = ({ id, question, price, on
                                 event.stopPropagation();
                                 onDelete();
                             }}
-                            sx={{ color: 'var(--danger)', p: '4px' }}
+                            sx={{ color: 'var(--danger)', p: '4px', width: 44, height: 44 }}
                         >
                             <DeleteIcon sx={{ fontSize: 16 }} />
                         </IconButton>

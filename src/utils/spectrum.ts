@@ -17,13 +17,15 @@ export const SPECTRUM_ZONE_COLORS: Record<string, string> = {
   '-1': '#ef4444',
 };
 
-const LABELS: Record<string, string> = {
-  '1': '+100%',
-  '0.5': '+50%',
-  '0.25': '+25%',
-  '-0.25': '-25%',
-  '-0.5': '-50%',
-  '-1': '-100%',
+export const formatSpectrumPoints = (
+  multiplier: number,
+  baseScore: number,
+  riskMode: 'risk' | 'safe' = 'risk',
+): string => {
+  const points = riskMode === 'safe' && multiplier < 0
+    ? 0
+    : Math.round(Math.abs(Number(baseScore) || 0) * multiplier);
+  return `${points > 0 ? '+' : ''}${points}`;
 };
 
 export const wrapSpectrumPosition = (value: number): number => {
@@ -54,6 +56,8 @@ const split = (
   start: number,
   end: number,
   multiplier: SpectrumMultiplier,
+  baseScore: number,
+  riskMode: 'risk' | 'safe',
 ): SpectrumSegment[] => {
   const length = end - start;
   if (length <= 0) return [];
@@ -62,7 +66,7 @@ const split = (
   const meta = {
     multiplier,
     color: SPECTRUM_ZONE_COLORS[String(multiplier)],
-    label: LABELS[String(multiplier)],
+    label: formatSpectrumPoints(multiplier, baseScore, riskMode),
   };
   if (normalizedEnd <= 100) return [{ start: normalizedStart, end: normalizedEnd, ...meta }];
   return [
@@ -71,15 +75,20 @@ const split = (
   ];
 };
 
-export const getSpectrumSegments = (targetValue: number, rangeValue: number): SpectrumSegment[] => {
+export const getSpectrumSegments = (
+  targetValue: number,
+  rangeValue: number,
+  baseScore = 100,
+  riskMode: 'risk' | 'safe' = 'risk',
+): SpectrumSegment[] => {
   const target = wrapSpectrumPosition(targetValue);
   const result: SpectrumSegment[] = [];
   bands(rangeValue).forEach(({ inner, outer, multiplier }) => {
     if (inner === 0) {
-      result.push(...split(target - outer, target + outer, multiplier));
+      result.push(...split(target - outer, target + outer, multiplier, baseScore, riskMode));
     } else {
-      result.push(...split(target - outer, target - inner, multiplier));
-      result.push(...split(target + inner, target + outer, multiplier));
+      result.push(...split(target - outer, target - inner, multiplier, baseScore, riskMode));
+      result.push(...split(target + inner, target + outer, multiplier, baseScore, riskMode));
     }
   });
   return result.filter(item => item.end - item.start > 0.000001).sort((a, b) => a.start - b.start);

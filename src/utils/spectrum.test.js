@@ -1,4 +1,10 @@
-import { getSpectrumSegments, wrapSpectrumPosition } from './spectrum';
+import { formatSpectrumPoints, getSpectrumSegments, wrapSpectrumPosition } from './spectrum';
+
+test('formats real point values for the configured maximum score', () => {
+  expect(formatSpectrumPoints(0.5, 300, 'risk')).toBe('+150');
+  expect(formatSpectrumPoints(-0.25, 300, 'risk')).toBe('-75');
+  expect(formatSpectrumPoints(-1, 300, 'safe')).toBe('0');
+});
 
 test('wraps draggable spectrum previews through both edges', () => {
   expect(wrapSpectrumPosition(-7)).toBe(93);

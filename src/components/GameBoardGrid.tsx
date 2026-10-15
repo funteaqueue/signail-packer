@@ -140,9 +140,9 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: 4,
-                    marginBottom: '32px',
-                    padding: '20px',
+                    gap: { xs: 0.5, sm: 4 },
+                    marginBottom: { xs: '16px', sm: '32px' },
+                    padding: { xs: '12px', sm: '20px' },
                     background: 'var(--glass-bg)',
                     borderRadius: '16px',
                     border: '1px solid var(--glass-border)',
@@ -153,6 +153,9 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({
                     disabled={roundIndex === 0}
                     sx={{
                         color: 'var(--primary)',
+                        flex: '0 0 44px',
+                        width: 44,
+                        height: 44,
                         '&:disabled': {
                             color: 'var(--text-muted)',
                         },
@@ -176,17 +179,19 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({
                         inputProps={{
                             style: {
                                 textAlign: 'center',
-                                fontSize: '2.125rem',
+                                fontSize: 'clamp(1.35rem, 8vw, 2.125rem)',
                                 fontWeight: 700,
                                 background: 'var(--grad-text)',
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: 'transparent',
                                 backgroundClip: 'text',
-                                width: '300px',
+                                width: '100%',
                             },
                         }}
                         sx={{
-                            minWidth: '300px',
+                            minWidth: 0,
+                            width: { xs: '100%', sm: '300px' },
+                            flex: 1,
                             '& .MuiInput-underline:before': { borderBottomColor: 'var(--hover-border)' },
                             '& .MuiInput-underline:after': { borderBottomColor: 'var(--primary)' },
                         }}
@@ -196,7 +201,9 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({
                         sx={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: 1,
+                            gap: { xs: 0.25, sm: 1 },
+                            minWidth: 0,
+                            flex: 1,
                             cursor: 'pointer',
                             '&:hover .edit-icon': {
                                 opacity: 1,
@@ -207,9 +214,12 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({
                         <Typography
                             variant="h4"
                             sx={{
-                                minWidth: '200px',
+                                minWidth: 0,
+                                flex: 1,
                                 textAlign: 'center',
                                 fontWeight: 700,
+                                fontSize: 'clamp(1.45rem, 8vw, 2.125rem)',
+                                overflowWrap: 'anywhere',
                                 background: 'var(--grad-text)',
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: 'transparent',
@@ -224,6 +234,9 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({
                             size="small"
                             sx={{
                                 opacity: 0.5,
+                                width: 44,
+                                height: 44,
+                                flex: '0 0 44px',
                                 transition: 'opacity 0.2s',
                                 color: 'var(--secondary)',
                             }}
@@ -237,6 +250,9 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({
                     onClick={onNextRound}
                     sx={{
                         color: 'var(--primary)',
+                        flex: '0 0 44px',
+                        width: 44,
+                        height: 44,
                     }}
                 >
                     <ChevronRight fontSize="large" />
@@ -254,7 +270,7 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({
                     sx={{
                         background: 'var(--surface-soft)',
                         borderRadius: '16px',
-                        padding: '24px',
+                        padding: { xs: '12px', sm: '24px' },
                         border: '1px solid var(--glass-border)',
                     }}
                 >
@@ -262,7 +278,7 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = ({
                         <Box
                             sx={{
                                 textAlign: 'center',
-                                padding: '60px',
+                                padding: { xs: '40px 16px', sm: '60px' },
                                 color: 'var(--text-secondary)',
                             }}
                         >

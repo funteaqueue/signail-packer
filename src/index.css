@@ -592,6 +592,16 @@ html[data-theme="party"] .q-cell--r5 {
   }
 }
 
+@media (max-width: 600px) {
+  body::before {
+    animation: none;
+  }
+
+  .glass-card {
+    backdrop-filter: blur(8px);
+  }
+}
+
 /* Hide number input spinners */
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {

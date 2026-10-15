@@ -273,7 +273,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
     const isKaraokeValid = !isKaraoke || !!formData.media;
 
     const isPointOnImageValid = !isPointOnImage || (
-        !!formData.task?.trim() &&
+        (!!formData.task?.trim() || !!formData.prompt_image) &&
         !!formData.image &&
         !!formData.correct_point &&
         Number(formData.accuracy_percent) > 0 &&
@@ -407,6 +407,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                 ...optionFields,
                 price: formData.price || defaultPriceValue,
                 task: formData.task || '',
+                prompt_image: formData.prompt_image || undefined,
                 image: formData.image || '',
                 correct_point: formData.correct_point,
                 image_aspect_ratio: formData.image_aspect_ratio || 1,
@@ -616,6 +617,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
         }
 
         if (updatedQuestion.type !== QuestionType.PointOnImage) {
+            updatedQuestion.prompt_image = undefined;
             updatedQuestion.correct_point = undefined;
             updatedQuestion.image_aspect_ratio = undefined;
             updatedQuestion.accuracy_percent = undefined;
@@ -928,6 +930,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                                 targetMode={formData.spectrum_target_mode || 'random'}
                                 target={formData.spectrum_target ?? 50}
                                 riskMode={formData.spectrum_risk_mode || 'risk'}
+                                baseScore={Math.abs(Number(formData.price?.correct) || 0)}
                                 clueMode={formData.spectrum_clue_mode || 'text'}
                                 firstCorrectBonus={formData.first_place_bonus ?? 100}
                                 clueGiverCorrectBonus={formData.spectrum_clue_bonus ?? 50}
@@ -977,6 +980,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                         <TabPanel value={tabValue} index={0}>
                             <PointOnImageEditor
                                 image={formData.image}
+                                promptImage={formData.prompt_image}
                                 task={formData.task || ''}
                                 correctPoint={formData.correct_point}
                                 imageAspectRatio={formData.image_aspect_ratio}
@@ -984,6 +988,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
                                 accuracyPercent={formData.accuracy_percent || 2}
                                 firstPlaceBonus={formData.first_place_bonus ?? 100}
                                 onImageChange={(image) => setFormData(prev => ({ ...prev, image, correct_point: undefined }))}
+                                onPromptImageChange={(prompt_image) => setFormData(prev => ({ ...prev, prompt_image }))}
                                 onTaskChange={(task) => setFormData(prev => ({ ...prev, task }))}
                                 onCorrectPointChange={(correct_point) => setFormData(prev => ({ ...prev, correct_point }))}
                                 onImageAspectRatioChange={(image_aspect_ratio) => setFormData(prev => ({ ...prev, image_aspect_ratio }))}

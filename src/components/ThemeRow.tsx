@@ -91,14 +91,14 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
             style={style}
             sx={{
                 display: 'flex',
-                alignItems: 'center',
-                gap: 2,
-                padding: '16px',
+                flexDirection: { xs: 'column', md: 'row' },
+                alignItems: { xs: 'stretch', md: 'center' },
+                gap: { xs: 1.25, md: 2 },
+                padding: { xs: '12px', sm: '16px' },
                 background: 'var(--surface-soft)',
                 borderRadius: '12px',
                 marginBottom: '12px',
                 border: '1px solid var(--glass-border)',
-                touchAction: 'none',
                 '&:hover': {
                     background: 'var(--glass-bg)',
                     border: '1px solid var(--hover-border)',
@@ -118,6 +118,11 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
                     color: 'var(--text-muted)',
                     display: 'flex',
                     alignItems: 'center',
+                    alignSelf: { xs: 'flex-start', md: 'center' },
+                    width: 44,
+                    height: 44,
+                    justifyContent: 'center',
+                    touchAction: 'none',
                     '&:hover': {
                         color: 'var(--primary)',
                     },
@@ -144,8 +149,9 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
             {/* Theme Name */}
             <Box
                 sx={{
-                    minWidth: '200px',
-                    maxWidth: '200px',
+                    minWidth: { xs: 0, md: '200px' },
+                    maxWidth: { xs: 'none', md: '200px' },
+                    width: { xs: '100%', md: '200px' },
                     display: 'flex',
                     alignItems: 'center',
                     gap: 1,
@@ -180,6 +186,7 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
                             fontWeight: 500,
                             fontSize: '16px',
                             padding: '8px 12px',
+                            minHeight: 44,
                             borderRadius: '8px',
                             flex: 1,
                             '&:hover': {
@@ -192,13 +199,15 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
                 )}
                 {/* Compact icon column so the fixed-width name box keeps its
                     room for text: ordered toggle on top, delete below */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'row', md: 'column' }, alignItems: 'center' }}>
                     <Tooltip title={t(theme.ordered ? 'theme.orderedOn' : 'theme.orderedOff')} arrow>
                         <IconButton
                             onClick={onThemeOrderedToggle}
                             size="small"
                             sx={{
                                 padding: '2px',
+                                width: 44,
+                                height: 44,
                                 color: theme.ordered ? 'var(--primary)' : 'var(--text-muted)',
                                 background: theme.ordered ? 'var(--surface-soft)' : 'transparent',
                                 '&:hover': {
@@ -215,6 +224,8 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
                         size="small"
                         sx={{
                             padding: '2px',
+                            width: 44,
+                            height: 44,
                             color: 'var(--danger)',
                             '&:hover': {
                                 color: 'var(--danger)',
@@ -230,10 +241,12 @@ const ThemeRow: React.FC<ThemeRowProps> = ({
             {/* Questions Grid */}
             <Box
                 sx={{
-                    display: 'flex',
-                    gap: 2,
+                    display: { xs: 'grid', sm: 'flex' },
+                    gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))' },
+                    gap: { xs: 1, sm: 2 },
                     flex: 1,
                     flexWrap: 'wrap',
+                    width: '100%',
                 }}
             >
                 <SortableContext items={questionIds} strategy={horizontalListSortingStrategy}>

@@ -19,6 +19,8 @@ const LanguageSwitcher: React.FC = () => {
             sx={{
                 '& .MuiToggleButton-root': {
                     padding: '4px 10px',
+                    minWidth: '44px',
+                    minHeight: '44px',
                     fontWeight: 600,
                     color: 'var(--text-secondary)',
                     borderColor: 'var(--glass-border)',

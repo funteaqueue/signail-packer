@@ -1,12 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Box, Button, Grid, Paper, Slider, Stack, TextField, Typography } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import LinkIcon from '@mui/icons-material/Link';
 import { PointCoordinate } from '../types/quiz';
 import { useTranslation } from '../i18n/LanguageContext';
 
 interface PointOnImageEditorProps {
   image?: string;
+  promptImage?: string;
   task: string;
   correctPoint?: PointCoordinate;
   imageAspectRatio?: number;
@@ -14,6 +16,7 @@ interface PointOnImageEditorProps {
   accuracyPercent: number;
   firstPlaceBonus: number;
   onImageChange: (image: string) => void;
+  onPromptImageChange: (image?: string) => void;
   onTaskChange: (task: string) => void;
   onCorrectPointChange: (point: PointCoordinate) => void;
   onImageAspectRatioChange: (aspectRatio: number) => void;
@@ -24,6 +27,7 @@ interface PointOnImageEditorProps {
 
 const PointOnImageEditor: React.FC<PointOnImageEditorProps> = ({
   image,
+  promptImage,
   task,
   correctPoint,
   imageAspectRatio,
@@ -31,6 +35,7 @@ const PointOnImageEditor: React.FC<PointOnImageEditorProps> = ({
   accuracyPercent,
   firstPlaceBonus,
   onImageChange,
+  onPromptImageChange,
   onTaskChange,
   onCorrectPointChange,
   onImageAspectRatioChange,
@@ -40,6 +45,7 @@ const PointOnImageEditor: React.FC<PointOnImageEditorProps> = ({
 }) => {
   const { t } = useTranslation();
   const [urlInput, setUrlInput] = useState('');
+  const [promptUrlInput, setPromptUrlInput] = useState('');
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const parsedAspect = Number(imageAspectRatio);
   const safeAspect = Number.isFinite(parsedAspect) && parsedAspect > 0 ? parsedAspect : 1;
@@ -48,11 +54,11 @@ const PointOnImageEditor: React.FC<PointOnImageEditorProps> = ({
     : { width: 1, height: 1 / safeAspect };
   const correctnessRadius = (accuracyPercent / 100) * Math.hypot(imageSpace.width, imageSpace.height);
 
-  const readImageFile = (file?: File | null) => {
+  const readImageFile = (file: File | null | undefined, onLoad: (image: string) => void) => {
     if (!file || !file.type.startsWith('image/')) return;
     const reader = new FileReader();
     reader.onload = (event) => {
-      if (typeof event.target?.result === 'string') onImageChange(event.target.result);
+      if (typeof event.target?.result === 'string') onLoad(event.target.result);
     };
     reader.readAsDataURL(file);
   };
@@ -62,7 +68,7 @@ const PointOnImageEditor: React.FC<PointOnImageEditorProps> = ({
       const imageItem = Array.from(event.clipboardData?.items || [])
         .find((item) => item.type.startsWith('image/'));
       if (!imageItem) return;
-      readImageFile(imageItem.getAsFile());
+      readImageFile(imageItem.getAsFile(), onImageChange);
       event.preventDefault();
     };
     window.addEventListener('paste', handlePaste);
@@ -85,11 +91,81 @@ const PointOnImageEditor: React.FC<PointOnImageEditorProps> = ({
         value={task}
         onChange={(event) => onTaskChange(event.target.value)}
         helperText={t('pointOnImage.promptHelper')}
-        required
         fullWidth
         multiline
         minRows={2}
       />
+
+      <Paper
+        onDragOver={(event) => event.preventDefault()}
+        onDrop={(event) => {
+          event.preventDefault();
+          readImageFile(event.dataTransfer.files?.[0], onPromptImageChange);
+        }}
+        sx={{ p: 2, background: 'var(--surface-soft)' }}
+      >
+        <Stack spacing={1.5}>
+          <Box>
+            <Typography variant="subtitle2">{t('pointOnImage.promptImage')}</Typography>
+            <Typography variant="caption" color="text.secondary">
+              {t('pointOnImage.promptImageHelper')}
+            </Typography>
+          </Box>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+            <Button component="label" variant="contained" startIcon={<CloudUploadIcon />}>
+              {t('pointOnImage.uploadPromptImage')}
+              <input
+                hidden
+                accept="image/*"
+                type="file"
+                onChange={(event) => readImageFile(event.target.files?.[0], onPromptImageChange)}
+              />
+            </Button>
+            <TextField
+              size="small"
+              value={promptUrlInput}
+              onChange={(event) => setPromptUrlInput(event.target.value)}
+              placeholder={t('pointOnImage.promptImageUrl')}
+              sx={{ flex: 1 }}
+            />
+            <Button
+              variant="outlined"
+              startIcon={<LinkIcon />}
+              disabled={!promptUrlInput.trim()}
+              onClick={() => onPromptImageChange(promptUrlInput.trim())}
+            >
+              {t('pointOnImage.loadUrl')}
+            </Button>
+            {promptImage && (
+              <Button
+                variant="outlined"
+                color="error"
+                startIcon={<DeleteOutlineIcon />}
+                onClick={() => onPromptImageChange(undefined)}
+              >
+                {t('pointOnImage.removePromptImage')}
+              </Button>
+            )}
+          </Stack>
+          {promptImage && (
+            <Box
+              component="img"
+              src={promptImage}
+              alt={task || t('pointOnImage.promptImage')}
+              sx={{
+                display: 'block',
+                maxWidth: '100%',
+                maxHeight: '38vh',
+                width: 'auto',
+                height: 'auto',
+                mx: 'auto',
+                borderRadius: 2,
+                border: '1px solid var(--glass-border)',
+              }}
+            />
+          )}
+        </Stack>
+      </Paper>
 
       <Grid container spacing={2}>
         <Grid item xs={12} md={4}>
@@ -151,14 +227,17 @@ const PointOnImageEditor: React.FC<PointOnImageEditorProps> = ({
         onDragOver={(event) => event.preventDefault()}
         onDrop={(event) => {
           event.preventDefault();
-          readImageFile(event.dataTransfer.files?.[0]);
+          readImageFile(event.dataTransfer.files?.[0], onImageChange);
         }}
         sx={{ p: 2, background: 'var(--surface-soft)' }}
       >
+        <Typography variant="subtitle2" sx={{ mb: 1.5 }}>
+          {t('pointOnImage.answerImage')}
+        </Typography>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mb: 2 }}>
           <Button component="label" variant="contained" startIcon={<CloudUploadIcon />}>
             {t('pointOnImage.uploadImage')}
-            <input hidden accept="image/*" type="file" onChange={(event) => readImageFile(event.target.files?.[0])} />
+            <input hidden accept="image/*" type="file" onChange={(event) => readImageFile(event.target.files?.[0], onImageChange)} />
           </Button>
           <TextField
             size="small"
